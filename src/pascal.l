@@ -58,15 +58,29 @@
 "TRUE"      {std::cout << yytext; return TRUE;}
 "FALSE"     {std::cout << yytext; return FALSE;}
 "RECORD"    {std::cout << yytext; return RECORD;}
-"WRITE"     {std::cout << yytext; return SYS_FUNC;}
-"WRITELN"   {std::cout << yytext; return SYS_FUNC;}
-"READ"      {std::cout << yytext; return SYS_FUNC;}
-"READLN"    {std::cout << yytext; return SYS_FUNC;}
-"INTEGER"   {std::cout << yytext; return SIMPLE_TYPE;}
-"LONGINT"   {std::cout << yytext; return SIMPLE_TYPE;}
-"BOOLEAN"   {std::cout << yytext; return SIMPLE_TYPE;}
+
+"FALSE"     {std::cout << yytext; return SYS_CON;}
+"MAXINT"    {std::cout << yytext; return SYS_CON;}
+"TRUE"      {std::cout << yytext; return SYS_CON;}
+"ABS"       {std::cout << yytext; return SYS_FUNCT;}
+"CHR"       {std::cout << yytext; return SYS_FUNCT;}
+"ODD"       {std::cout << yytext; return SYS_FUNCT;}
+"ORD"       {std::cout << yytext; return SYS_FUNCT;}
+"PRED"      {std::cout << yytext; return SYS_FUNCT;}
+"SQR"       {std::cout << yytext; return SYS_FUNCT;}
+"SQRT"      {std::cout << yytext; return SYS_FUNCT;}
+"SUCC"      {std::cout << yytext; return SYS_FUNCT;}
+"WRITE"     {std::cout << yytext; return SYS_PROC;}
+"WRITELN"   {std::cout << yytext; return SYS_PROC;}
+"READ"      {std::cout << yytext; return SYS_PROC;}
+"READLN"    {std::cout << yytext; return SYS_PROC;}
+
+"BOOLEAN"   {std::cout << yytext; return SYS_TYPE;}
+"CHAR"      {std::cout << yytext; return SYS_TYPE;}
+"INTEGER"   {std::cout << yytext; return SYS_TYPE;}
 "REAL"      {std::cout << yytext; return SIMPLE_TYPE;}
 "STRING"    {std::cout << yytext; return STRING;}
+
 [+|-][0-9]+      {std::cout << "Sign Integer: " << yytext; return SIGNEDDIGSEQ;}
 [0-9]+      {std::cout << "Integer: " << yytext; return DIGSEQ;}
 [+|-][0-9]+"."[0-9]+   {std::cout << "Sign Real Number: " << yytext; return SIGNEDREALNUMBER;}
