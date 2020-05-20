@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cassert>
 #include "codegen/codegen_context.hpp"
+#include "utils/utils.hpp"
 
 namespace spc
 {
@@ -29,6 +30,8 @@ namespace spc
         ListNode(const std::shared_ptr<T> &val) { children.push_back(val); }
         ListNode(std::shared_ptr<T> &&val) { children.push_back(val); }
         ~ListNode() {}
+
+        std::list<std::shared_ptr<T>> &getChildren() { return children; }
 
         void append(const std::shared_ptr<T> &val) { children.push_back(val); }
         void append(std::shared_ptr<T> &&val) { children.push_back(val); }
@@ -64,7 +67,7 @@ namespace spc
         }
     };
 
-    class ExprNode
+    class ExprNode: public BaseNode
     {
     public:
         ExprNode() {}
@@ -73,7 +76,7 @@ namespace spc
         virtual void print() = 0;
     };
     
-    class StmtNode
+    class StmtNode: public BaseNode
     {
     public:
         StmtNode() {}

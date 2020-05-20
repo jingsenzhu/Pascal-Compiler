@@ -5,6 +5,7 @@
 
 %}
 
+NQUOTE [^']
 %option c++
 %option noyywrap
 
