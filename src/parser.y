@@ -70,7 +70,7 @@
 %type <std::string> if_stmt else_clause
 %type <std::string> repeat_stmt while_stmt goto_stmt
 %type <std::string> for_stmt direction 
-%type <std::string> case_stmt case_expr_list case_expr_list
+%type <std::string> case_stmt case_expr_list case_expr
 %type <std::string> expression expr term factor
 %type <std::string> args_list
 
