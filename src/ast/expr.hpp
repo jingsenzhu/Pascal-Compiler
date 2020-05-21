@@ -9,8 +9,8 @@ namespace spc
     enum UnaryOp { Pos, Neg, Not };
     enum BinaryOp
     {
-        PLUS, MINUS, MUL, DIV, MOD, TRUEDIV, AND, OR, XOR,
-        EQUAL, UNEQUAL, GT, LT, GE, LE
+        Plus, Minus, Mul, Div, Mod, Truediv, And, Or, Xor,
+        Eq, Neq, Gt, Lt, Geq, Leq
     };
 
     class BinaryExprNode: public ExprNode
@@ -45,6 +45,35 @@ namespace spc
         ~UnaryExprNode() = default;
 
         llvm::Value *codegen(CodegenContext &) override;
+        void print() override;
+    };
+    
+    class ArrayRefNode: public ExprNode
+    {
+    private:
+        std::shared_ptr<IdentifierNode> arr;
+        std::shared_ptr<ExprNode> index;
+    public:
+        ArrayRefNode(const std::shared_ptr<IdentifierNode> &arr, const std::shared_ptr<ExprNode> &index)
+            : arr(arr), index(index) {}
+        ~ArrayRefNode() = default;
+
+        llvm::Value *codegen(CodegenContext &) override;
+        llvm::Value *getPtr();
+        void print() override;
+    };
+
+    class RecordRefNode: public ExprNode
+    {
+    private:
+        std::shared_ptr<IdentifierNode> name;
+        std::shared_ptr<IdentifierNode> field;
+    public:
+        RecordRefNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<IdentifierNode> &field)
+            : name(name), field(field) {}
+        ~RecordRefNode() = default;
+
+        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         void print() override;
     };
     
