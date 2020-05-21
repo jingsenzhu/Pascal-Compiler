@@ -15,6 +15,9 @@ NQUOTE [^']
 %option noyywrap
 
 %%
+%{
+    yylval = lval;
+%}
 
 "("     {return token::LP;}
 ")"     {return token::RP;}
