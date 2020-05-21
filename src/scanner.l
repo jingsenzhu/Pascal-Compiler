@@ -21,7 +21,7 @@ NQUOTE [^']
 ","     {return COMMA;}
 ":"     {return COLON;}
 "*"     {return MUL;}
-"/"     {return DIV;}
+"/"     {return TRUEDIV;}
 "+"     {return PLUS;}
 "-"     {return MINUS;}
 ">="    {return GE;}
