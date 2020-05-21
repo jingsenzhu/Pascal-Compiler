@@ -17,7 +17,7 @@ namespace spc
         TypeNode() {}
         ~TypeNode() {}
         llvm::Value *codegen(CodegenContext &) override { return nullptr; };
-        llvm::Type *getType(CodegenContext &);
+        llvm::Type *getLLVMType(CodegenContext &);
         void print() override;
     };
 
@@ -77,7 +77,7 @@ namespace spc
         ConstValueNode() {}
         ~ConstValueNode() = default;
 
-        llvm::Type *getType(CodegenContext &context)
+        llvm::Type *getLLVMType(CodegenContext &context)
         {
             switch (type) 
             {

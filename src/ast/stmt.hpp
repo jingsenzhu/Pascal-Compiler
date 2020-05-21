@@ -191,15 +191,6 @@ namespace spc
         void print() override;
     };
     
-    CaseStmtNode::CaseStmtNode(/* args */)
-    {
-    }
-    
-    CaseStmtNode::~CaseStmtNode()
-    {
-    }
-    
-    
 
 } // namespace spc
 
