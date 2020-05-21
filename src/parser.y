@@ -24,16 +24,9 @@
     
 }
 
-// 定义参数传递
-// %parse-param {Scanner& scanner}
-// %parse-param {Driver& driver}
 
 // 导入scanner和driver操作
 %code {
-    // #include "Driver.hpp"
-    // #include "Scanner.hpp"
-    // #undef yylex
-    // #define yylex scanner.yylex
     int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc);
 }
 
@@ -50,27 +43,37 @@
 %token PLUS MINUS MUL DIV MOD TRUEDIV AND OR XOR NOT
 %token DOT DOTDOT SEMI LP RP LB RB COMMA COLON
 
-%type <std::string> program program_head
-%type <std::string> routine routine_head routine_body
-%type <std::string> const_part type_part var_part routine_part
-%type <std::string> const_expr_list const_value
-%type <std::string> type_decl_list type_decl type_definition
-%type <std::string> simple_type_decl
-%type <std::string> array_type_decl array_range
-%type <std::string> record_type_decl
-%type <std::string> field_decl field_decl_list name_list
-%type <std::string> var_para_list var_decl_list var_decl
-%type <std::string> function_decl function_head
-%type <std::string> procedure_head procedure_decl
-%type <std::string> parameters para_decl_list para_type_list
-%type <std::string> stmt_list stmt 
-%type <std::string> assign_stmt proc_stmt compound_stmt 
-%type <std::string> if_stmt else_clause
-%type <std::string> repeat_stmt while_stmt goto_stmt
-%type <std::string> for_stmt direction 
-%type <std::string> case_stmt case_expr_list case_expr
-%type <std::string> expression expr term factor
-%type <std::string> args_list
+%type <std::shared_ptr<ProgramNode>> program
+%type <std::shared_ptr<RoutineHeadNode>> routine_head
+%type <std::shared_ptr<RoutineList>> routine_body routine_part 
+%type <std::shared_ptr<RoutineNode>> function_decl procedure_decl
+%type <std::shared_ptr<ConstDeclList>> const_part const_expr_list
+%type <std::shared_ptr<TypeDeclList>> type_part type_decl_list
+%type <std::shared_ptr<VarDeclList>> var_part var_decl_list var_decl
+%type <std::shared_ptr<ConstValueNode>> const_value
+%type <std::shared_ptr<DeclNode>> type_decl
+%type <std::shared_ptr<TypeNode>> simple_type_decl
+%type <std::shared_ptr<ArrayTypeNode>> array_type_decl
+// %type <std::shared_ptr<ArgDeclNode>> record_type_decl field_decl field_decl_list
+// %type <std::shared_ptr<ArrayRefNode> array_range
+%type <std::shared_ptr<TypeDeclNode>> type_definition 
+%type <std::shared_ptr<IdentifierList>> name_list var_para_list
+%type <std::shared_ptr<ParamList>> parameters para_decl_list para_type_list
+%type <std::shared_ptr<AssignStmtNode>> assign_stmt
+%type <std::shared_ptr<ProcStmtNode>> proc_stmt
+// %type <std::shared_ptr<StmtNode>> stmt_list stmt else_clause  不知道是哪个
+%type <std::shared_ptr<CompoundStmtNode>> compound_stmt stmt_list stmt else_clause
+%type <std::shared_ptr<IfStmtNode>> if_stmt
+%type <std::shared_ptr<RepeatStmtNode>> repeat_stmt
+%type <std::shared_ptr<WhileStmtNode>> while_stmt
+%type <std::shared_ptr<StmtNode>> goto_stmt
+%type <std::shared_ptr<ForStmtNode>> for_stmt
+%type <std::ForDirection> direction
+%type <std::shared_ptr<CaseStmtNode>> case_stmt
+%type <std::shared_ptr<CaseBranchList>> case_expr_list
+%type <std::shared_ptr<CaseBranchNode>> case_expr
+%type <std::shared_ptr<BinaryExprNode>> expression expr term factor
+%type <std::shared_ptr<ArgListNode>> args_list
 
 %start program
 
@@ -80,16 +83,6 @@ program: PROGRAM ID SEMI routine_head routine_body DOT{
         $$ = make_node<ProgramNode>($2, $4, $5);
     }
     ;
-
-// program_head: PROGRAM ID SEMI{
-//         printf("program_head: PROGRAM ID SEMI\n");
-//     }
-//     ;
-// // TBD
-// routine: routine_head routine_body {
-//         $$ = make_node<>
-//     }
-//     ;
 
 routine_head: const_part type_part var_part routine_part {
         $$ = make_node<RoutineHeadNode>($1, $3, $2, $4);
@@ -210,19 +203,10 @@ function_decl: FUNCTION ID parameters COLON simple_type_decl SEMI routine_head r
     }
     ;
 
-// function_head: FUNCTION ID parameters COLON simple_type_decl 
-//         { $$ = make_node<RoutineHeadNode>($2, $3, $5); $$->append($4); }
-//     ;
-
 procedure_decl: PROCEDURE ID parameters SEMI routine_head routine_body SEMI {
         $$ = make_node<RoutineNode>($2, $5, $6, $3, make_node<VoidTypeNode>());
     }
     ;
-
-// procedure_head: PROCEDURE ID parameters {
-//         $$ = make_node<RoutineHeadNode>($2, $3, make_node<SimpleTypeNode>(Type::VOID)); $$->append($4);
-//     }
-//     ;
 
 parameters: LP para_decl_list RP { $$ = $2; }
     | LP RP { $$ = make_node<ParamList>(); }
@@ -291,10 +275,10 @@ proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
     | SYS_PROC
         { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1)); }
     | SYS_PROC LP args_list RP
-        { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1, $3)); }
-//    | READ LP factor RP
-//        { printf("proc_stmt: READ LP factor RP\n"); }
-    ;
+        { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1, $3)); };
+//  | READ LP factor RP
+//      { printf("proc_stmt: READ LP factor RP\n"); }
+    
 
 repeat_stmt: REPEAT stmt_list UNTIL expression {
         $$ = make_node<RepeatStmtNode>($4, $2); // $$->append($2);
