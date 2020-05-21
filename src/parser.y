@@ -3,8 +3,8 @@
 %debug
 
 //声明命名空间与类名，结合使用 spc::Parser::
-%define api.IDspace {spc}
-%define parser_class_ID {Parser}
+//%define api.IDspace {spc}
+//%define parser_class_ID {Parser}
 //使得类型与token定义可以使用各种复杂的结构与类型
 %define api.value.type variant
 //开启断言功能
@@ -19,24 +19,26 @@
     #include <string>
     #include <stdexcept>
 
-    IDspace spc {
-        class Driver;
-        class Scanner;
-    }
-    using IDspace spc;
+	using namespace std;
+   // IDspace spc {
+    //    class Driver;
+    //    class Scanner;
+   // }
+   // using IDspace spc;
     
 }
 
 //定义参数传递
-%parse-param {Scanner& scanner}
-%parse-param {Driver& driver}
+//%parse-param {Scanner& scanner}
+//%parse-param {Driver& driver}
 
 //导入scanner和driver操作
 %code {
-    #include "Driver.hpp"
-    #include "Scanner.hpp"
-    #undef yylex
-    #define yylex scanner.yylex
+    //#include "Driver.hpp"
+   // #include "Scanner.hpp"
+    //#undef yylex
+    //#define yylex scanner.yylex
+	int yylex();
 }
 
 %locations
@@ -73,9 +75,6 @@
 %type <std::string> case_stmt case_expr_list case_expr
 %type <std::string> expression expr term factor
 %type <std::string> args_list
-
-//不允许出现多个else
-%nonassoc else_clause
 
 %start program
 
