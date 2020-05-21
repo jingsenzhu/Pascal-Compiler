@@ -67,8 +67,35 @@ namespace spc
         ~AliasTypeNode() = default;
         void print() override;
     };
+
+    class VarDeclNode;
     
     // TODO: RecordTypeNode
+    class RecordTypeNode: public TypeNode
+    {
+    private:
+        std::list<std::shared_ptr<VarDeclNode>> field;
+    public:
+        RecordTypeNode(const std::shared_ptr<IdentifierList> &names, const std::shared_ptr<SimpleTypeNode> &type)
+        {
+            for (auto &id : names->getChildren())
+            {
+                field.push_back(make_node<VarDeclNode>(id, type));
+            }
+        }
+        ~RecordTypeNode() = default;
+        
+        void append(const std::shared_ptr<VarDeclNode> &var)
+        {
+            field.push_back(var);
+        }
+        void merge(const std::shared_ptr<RecordTypeNode> &rhs)
+        {
+            field.merge(std::move(rhs->field));
+        }
+        void print() override;
+    };
+    
 
     class ConstValueNode: ExprNode
     {

@@ -38,17 +38,19 @@ namespace spc
 
         void merge(const std::shared_ptr<ListNode<T>> &rhs)
         {
-            for (auto &c: rhs->children)
-            {
-                children.push_back(c);
-            }           
+            // for (auto &c: rhs->children)
+            // {
+            //     children.push_back(c);
+            // }
+            children.merge(std::move(rhs->children));
         }
         void mergeList(const std::list<std::shared_ptr<T>> &lst)
         {
-            for (auto &c: lst)
-            {
-                children.push_back(c);
-            }
+            // for (auto &c: lst)
+            // {
+            //     children.push_back(c);
+            // }
+            children.merge(std::move(lst));
         }
         virtual llvm::Value *codegen(CodegenContext &context)
         {

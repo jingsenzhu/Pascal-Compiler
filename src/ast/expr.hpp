@@ -48,6 +48,35 @@ namespace spc
         void print() override;
     };
     
+    class ArrayRefNode: public ExprNode
+    {
+    private:
+        std::shared_ptr<IdentifierNode> arr;
+        std::shared_ptr<ExprNode> index;
+    public:
+        ArrayRefNode(const std::shared_ptr<IdentifierNode> &arr, const std::shared_ptr<ExprNode> &index)
+            : arr(arr), index(index) {}
+        ~ArrayRefNode() = default;
+
+        llvm::Value *codegen(CodegenContext &) override;
+        llvm::Value *getPtr();
+        void print() override;
+    };
+
+    class RecordRefNode: public ExprNode
+    {
+    private:
+        std::shared_ptr<IdentifierNode> name;
+        std::shared_ptr<IdentifierNode> field;
+    public:
+        RecordRefNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<IdentifierNode> &field)
+            : name(name), field(field) {}
+        ~RecordRefNode() = default;
+
+        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
+        void print() override;
+    };
+    
 
 } // namespace spc
 

@@ -23,6 +23,8 @@ namespace spc
         void print() override;
     };
 
+    using IdentifierList = ListNode<IdentifierNode>;
+
 } // namespace spc
 
 
