@@ -2,93 +2,97 @@
 #include<iostream>
 #include<stdio.h>
 #include<string>    
-#include "p.hpp"
+#include "parser.hpp"
+
+#undef YY_DECL
+#define YY_DECL int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc)
+
+using token = spc::parser::token::yytokentype;
 %}
 
 NQUOTE [^']
-%option c++
+%option caseless
 %option noyywrap
 
 %%
 
-"("     {return LP;}
-")"     {return RP;}
-"["     {return LB;}
-"]"     {return RB;}
-"."     {return DOT;}
-".."    {return DOTDOT;}
-";"     {return SEMI;}
-","     {return COMMA;}
-":"     {return COLON;}
-"*"     {return MUL;}
-"/"     {return TRUEDIV;}
-"+"     {return PLUS;}
-"-"     {return MINUS;}
-">="    {return GE;}
-">"     {return GT;}
-"<="    {return LE;}
-"<"     {return LT;}
-"<>"    {return UNEQUAL;}
-"="     {return EQUAL;}
-":="    {return ASSIGN;}
+"("     {return token::LP;}
+")"     {return token::RP;}
+"["     {return token::LB;}
+"]"     {return token::RB;}
+"."     {return token::DOT;}
+".."    {return token::DOTDOT;}
+";"     {return token::SEMI;}
+","     {return token::COMMA;}
+":"     {return token::COLON;}
+"*"     {return token::MUL;}
+"/"     {return token::TRUEDIV;}
+"+"     {return token::PLUS;}
+"-"     {return token::MINUS;}
+">="    {return token::GE;}
+">"     {return token::GT;}
+"<="    {return token::LE;}
+"<"     {return token::LT;}
+"<>"    {return token::UNEQUAL;}
+"="     {return token::EQUAL;}
+":="    {return token::ASSIGN;}
 
-"AND"       {std::cout << yytext;  return AND;}
-"ARRAY"     {std::cout << yytext;  return ARRAY;}
-"CASE"      {std::cout << yytext;  return CASE;}
-"CONST"     {std::cout << yytext;  return CONST;}
-"DIV"       {std::cout << yytext;  return DIV;}
-"MOD"       {std::cout << yytext;  return MOD;}
-"DO"        {std::cout << yytext;  return DO;}
-"DOWNTO"    {std::cout << yytext;  return DOWNTO;}
-"ELSE"      {std::cout << yytext;  return ELSE;}
-"END"       {std::cout << yytext;  return END;}
-"FOR"       {std::cout << yytext;  return FOR;}
-"FUNCTION"  {std::cout << yytext;  return FUNCTION;}
-"GOTO"      {std::cout << yytext;  return GOTO;}
-"IF"        {std::cout << yytext;  return IF;}
-"NOT"       {std::cout << yytext;  return NOT;}
-"OF"        {std::cout << yytext;  return OF;}
-"OR"        {std::cout << yytext;  return OR;}
-"XOR"       {std::cout << yytext;  return XOR;}
-"BEGIN"     {std::cout << yytext;  return PBEGIN;}
-"PROCEDURE" {std::cout << yytext;  return PROCEDURE;}
-"PROGRAM"   {std::cout << yytext;  return PROGRAM;}
-"READ"      {std::cout << yytext; return READ;}
-"READLN"    {std::cout << yytext; return READLN;}
-"REPEAT"    {std::cout << yytext;  return REPEAT;}
-"THEN"      {std::cout << yytext;  return THEN;}
-"TO"        {std::cout << yytext;  return TO;}
-"TYPE"      {std::cout << yytext;  return TYPE;}
-"UNTIL"     {std::cout << yytext;  return UNTIL;}
-"VAR"       {std::cout << yytext;  return VAR;}
-"WHILE"     {std::cout << yytext;  return WHILE;}
-"RECORD"    {std::cout << yytext; return RECORD;}
+"AND"       {std::cout << yytext;  return token::AND;}
+"ARRAY"     {std::cout << yytext;  return token::ARRAY;}
+"CASE"      {std::cout << yytext;  return token::CASE;}
+"CONST"     {std::cout << yytext;  return token::CONST;}
+"DIV"       {std::cout << yytext;  return token::DIV;}
+"MOD"       {std::cout << yytext;  return token::MOD;}
+"DO"        {std::cout << yytext;  return token::DO;}
+"DOWNTO"    {std::cout << yytext;  return token::DOWNTO;}
+"ELSE"      {std::cout << yytext;  return token::ELSE;}
+"END"       {std::cout << yytext;  return token::END;}
+"FOR"       {std::cout << yytext;  return token::FOR;}
+"FUNCTION"  {std::cout << yytext;  return token::FUNCTION;}
+"GOTO"      {std::cout << yytext;  return token::GOTO;}
+"IF"        {std::cout << yytext;  return token::IF;}
+"NOT"       {std::cout << yytext;  return token::NOT;}
+"OF"        {std::cout << yytext;  return token::OF;}
+"OR"        {std::cout << yytext;  return token::OR;}
+"XOR"       {std::cout << yytext;  return token::XOR;}
+"BEGIN"     {std::cout << yytext;  return token::PBEGIN;}
+"PROCEDURE" {std::cout << yytext;  return token::PROCEDURE;}
+"PROGRAM"   {std::cout << yytext;  return token::PROGRAM;}
+"READ"      {std::cout << yytext; return token::READ;}
+"REPEAT"    {std::cout << yytext;  return token::REPEAT;}
+"THEN"      {std::cout << yytext;  return token::THEN;}
+"TO"        {std::cout << yytext;  return token::TO;}
+"TYPE"      {std::cout << yytext;  return token::TYPE;}
+"UNTIL"     {std::cout << yytext;  return token::UNTIL;}
+"VAR"       {std::cout << yytext;  return token::VAR;}
+"WHILE"     {std::cout << yytext;  return token::WHILE;}
+"RECORD"    {std::cout << yytext; return token::RECORD;}
 
-"FALSE"     {std::cout << yytext; return SYS_CON;}
-"MAXINT"    {std::cout << yytext; return SYS_CON;}
-"TRUE"      {std::cout << yytext; return SYS_CON;}
-"ABS"       {std::cout << yytext; return SYS_FUNCT;}
-"CHR"       {std::cout << yytext; return SYS_FUNCT;}
-"ODD"       {std::cout << yytext; return SYS_FUNCT;}
-"ORD"       {std::cout << yytext; return SYS_FUNCT;}
-"PRED"      {std::cout << yytext; return SYS_FUNCT;}
-"SQR"       {std::cout << yytext; return SYS_FUNCT;}
-"SQRT"      {std::cout << yytext; return SYS_FUNCT;}
-"SUCC"      {std::cout << yytext; return SYS_FUNCT;}
-"WRITE"     {std::cout << yytext; return SYS_PROC;}
-"WRITELN"   {std::cout << yytext; return SYS_PROC;}
+"FALSE"     {std::cout << yytext; return token::SYS_CON;}
+"MAXINT"    {std::cout << yytext; return token::SYS_CON;}
+"TRUE"      {std::cout << yytext; return token::SYS_CON;}
+"ABS"       {std::cout << yytext; return token::SYS_FUNCT;}
+"CHR"       {std::cout << yytext; return token::SYS_FUNCT;}
+"ODD"       {std::cout << yytext; return token::SYS_FUNCT;}
+"ORD"       {std::cout << yytext; return token::SYS_FUNCT;}
+"PRED"      {std::cout << yytext; return token::SYS_FUNCT;}
+"SQR"       {std::cout << yytext; return token::SYS_FUNCT;}
+"SQRT"      {std::cout << yytext; return token::SYS_FUNCT;}
+"SUCC"      {std::cout << yytext; return token::SYS_FUNCT;}
+"WRITE"     {std::cout << yytext; return token::SYS_PROC;}
+"WRITELN"   {std::cout << yytext; return token::SYS_PROC;}
 
-"BOOLEAN"   {std::cout << yytext; return SYS_TYPE;}
-"CHAR"      {std::cout << yytext; return SYS_TYPE;}
-"INTEGER"   {std::cout << yytext; return SYS_TYPE;}
-"REAL"      {std::cout << yytext; return SIMPLE_TYPE;}
-"STRING"    {std::cout << yytext; return STRING;}
+"BOOLEAN"   {std::cout << yytext; return token::SYS_TYPE;}
+"CHAR"      {std::cout << yytext; return token::SYS_TYPE;}
+"INTEGER"   {std::cout << yytext; return token::SYS_TYPE;}
+"REAL"      {std::cout << yytext; return token::SYS_TYPE;}
+"STRING"    {std::cout << yytext; return token::STRING;}
 
-[0-9]+      {std::cout << "Integer: " << yytext; return INTEGER;}
-[0-9]+"."[0-9]+   {std::cout << "Real Number: " << yytext; return REAL;}
-'{NQUOTE}'  {std::cout << "STRING: " << yytext; yytext[yyleng-1] = 0; return STRING;}
-'({NQUOTE}|'')+'  {std::cout << "CHAR: " << yytext; return CHAR;}
-[a-zA-Z_]([a-zA-Z0-9_])*  {std::cout << "IDD: " << yytext << " "; yytext[yyleng] = 0; return ID;}
+[0-9]+      {std::cout << "Integer: " << yytext; return token::INTEGER;}
+[0-9]+"."[0-9]+   {std::cout << "Real Number: " << yytext; return token::REAL;}
+'{NQUOTE}'  {std::cout << "STRING: " << yytext; yytext[yyleng-1] = 0; return token::STRING;}
+'({NQUOTE}|'')+'  {std::cout << "CHAR: " << yytext; return token::CHAR;}
+[a-zA-Z_]([a-zA-Z0-9_])*  {std::cout << "IDD: " << yytext << " "; yytext[yyleng] = 0; return token::ID;}
 [\t\f]    {std::cout << ' '; continue;}
 [\n\r]     {std::cout << std::endl;}
 

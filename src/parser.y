@@ -4,6 +4,7 @@
 
 //声明命名空间与类名，结合使用 spc::Parser::
 //%define api.IDspace {spc}
+%define api.namespace {spc}
 //%define parser_class_ID {Parser}
 //使得类型与token定义可以使用各种复杂的结构与类型
 %define api.value.type variant
@@ -24,7 +25,8 @@
     //    class Driver;
     //    class Scanner;
    // }
-   // using IDspace spc;
+   namespace spc {}
+   using namespace spc;
     
 }
 
@@ -38,7 +40,7 @@
    // #include "Scanner.hpp"
     //#undef yylex
     //#define yylex scanner.yylex
-	int yylex();
+    int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc);
 }
 
 %locations
@@ -390,9 +392,9 @@ args_list: args_list COMMA expression {
     ;
 
 %%
-    /*
-void spc::Parser::error(const spc::location_type &loc, const std::string& msg) {
+    
+void spc::parser::error(const spc::parser::location_type &loc, const std::string& msg) {
     std::cerr << loc << ": " << msg << std::endl;
     throw std::logic_error("Syntax error: invalid syntax");
 }
-    */
+    
