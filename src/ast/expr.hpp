@@ -76,6 +76,53 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         void print() override;
     };
+
+    class ProcNode: public ExprNode
+    {
+    public:
+        ProcNode() = default;
+        ~ProcNode() = default;
+        llvm::Value *codegen(CodegenContext &context) = 0;
+        void print() = 0;
+    };
+
+    class CustomProcNode: public ProcNode
+    {
+    private:
+        std::shared_ptr<IdentifierNode> name;
+        std::shared_ptr<ArgList> args;
+    public:
+        CustomProcNode(const std::string &name, const std::shared_ptr<ArgList> &args = nullptr) 
+            : name(make_node<IdentifierNode>(name)), args(args) {}
+        // CustomProcStmtNode(const std::string &name) 
+        //     : name(make_node<IdentifierNode>(name)), args(nullptr) {}
+        CustomProcNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<ArgList> &args = nullptr) 
+            : name(name), args(args) {}
+        // CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name) 
+        //     : name(name), args(nullptr) {}
+        ~CustomProcNode() = default;
+
+        llvm::Value *codegen(CodegenContext &context) override;
+        void print() override;
+    };
+
+    enum SysFunc { Read, Write, Readln, Writeln };
+    
+    class SysProcNode: public ProcNode
+    {
+    private:
+        SysFunc name;
+        std::shared_ptr<ArgList> args;
+    public:
+        SysProcNode(const SysFunc name, const std::shared_ptr<ArgList> &args = nullptr) 
+            : name(name), args(args) {}
+        // SysProcStmtNode(const SysFunc &name) 
+        //     : name(name), args(nullptr) {}
+        ~SysProcNode() = default;
+
+        llvm::Value *codegen(CodegenContext &context) override;
+        void print() override;
+    };
     
 
 } // namespace spc

@@ -76,35 +76,35 @@
 
 %%
 
-program: program_head routine DOT{
-        $$ = make_node<ProgramNode>($2);
+program: PROGRAM ID SEMI routine_head routine_body DOT{
+        $$ = make_node<ProgramNode>($2, $4, $5);
     }
     ;
 
-program_head: PROGRAM ID SEMI{
-        printf("program_head: PROGRAM ID SEMI\n");
-    }
-    ;
-//TBD
-routine: routine_head routine_body {
-        $$ = 
-    }
-    ;
+// program_head: PROGRAM ID SEMI{
+//         printf("program_head: PROGRAM ID SEMI\n");
+//     }
+//     ;
+// // TBD
+// routine: routine_head routine_body {
+//         $$ = make_node<>
+//     }
+//     ;
 
 routine_head: const_part type_part var_part routine_part {
-        $$ = make_node<RoutineList>($1, $2, $3, $4);//
+        $$ = make_node<RoutineHeadNode>($1, $3, $2, $4);
     }
     ;
 
-const_part: CONST const_expr_list {$$=$2}
-    | {$$ = make_node<ConstDeclList>();//}
+const_part: CONST const_expr_list { $$=$2; }
+    | { $$ = make_node<ConstDeclList>(); }
     ;
 
 const_expr_list: const_expr_list ID EQUAL const_value SEMI  {
-        $$ = $1; $$->add_child(make_node<ConstDeclNode>($2, $4));
+        $$ = $1; $$->append(make_node<ConstDeclNode>($2, $4));
     }
     | ID EQUAL const_value SEMI {
-        $$ = make_node<ConstDeclList>(); $$->add_child(make_node<ConstDeclNode>($1, $3));
+        $$ = make_node<ConstDeclList>(make_node<ConstDeclNode>($1, $3));
     }
     ;
 
@@ -120,20 +120,19 @@ type_part: TYPE type_decl_list {$$ = $2}
     ;
 
 type_decl_list: type_decl_list type_definition {
-        $$ = $1; $$->add_child($2);
+        $$ = $1; $$->append($2);
     }
     | type_definition {
-        $$ = make_node<TypeDeclList>();
-        $$ ->add_child($1);
+        $$ = make_node<TypeDeclList>($1);
     }
     ;
 
 type_definition: ID EQUAL type_decl SEMI {
-        $$ = make_node<TypeDeclNode>($1, $3);//
+        $$ = make_node<TypeDeclNode>($1, $3);
     }
     ;
 
-type_decl: simple_type_decl{
+type_decl: simple_type_decl {
         $$ = $1;
     }
     | array_type_decl {$$ = $1;}
@@ -142,18 +141,23 @@ type_decl: simple_type_decl{
 
 simple_type_decl: SYS_TYPE {$$ = $1;}
     | ID {$$ = make_node<AliasTypeNode>($1);}
-    | LP name_list RP {$$ = make_node<SetTypeNode>(); $$->append($2);//lift}
+    // | LP name_list RP {$$ = make_node<SetTypeNode>(); $$->append($2);//lift}
     ;
 
 array_type_decl: ARRAY LB array_range RB OF type_decl {
-        $$ = make_node<ArrayTypeNode>($3, $6);
+        $$ = make_node<ArrayTypeNode>($3.first, $3.second, $6);
     }
     ;
 
-array_range: const_value DOTDOT const_value
-        { $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); //这咋写啊}
-    | ID DOTDOT ID
-        { $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); //这咋写啊}
+array_range: const_value DOTDOT const_value { 
+            // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); // 这咋写啊
+        if (!is_ptr_of<IntegerNode>($1) || !is_ptr_of<IntegerNode>($3)) throw std::exception("Array index must be integer!");
+        $$ = std::make_pair($1, $3);
+    }
+    | ID DOTDOT ID { 
+        // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); //这咋写啊
+        $$ = std::make_pair($1, $3);
+    }
     ;
 
 record_type_decl: RECORD field_decl_list END {
@@ -168,14 +172,14 @@ field_decl_list: field_decl_list field_decl {
     ;
 
 field_decl: name_list COLON type_decl SEMI {
-        //record
+        // record
     }
     ;
 
 name_list: name_list COMMA ID {
         $$ = $1; $$->append($3);
     }
-    | ID {$$ = make_node<DeclNode>(); $$->append($1);//y的name node没东西啊}
+    | ID {$$ = make_node<IdentifierList>($1);}
     ;
 
 var_part: VAR var_decl_list {$$ = $2;}
@@ -183,14 +187,14 @@ var_part: VAR var_decl_list {$$ = $2;}
     ;
 
 var_decl_list: var_decl_list var_decl {
-        $$ = $1; $$->append($2); //lift
+        $$ = $1; $$->append($2);
     }
-    | var_decl {$$ = $1;}
+    | var_decl {$$ = make_node<VarDeclList>($1);}
     ;
 
 var_decl: name_list COLON type_decl SEMI {
         $$ = make_node<VarDeclList>();
-        for (auto name : $1->children()) $$->add_child(make_node<VarDeclNode>(name, $3));
+        for (auto &name : $1->getChildren()) $$->append(make_node<VarDeclNode>(name, $3));
     }
     ;
 
@@ -200,24 +204,25 @@ routine_part: routine_part function_decl {
     | routine_part procedure_decl {$$ = $1; $$->append($2);}
     | {$$ = make_node<RoutineList>();}
     ;
-//TBD
-function_decl: function_head SEMI routine_head routine_body SEMI
-        {$$ = make_node<RoutineNode>($1, $3); $$->append($4); }
-    ;
-
-function_head: FUNCTION ID parameters COLON simple_type_decl 
-        { $$ = make_node<RoutineHeadNode>($2, $3, $5); $$->append($4); }
-    ;
-
-procedure_decl: procedure_head SEMI routine_head routine_body SEMI {
-        $$ = make_node<RoutineNode>($1, $3); $$->append($4);
+// TBD
+function_decl: FUNCTION ID parameters COLON simple_type_decl SEMI routine_head routine_body SEMI {
+    $$ = make_node<RoutineNode>($2, $7, $8, $3, $5); 
     }
     ;
 
-procedure_head: PROCEDURE ID parameters {
-        $$ = make_node<RoutineHeadNode>($2, $3, make_node<SimpleTypeNode>(Type::VOID)); $$->append($4);
+// function_head: FUNCTION ID parameters COLON simple_type_decl 
+//         { $$ = make_node<RoutineHeadNode>($2, $3, $5); $$->append($4); }
+//     ;
+
+procedure_decl: PROCEDURE ID parameters SEMI routine_head routine_body SEMI {
+        $$ = make_node<RoutineNode>($2, $5, $6, $3, make_node<VoidTypeNode>());
     }
     ;
+
+// procedure_head: PROCEDURE ID parameters {
+//         $$ = make_node<RoutineHeadNode>($2, $3, make_node<SimpleTypeNode>(Type::VOID)); $$->append($4);
+//     }
+//     ;
 
 parameters: LP para_decl_list RP { $$ = $2; }
     | LP RP { $$ = make_node<ParamList>(); }
@@ -225,14 +230,14 @@ parameters: LP para_decl_list RP { $$ = $2; }
     ;
 
 para_decl_list: para_decl_list SEMI para_type_list {
-        $$ = $1; $$->append($3);
+        $$ = $1; $$->merge(std::move($3));
     }
     | para_type_list {$$ = $1;}
     ;
 
 para_type_list: var_para_list COLON simple_type_decl {
         $$ = make_node<ParamList>();
-          for (auto name : $1->children()) $$->add_child(make_node<ParamNode>(name, $3));
+        for (auto &name : $1->getChildren()) $$->append(make_node<ParamNode>(name, $3));
     }
     ;
 
@@ -248,51 +253,51 @@ routine_body: compound_stmt {
     ;
 
 compound_stmt: PBEGIN stmt_list END {
-        $$ = make_node<CompoundStmtNode>(); $$->append($2);
+        $$ = $2;
     }
     ;
 
 stmt_list: stmt_list stmt SEMI {
-        $$ = $1; $$->add_child($2);
+        $$ = $1; $$->append($2);
     }
-    | {$$ = make_node<CompoundStmtNode>();//y这里没定义}
+    | {$$ = make_node<CompoundStmtNode>();}// y这里没定义
     ;
 
-stmt: assign_stmt {$$ = $1;}
-    | proc_stmt {$$ = $1;}
+stmt: assign_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | proc_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | compound_stmt {$$ = $1;}
-    | if_stmt {$$ = $1;}
-    | repeat_stmt {$$ = $1;}
-    | while_stmt {$$ = $1;}
-    | for_stmt {$$ = $1;}
-    | case_stmt {$$ = $1;}
-    | goto_stmt {$$ = $1;}
+    | if_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | repeat_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | while_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | for_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | case_stmt {$$ = make_node<CompoundStmtNode>($1);}
+    | goto_stmt {$$ = make_node<CompoundStmtNode>($1);}
     ;
-//array ref
+// array ref
 assign_stmt: ID ASSIGN expression {
         $$ = make_node<AssignStmtNode>($1, $3);
     }
     | ID LB expression RB ASSIGN expression {
-        $$ = make_node<AssignStmtNode>(make_node<ArrayRefNode>($1, $3), $5);
+        $$ = make_node<AssignStmtNode>(make_node<ArrayRefNode>($1, $3), $6);
     }
     | ID DOT ID ASSIGN expression {
-        printf("stmt_list: ID DOT ID ASSIGN expression\n");
+        $$ = make_node<AssignStmtNode>(make_node<RecordRefNode>($1, $3), $5);
     }
     ;
-//routine call
-proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<RoutineCallNode>($1)); }
+// routine call
+proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
     | ID LP args_list RP
-        { printf("proc_stmt: ID LP args_list RP\n"); }
+        { $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1, $3)); }
     | SYS_PROC
-        { printf("proc_stmt: SYS_PROC LP RP\n"); }
+        { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1)); }
     | SYS_PROC LP args_list RP
-        { printf("proc_stmt: SYS_PROC LP args_list RP\n"); }
-    | READ LP factor RP
-        { printf("proc_stmt: READ LP factor RP\n"); }
+        { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1, $3)); }
+//    | READ LP factor RP
+//        { printf("proc_stmt: READ LP factor RP\n"); }
     ;
 
 repeat_stmt: REPEAT stmt_list UNTIL expression {
-        $$ = make_node<RepeatStmtNode>($4); $$->append($2);
+        $$ = make_node<RepeatStmtNode>($4, $2); // $$->append($2);
     }
     ;
 
@@ -300,14 +305,14 @@ while_stmt: WHILE expression DO stmt {
         $$ = make_node<WhileStmtNode>($2, $4);
     }
     ;
-//direction
+// direction
 for_stmt: FOR ID ASSIGN expression direction expression DO stmt {
         $$ = make_node<ForStmtNode>($5, $2, $4, $6, $8);
     }
     ;
 
-direction: TO {$$ = ForDirection::To }
-    | DOWNTO {$$ = ForDirection::Downto}
+direction: TO {$$ = ForDirection::To; }
+    | DOWNTO {$$ = ForDirection::Downto;}
     ;
 
 if_stmt: IF expression THEN stmt else_clause {
@@ -316,26 +321,26 @@ if_stmt: IF expression THEN stmt else_clause {
     ;
 
 else_clause: ELSE stmt { $$ = $2; }
-    | { $$ = make_node<CompoundStmtNode>(); }
+    | { $$ = nullptr; }// $$ = make_node<CompoundStmtNode>();
     ;
 
 case_stmt: CASE expression OF case_expr_list END {
-        $$ = $4; is_ptr_of<CaseStmtNode>($$)->add_expr($2);//add_expr
+        $$ = make_node<CaseStmtNode>($2, std::move($4));
     }
     ;
 
 case_expr_list: case_expr_list case_expr { 
-        $$ = $1; $$->add_child($2); 
+        $$ = $1; $$->append($2); 
     }
-    | case_expr { $$ = make_node<CaseStmtNode>(); $$->add_child($1); }
+    | case_expr { $$ = make_node<CaseBranchList>($1); }
     ;
 
 case_expr: const_value COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
-    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
+//    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
     ;
-//不会真有人写goto吧
+// 不会真有人写goto吧
 goto_stmt: GOTO INTEGER {
-        printf("goto_stmt: GOTO INTEGER\n");
+        throw std::exception("Goto not supported yet");
     }
     ;
 
@@ -365,26 +370,26 @@ term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::MUL, $1, $3); }
 //call node & ref node
 factor: ID { $$ = $1; }
     | ID LP args_list RP
-        { printf("factor: ID LP args_list RP\n"); }
+        { $$ = make_node<CustomProcNode>($1, $3); }
     | SYS_FUNCT LP args_list RP
-        { printf("factor: SYS_FUNCT LP args_list RP\n"); }
+        { $$ = make_node<SysProcNode>($1, $3); }
     | const_value { $$ = $1; }
     | LP expression RP { $$ = $2; }
     | NOT factor
-        { $$ = make_node<BinaryExprNode>(BinaryOp::XOR, make_node<BooleanNode>(true), $2); }
+        { $$ = make_node<UnaryExprNode>(UnaryOp::Not, $2); }
     | MINUS factor
-        { $$ = make_node<BinaryExprNode>(BinaryOp::SUB, make_node<IntegerNode>(0), $2); }
+        { $$ = make_node<UnaryExprNode>(BinaryOp::Neg, $2); }
     | ID LB expression RB
-        { printf("factor: ID LB expression RB\n"); }
+        { $$ = make_node<ArrayRefNode>($1, $3); }
     | ID DOT ID
-        { printf("factor: ID DOT ID\n"); }
+        { $$ = make_node<RecordRefNode>($1, $3); }
     ;
 
 args_list: args_list COMMA expression {
-        $$ = $1; $$->add_child($3);
+        $$ = $1; $$->append($3);
     }
     | expression {
-        $$ = make_node<ArgListNode>(); $$->add_child($1);
+        $$ = make_node<ArgListNode>($1);// $$->add_child($1);
     }
     ;
 

@@ -52,7 +52,11 @@ namespace spc
         std::shared_ptr<ExprNode> range_end;
         std::shared_ptr<TypeNode> itemType;
 
-        ArrayTypeNode() : type(Type::String) {}
+        ArrayTypeNode(
+            const std::shared_ptr<ExprNode> &start,
+            const std::shared_ptr<ExprNode> &end,
+            const std::shared_ptr<TypeNode> &itype
+        ) : type(Type::Array), range_start(start), range_end(end), itemType(itype) {}
         ~ArrayTypeNode() = default;
         void print() override;
     };

@@ -62,12 +62,13 @@ namespace spc
         std::shared_ptr<CompoundStmtNode> stmt;
     public:
         ForStmtNode(
+            const ForDirection dir,
             const std::shared_ptr<IdentifierNode> &id, 
             const std::shared_ptr<ExprNode> &init_val, 
             const std::shared_ptr<ExprNode> &end_val, 
             const std::shared_ptr<CompoundStmtNode> &stmt
             )
-            : init_val(init_val), end_val(end_val), stmt(stmt) {}
+            : direction(dir), init_val(init_val), end_val(end_val), stmt(stmt) {}
         ~ForStmtNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;
@@ -91,53 +92,62 @@ namespace spc
         void print() override;
     };
 
-    
     class ProcStmtNode: public StmtNode
     {
+    private:
+        std::shared_ptr<ProcNode> call;
     public:
-        ProcStmtNode() = default;
+        ProcStmtNode(const std::shared_ptr<ProcNode> &call) : call(call) {}
         ~ProcStmtNode() = default;
-        llvm::Value *codegen(CodegenContext &context) = 0;
-        void print() = 0;
-    };
-
-    class CustomProcStmtNode: public ProcStmtNode
-    {
-    private:
-        std::shared_ptr<IdentifierNode> name;
-        std::shared_ptr<ArgList> args;
-    public:
-        CustomProcStmtNode(const std::string &name, const std::shared_ptr<ArgList> &args = nullptr) 
-            : name(make_node<IdentifierNode>(name)), args(args) {}
-        // CustomProcStmtNode(const std::string &name) 
-        //     : name(make_node<IdentifierNode>(name)), args(nullptr) {}
-        CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<ArgList> &args = nullptr) 
-            : name(name), args(args) {}
-        // CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name) 
-        //     : name(name), args(nullptr) {}
-        ~CustomProcStmtNode() = default;
-
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
     };
 
-    enum SysFunc { Read, Write, Readln, Writeln };
+
+    // class ProcStmtNode: public StmtNode
+    // {
+    // public:
+    //     ProcStmtNode() = default;
+    //     ~ProcStmtNode() = default;
+    //     llvm::Value *codegen(CodegenContext &context) = 0;
+    //     void print() = 0;
+    // };
+
+    // class CustomProcStmtNode: public ProcStmtNode
+    // {
+    // private:
+    //     std::shared_ptr<IdentifierNode> name;
+    //     std::shared_ptr<ArgList> args;
+    // public:
+    //     CustomProcStmtNode(const std::string &name, const std::shared_ptr<ArgList> &args = nullptr) 
+    //         : name(make_node<IdentifierNode>(name)), args(args) {}
+    //     // CustomProcStmtNode(const std::string &name) 
+    //     //     : name(make_node<IdentifierNode>(name)), args(nullptr) {}
+    //     CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<ArgList> &args = nullptr) 
+    //         : name(name), args(args) {}
+    //     // CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name) 
+    //     //     : name(name), args(nullptr) {}
+    //     ~CustomProcStmtNode() = default;
+
+    //     llvm::Value *codegen(CodegenContext &context) override;
+    //     void print() override;
+    // };
     
-    class SysProcStmtNode: public ProcStmtNode
-    {
-    private:
-        SysFunc name;
-        std::shared_ptr<ArgList> args;
-    public:
-        SysProcStmtNode(const SysFunc name, const std::shared_ptr<ArgList> &args = nullptr) 
-            : name(name), args(args) {}
-        // SysProcStmtNode(const SysFunc &name) 
-        //     : name(name), args(nullptr) {}
-        ~SysProcStmtNode() = default;
+    // class SysProcStmtNode: public ProcStmtNode
+    // {
+    // private:
+    //     SysFunc name;
+    //     std::shared_ptr<ArgList> args;
+    // public:
+    //     SysProcStmtNode(const SysFunc name, const std::shared_ptr<ArgList> &args = nullptr) 
+    //         : name(name), args(args) {}
+    //     // SysProcStmtNode(const SysFunc &name) 
+    //     //     : name(name), args(nullptr) {}
+    //     ~SysProcStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
-        void print() override;
-    };
+    //     llvm::Value *codegen(CodegenContext &context) override;
+    //     void print() override;
+    // };
 
     class AssignStmtNode: public StmtNode
     {
