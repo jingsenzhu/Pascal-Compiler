@@ -148,9 +148,9 @@ namespace spc
         AssignStmtNode(const std::shared_ptr<ExprNode> &lhs, const std::shared_ptr<ExprNode> &rhs)
             : lhs(lhs), rhs(rhs)
         {
-            if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<IdentifierNode>(lhs)))
+            if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<ArrayRefNode>(lhs)) || is_ptr_of<RecordRefNode>(lhs))
             {
-                throw CodegenException("Left side of assignment must be identifier or array reference!");
+                throw CodegenException("Left side of assignment must be identifier or array/record reference!");
             }
         }
         ~AssignStmtNode() = default;
@@ -183,7 +183,9 @@ namespace spc
         std::shared_ptr<ExprNode> expr;
         std::list<std::shared_ptr<CaseBranchNode>> branches;
     public:
-        CaseStmtNode(const std::shared_ptr<ExprNode> &expr, const CaseBranchList &list)
+        CaseStmtNode(const std::shared_ptr<ExprNode> &expr, const std::shared_ptr<CaseBranchList> &list)
+            : expr(expr), branches(list->getChildren()) {}
+        CaseStmtNode(const std::shared_ptr<ExprNode> &expr, std::shared_ptr<CaseBranchList> &&list)
             : expr(expr), branches(std::move(list->getChildren())) {}
         ~CaseStmtNode();
 

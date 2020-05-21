@@ -91,6 +91,13 @@ namespace spc
         }
         void merge(const std::shared_ptr<RecordTypeNode> &rhs)
         {
+            for (auto &var : rhs->field)
+            {
+                field.push_back(var);
+            }
+        }
+        void merge(std::shared_ptr<RecordTypeNode> &&rhs)
+        {
             field.merge(std::move(rhs->field));
         }
         void print() override;
