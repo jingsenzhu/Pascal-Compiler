@@ -2,48 +2,46 @@
 %require "3.0"
 %debug
 
-//声明命名空间与类名，结合使用 spc::Parser::
-%define api.IDspace {spc}
-%define parser_class_ID {Parser}
-//使得类型与token定义可以使用各种复杂的结构与类型
+// 声明命名空间与类名，结合使用 spc::parser::
+%define api.namespace {spc}
+// 使得类型与token定义可以使用各种复杂的结构与类型
 %define api.value.type variant
-//开启断言功能
+// 开启断言功能
 %define parse.assert
 
-//生成各种头文件
+// 生成各种头文件
 %defines
-//导入必要的头文件，定义命名空间
+// 导入必要的头文件，定义命名空间
 %code requires {
     #include <iostream>
     #include <memory>
     #include <string>
     #include <stdexcept>
 
-    IDspace spc {
-        class Driver;
-        class Scanner;
-    }
-    using IDspace spc;
+	using namespace std;
+    namespace spc {}
+    using namespace spc;
     
 }
 
-//定义参数传递
-%parse-param {Scanner& scanner}
-%parse-param {Driver& driver}
+// 定义参数传递
+// %parse-param {Scanner& scanner}
+// %parse-param {Driver& driver}
 
-//导入scanner和driver操作
+// 导入scanner和driver操作
 %code {
-    #include "Driver.hpp"
-    #include "Scanner.hpp"
-    #undef yylex
-    #define yylex scanner.yylex
+    // #include "Driver.hpp"
+    // #include "Scanner.hpp"
+    // #undef yylex
+    // #define yylex scanner.yylex
+    int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc);
 }
 
 %locations
-//详细显示错误信息
+// 详细显示错误信息
 %define parse.error verbose
 
-//定义terminal：token
+// 定义terminal：token
 %token PROGRAM ID CONST ARRAY VAR FUNCTION PROCEDURE PBEGIN END TYPE RECORD
 %token INTEGER REAL CHAR STRING
 %token SYS_CON SYS_FUNCT SYS_PROC SYS_TYPE READ
@@ -74,17 +72,9 @@
 %type <std::string> expression expr term factor
 %type <std::string> args_list
 
-//不允许出现多个else
-%nonassoc else_clause
-
 %start program
 
 %%
-
-export: program {
-        program = $1;
-    }
-    ;
 
 program: program_head routine DOT{
         $$ = make_node<ProgramNode>($2);
@@ -399,9 +389,8 @@ args_list: args_list COMMA expression {
     ;
 
 %%
-    /*
+
 void spc::Parser::error(const spc::location_type &loc, const std::string& msg) {
     std::cerr << loc << ": " << msg << std::endl;
     throw std::logic_error("Syntax error: invalid syntax");
 }
-    */
