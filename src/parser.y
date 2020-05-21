@@ -44,7 +44,7 @@
 // 定义terminal：token
 %token PROGRAM ID CONST ARRAY VAR FUNCTION PROCEDURE PBEGIN END TYPE RECORD
 %token INTEGER REAL CHAR STRING
-%token SYS_CON SYS_FUNCT SYS_PROC SYS_TYPE READ
+%token SYS_CON SYS_FUNCT SYS_PROC SYS_TYPE
 %token IF THEN ELSE REPEAT UNTIL WHILE DO FOR TO DOWNTO CASE OF GOTO
 %token ASSIGN EQUAL UNEQUAL LE LT GE GT
 %token PLUS MINUS MUL DIV MOD TRUEDIV AND OR XOR NOT
@@ -344,30 +344,30 @@ goto_stmt: GOTO INTEGER {
     }
     ;
 
-expression: expression GE expr { $$ = make_node<BinaryExprNode>(BinaryOp::GE, $1, $3); }
-    | expression GT expr { $$ = make_node<BinaryExprNode>(BinaryOp::GT, $1, $3); }
-    | expression LE expr { $$ = make_node<BinaryExprNode>(BinaryOp::LE, $1, $3); }
-    | expression LT expr { $$ = make_node<BinaryExprNode>(BinaryOp::LT, $1, $3); }
-    | expression EQUAL expr { $$ = make_node<BinaryExprNode>(BinaryOp::EQUAL, $1, $3); }
-    | expression UNEQUAL expr { $$ = make_node<BinaryExprNode>(BinaryOp::UNEQUAL, $1, $3); }
+expression: expression GE expr { $$ = make_node<BinaryExprNode>(BinaryOp::Geq, $1, $3); }
+    | expression GT expr { $$ = make_node<BinaryExprNode>(BinaryOp::Gt, $1, $3); }
+    | expression LE expr { $$ = make_node<BinaryExprNode>(BinaryOp::Leq, $1, $3); }
+    | expression LT expr { $$ = make_node<BinaryExprNode>(BinaryOp::Lt, $1, $3); }
+    | expression EQUAL expr { $$ = make_node<BinaryExprNode>(BinaryOp::Eq, $1, $3); }
+    | expression UNEQUAL expr { $$ = make_node<BinaryExprNode>(BinaryOp::Neq, $1, $3); }
     | expr { $$ = $1 }
     ;
 
-expr: expr PLUS term { $$ = make_node<BinaryExprNode>(BinaryOp::PLUS, $1, $3); }
-    | expr MINUS term { $$ = make_node<BinaryExprNode>(BinaryOp::MINUS, $1, $3); }
-    | expr OR term { $$ = make_node<BinaryExprNode>(BinaryOp::OR, $1, $3); }
-    | expr XOR term { $$ = make_node<BinaryExprNode>(BinaryOp::XOR, $1, $3); }
+expr: expr PLUS term { $$ = make_node<BinaryExprNode>(BinaryOp::Plus, $1, $3); }
+    | expr MINUS term { $$ = make_node<BinaryExprNode>(BinaryOp::Minus, $1, $3); }
+    | expr OR term { $$ = make_node<BinaryExprNode>(BinaryOp::Or, $1, $3); }
+    | expr XOR term { $$ = make_node<BinaryExprNode>(BinaryOp::Xor, $1, $3); }
     | term { $$ = $1; }
     ;
 
-term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::MUL, $1, $3); }
-    | term DIV factor { $$ = make_node<BinaryExprNode>(BinaryOp::DIV, $1, $3); }
-    | term MOD factor { $$ = make_node<BinaryExprNode>(BinaryOp::MOD, $1, $3); }
-    | term AND factor { $$ = make_node<BinaryExprNode>(BinaryOp::AND, $1, $3); }
-    | term TRUEDIV factor { $$ = make_node<BinaryExprNode>(BinaryOp::TRUEDIV, $1, $3);  }
+term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::Mul, $1, $3); }
+    | term DIV factor { $$ = make_node<BinaryExprNode>(BinaryOp::Div, $1, $3); }
+    | term MOD factor { $$ = make_node<BinaryExprNode>(BinaryOp::Mod, $1, $3); }
+    | term AND factor { $$ = make_node<BinaryExprNode>(BinaryOp::And, $1, $3); }
+    | term TRUEDIV factor { $$ = make_node<BinaryExprNode>(BinaryOp::Truediv, $1, $3);  }
     | factor { $$ = $1; }
     ;
-//call node & ref node
+// call node & ref node
 factor: ID { $$ = $1; }
     | ID LP args_list RP
         { $$ = make_node<CustomProcNode>($1, $3); }
@@ -378,7 +378,7 @@ factor: ID { $$ = $1; }
     | NOT factor
         { $$ = make_node<UnaryExprNode>(UnaryOp::Not, $2); }
     | MINUS factor
-        { $$ = make_node<UnaryExprNode>(BinaryOp::Neg, $2); }
+        { $$ = make_node<UnaryExprNode>(UnaryOp::Neg, $2); }
     | ID LB expression RB
         { $$ = make_node<ArrayRefNode>($1, $3); }
     | ID DOT ID
