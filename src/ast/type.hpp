@@ -80,7 +80,7 @@ namespace spc
     private:
         std::list<std::shared_ptr<VarDeclNode>> field;
     public:
-        RecordTypeNode(const std::shared_ptr<IdentifierList> &names, const std::shared_ptr<SimpleTypeNode> &type)
+        RecordTypeNode(const std::shared_ptr<IdentifierList> &names, const std::shared_ptr<TypeNode> &type)
         {
             for (auto &id : names->getChildren())
             {

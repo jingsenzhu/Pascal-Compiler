@@ -106,7 +106,7 @@ namespace spc
         void print() override;
     };
 
-    enum SysFunc { Read, Write, Readln, Writeln };
+    enum SysFunc { Read, Write, Writeln };
     
     class SysProcNode: public ProcNode
     {

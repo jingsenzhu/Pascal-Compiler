@@ -43,36 +43,46 @@
 %token PLUS MINUS MUL DIV MOD TRUEDIV AND OR XOR NOT
 %token DOT DOTDOT SEMI LP RP LB RB COMMA COLON
 
+%type <std::shared_ptr<IntegerNode>> INTEGER
+%type <std::shared_ptr<RealNode>> REAL
+%type <std::shared_ptr<CharNode>> CHAR
+%type <std::shared_ptr<StringNode>> STRING
+%type <std::shared_ptr<IdentifierNode>> ID
+%type <std::shared_ptr<ConstValueNode>> SYS_CON
+%type <spc::SysFunc> SYS_PROC SYS_FUNCT
+%type <spc::ForDirection> TO DOWNTO
+
 %type <std::shared_ptr<ProgramNode>> program
 %type <std::shared_ptr<RoutineHeadNode>> routine_head
-%type <std::shared_ptr<RoutineList>> routine_body routine_part 
+%type <std::shared_ptr<RoutineList>> routine_part 
 %type <std::shared_ptr<RoutineNode>> function_decl procedure_decl
 %type <std::shared_ptr<ConstDeclList>> const_part const_expr_list
 %type <std::shared_ptr<TypeDeclList>> type_part type_decl_list
 %type <std::shared_ptr<VarDeclList>> var_part var_decl_list var_decl
 %type <std::shared_ptr<ConstValueNode>> const_value
-%type <std::shared_ptr<DeclNode>> type_decl
-%type <std::shared_ptr<TypeNode>> simple_type_decl
+%type <std::shared_ptr<TypeNode>> type_decl
+%type <std::shared_ptr<SimpleTypeNode>> simple_type_decl
 %type <std::shared_ptr<ArrayTypeNode>> array_type_decl
 // %type <std::shared_ptr<ArgDeclNode>> record_type_decl field_decl field_decl_list
-// %type <std::shared_ptr<ArrayRefNode> array_range
+%type <std::shared_ptr<RecordTypeNode>> record_type_decl field_decl field_decl_list 
+%type <std::pair<std::shared_ptr<ExprNode>, std::shared_ptr<ExprNode>> array_range
 %type <std::shared_ptr<TypeDeclNode>> type_definition 
 %type <std::shared_ptr<IdentifierList>> name_list var_para_list
 %type <std::shared_ptr<ParamList>> parameters para_decl_list para_type_list
 %type <std::shared_ptr<AssignStmtNode>> assign_stmt
 %type <std::shared_ptr<ProcStmtNode>> proc_stmt
 // %type <std::shared_ptr<StmtNode>> stmt_list stmt else_clause  不知道是哪个
-%type <std::shared_ptr<CompoundStmtNode>> compound_stmt stmt_list stmt else_clause
+%type <std::shared_ptr<CompoundStmtNode>> compound_stmt stmt_list stmt else_clause routine_body
 %type <std::shared_ptr<IfStmtNode>> if_stmt
 %type <std::shared_ptr<RepeatStmtNode>> repeat_stmt
 %type <std::shared_ptr<WhileStmtNode>> while_stmt
 %type <std::shared_ptr<StmtNode>> goto_stmt
 %type <std::shared_ptr<ForStmtNode>> for_stmt
-%type <std::ForDirection> direction
+%type <spc::ForDirection> direction
 %type <std::shared_ptr<CaseStmtNode>> case_stmt
 %type <std::shared_ptr<CaseBranchList>> case_expr_list
 %type <std::shared_ptr<CaseBranchNode>> case_expr
-%type <std::shared_ptr<BinaryExprNode>> expression expr term factor
+%type <std::shared_ptr<ExprNode>> expression expr term factor
 %type <std::shared_ptr<ArgListNode>> args_list
 
 %start program
@@ -159,13 +169,13 @@ record_type_decl: RECORD field_decl_list END {
     ;
 
 field_decl_list: field_decl_list field_decl {
-        $$ = $1; $$->append($2);
+        $$ = $1; $$->merge(std::move($2));
     }
-    | field_decl {$$ = $1;}
+    | field_decl {$$ = make_node<RecordTypeNode>($1.first, $1.second);}
     ;
 
 field_decl: name_list COLON type_decl SEMI {
-        // record
+        $$ = std::make_pair($1, $3);
     }
     ;
 
@@ -244,7 +254,7 @@ compound_stmt: PBEGIN stmt_list END {
 stmt_list: stmt_list stmt SEMI {
         $$ = $1; $$->append($2);
     }
-    | {$$ = make_node<CompoundStmtNode>();}// y这里没定义
+    | { $$ = make_node<CompoundStmtNode>(); } // y这里没定义
     ;
 
 stmt: assign_stmt {$$ = make_node<CompoundStmtNode>($1);}

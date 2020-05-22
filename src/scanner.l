@@ -93,8 +93,8 @@ NQUOTE [^']
 
 [0-9]+      {std::cout << "Integer: " << yytext; return token::INTEGER;}
 [0-9]+"."[0-9]+   {std::cout << "Real Number: " << yytext; return token::REAL;}
-'{NQUOTE}'  {std::cout << "STRING: " << yytext; yytext[yyleng-1] = 0; return token::STRING;}
-'({NQUOTE}|'')+'  {std::cout << "CHAR: " << yytext; return token::CHAR;}
+'{NQUOTE}'  {std::cout << "CHAR: " << yytext; return token::CHAR;}
+'({NQUOTE}|'')+'  {std::cout << "STRING: " << yytext; yytext[yyleng-1] = 0; return token::STRING;}
 [a-zA-Z_]([a-zA-Z0-9_])*  {std::cout << "IDD: " << yytext << " "; yytext[yyleng] = 0; return token::ID;}
 [\t\f]    {std::cout << ' '; continue;}
 [\n\r]     {std::cout << std::endl;}
