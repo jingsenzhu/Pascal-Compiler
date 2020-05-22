@@ -48,7 +48,8 @@
 %type <std::shared_ptr<CharNode>> CHAR
 %type <std::shared_ptr<StringNode>> STRING
 %type <std::shared_ptr<IdentifierNode>> ID
-%type <std::shared_ptr<ConstValueNode>> SYS_CON
+%type <std::shared_ptr<IdentifierNode>> ID
+%type <std::shared_ptr<SimpleTypeNode>> SYS_TYPE
 %type <spc::SysFunc> SYS_PROC SYS_FUNCT
 %type <spc::ForDirection> TO DOWNTO
 
@@ -60,8 +61,8 @@
 %type <std::shared_ptr<TypeDeclList>> type_part type_decl_list
 %type <std::shared_ptr<VarDeclList>> var_part var_decl_list var_decl
 %type <std::shared_ptr<ConstValueNode>> const_value
-%type <std::shared_ptr<TypeNode>> type_decl
-%type <std::shared_ptr<SimpleTypeNode>> simple_type_decl
+%type <std::shared_ptr<TypeNode>> type_decl simple_type_decl
+// %type <std::shared_ptr<SimpleTypeNode>> simple_type_decl
 %type <std::shared_ptr<ArrayTypeNode>> array_type_decl
 // %type <std::shared_ptr<ArgDeclNode>> record_type_decl field_decl field_decl_list
 %type <std::shared_ptr<RecordTypeNode>> record_type_decl field_decl field_decl_list 
