@@ -29,6 +29,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
 
     class UnaryExprNode: public ExprNode
@@ -46,6 +47,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
     
     class ArrayRefNode: public ExprNode
@@ -61,6 +63,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override;
         llvm::Value *getPtr();
         void print() override;
+        friend class ASTvis;
     };
 
     class RecordRefNode: public ExprNode
@@ -75,6 +78,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         void print() override;
+        friend class ASTvis;
     };
 
     class ProcNode: public ExprNode
@@ -104,6 +108,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
 
     enum SysFunc { Read, Write, Writeln, Abs, Chr, Odd, Ord, Pred, Sqr, Sqrt, Succ };
@@ -122,6 +127,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
     
 

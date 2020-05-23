@@ -40,6 +40,8 @@ namespace spc
         BaseRoutineNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<RoutineHeadNode> &header, const std::shared_ptr<CompoundStmtNode> &body)
             : name(name), header(header), body(body) {}
         ~BaseRoutineNode() = default;
+
+        std::string getName() const { return name->name; }
         llvm::Value *codegen(CodegenContext &) = 0;
         void print() = 0;
     };
@@ -62,6 +64,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
 
     class ProgramNode: public BaseRoutineNode
@@ -72,6 +75,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };   
 
 } // namespace spc

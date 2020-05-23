@@ -30,6 +30,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
     
     class WhileStmtNode: public StmtNode
@@ -47,6 +48,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
 
     
@@ -73,6 +75,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
     
     class RepeatStmtNode: public StmtNode
@@ -90,6 +93,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
 
     class ProcStmtNode: public StmtNode
@@ -101,6 +105,7 @@ namespace spc
         ~ProcStmtNode() = default;
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
 
 
@@ -167,6 +172,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
     
 
@@ -183,6 +189,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
 
     using CaseBranchList = ListNode<CaseBranchNode>;
@@ -201,6 +208,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         void print() override;
+        friend class ASTvis;
     };
     
 

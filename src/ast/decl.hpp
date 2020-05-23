@@ -24,6 +24,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
 
     class ConstDeclNode: public DeclNode
@@ -37,6 +38,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
     
     class TypeDeclNode: public DeclNode
@@ -50,6 +52,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
 
     class ParamNode: public DeclNode
@@ -63,6 +66,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &) override;
         void print() override;
+        friend class ASTvis;
     };
     
     using TypeDeclList = ListNode<TypeDeclNode>;

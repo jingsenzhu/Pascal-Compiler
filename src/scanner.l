@@ -2,14 +2,7 @@
 #include<iostream>
 #include<stdio.h>
 #include<string>    
-#include "parser.hpp"
-#include "ast/base.hpp"
-#include "ast/decl.hpp"
-#include "ast/expr.hpp"
-#include "ast/identifier.hpp"
-#include "ast/program.hpp"
-#include "ast/stmt.hpp"
-#include "ast/type.hpp"
+#include "utils/ast.hpp"
 
 #undef YY_DECL
 #define YY_DECL int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc)
