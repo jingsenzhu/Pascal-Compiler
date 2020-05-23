@@ -4,7 +4,6 @@
 #include <list>
 #include <memory>
 #include <iostream>
-#include <cassert>
 #include "codegen/codegen_context.hpp"
 #include "utils/utils.hpp"
 

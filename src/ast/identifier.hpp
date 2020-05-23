@@ -11,6 +11,11 @@ namespace spc
     {      
     public:
         std::string name;
+        IdentifierNode(const std::string &str)
+            : name(str) 
+        {
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        }
         IdentifierNode(const char *str)
             : name(str) 
         {

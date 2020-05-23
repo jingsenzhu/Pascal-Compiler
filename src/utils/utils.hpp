@@ -7,11 +7,18 @@ namespace spc
 {
     class BaseNode;
 
-    template<typename T>
-    inline bool is_ptr_of(const std::shared_ptr<BaseNode> &ptr)
+    template<typename T, typename U>
+    inline typename std::enable_if<std::is_base_of<BaseNode, U>::value && std::is_base_of<BaseNode, T>::value, bool>::type 
+    is_ptr_of(const std::shared_ptr<U> &ptr)
     {
-        assert(std::is_base_of<BaseNode, T>::value);
         return dynamic_cast<T *>(ptr.get()) != nullptr;
+    }
+
+    template<typename T, typename U>
+    inline typename std::enable_if<std::is_base_of<BaseNode, U>::value && std::is_base_of<BaseNode, T>::value, std::shared_ptr<T>>::type
+    cast_node(const std::shared_ptr<U> &ptr)
+    {
+        return std::dynamic_pointer_cast<T>(ptr);
     }
     
 } // namespace spc

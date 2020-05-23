@@ -14,7 +14,7 @@ namespace spc
     {
     public:
         Type type;
-        TypeNode() {}
+        TypeNode(const Type type = Unknown) : type(type) {}
         ~TypeNode() {}
         llvm::Value *codegen(CodegenContext &) override { return nullptr; };
         llvm::Type *getLLVMType(CodegenContext &);
@@ -24,7 +24,7 @@ namespace spc
     class VoidTypeNode: public TypeNode
     {
     public:
-        VoidTypeNode() : type(Type::Void) {}
+        VoidTypeNode() : TypeNode(Type::Void) {}
         ~VoidTypeNode() = default;
         void print() override;
     };
@@ -32,7 +32,7 @@ namespace spc
     class SimpleTypeNode: public TypeNode
     {
     public:
-        SimpleTypeNode(const Type type) : type(type) {}
+        SimpleTypeNode(const Type type) : TypeNode(type) {}
         ~SimpleTypeNode() = default;
         void print() override;
     };
@@ -40,7 +40,7 @@ namespace spc
     class StringTypeNode: public TypeNode
     {
     public:
-        StringTypeNode() : type(Type::String) {}
+        StringTypeNode() : TypeNode(Type::String) {}
         ~StringTypeNode() = default;
         void print() override;
     };
@@ -56,7 +56,7 @@ namespace spc
             const std::shared_ptr<ExprNode> &start,
             const std::shared_ptr<ExprNode> &end,
             const std::shared_ptr<TypeNode> &itype
-        ) : type(Type::Array), range_start(start), range_end(end), itemType(itype) {}
+        ) : TypeNode(Type::Array), range_start(start), range_end(end), itemType(itype) {}
         ~ArrayTypeNode() = default;
         void print() override;
     };
@@ -81,6 +81,7 @@ namespace spc
         std::list<std::shared_ptr<VarDeclNode>> field;
     public:
         RecordTypeNode(const std::shared_ptr<IdentifierList> &names, const std::shared_ptr<TypeNode> &type)
+            : TypeNode(Type::Record)
         {
             for (auto &id : names->getChildren())
             {
@@ -108,24 +109,25 @@ namespace spc
     };
     
 
-    class ConstValueNode: ExprNode
+    class ConstValueNode: public ExprNode
     {
     public:
-        Type type = Type::Unknown;
-        ConstValueNode() {}
+        Type type;
+        ConstValueNode(const Type type): type(Type::Unknown) {}
         ~ConstValueNode() = default;
 
         llvm::Type *getLLVMType(CodegenContext &context)
         {
-            switch (type) 
-            {
-                case Type::Bool: return context.GetBuilder().getInt1Ty();
-                case Type::Int: return context.GetBuilder().getInt32Ty();
-                case Type::Long: return context.GetBuilder().getInt32Ty();
-                case Type::Real: return context.GetBuilder().getDoubleTy();
-                case Type::String: throw CodegenException("String currently not supported.\n");
-                default: return nullptr;
-            }
+            // switch (type) 
+            // {
+            //     case Type::Bool: return context.GetBuilder().getInt1Ty();
+            //     case Type::Int: return context.GetBuilder().getInt32Ty();
+            //     case Type::Long: return context.GetBuilder().getInt32Ty();
+            //     case Type::Real: return context.GetBuilder().getDoubleTy();
+            //     case Type::String: throw CodegenException("String currently not supported.\n");
+            //     default: return nullptr;
+            // }
+            return nullptr;
         }
         void print() override;
     };
@@ -134,10 +136,10 @@ namespace spc
     {
     public:
         bool val;
-        BooleanNode(const bool val = false): type(Type::Bool), val(val) {}
+        BooleanNode(const bool val = false): ConstValueNode(Type::Bool), val(val) {}
         ~BooleanNode() = default;
 
-        llvm::Type *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override;
         void print() override;
     };
 
@@ -145,10 +147,10 @@ namespace spc
     {
     public:
         int val;
-        IntegerNode(const int val = 0): type(Type::Int), val(val) {}
+        IntegerNode(const int val = 0): ConstValueNode(Type::Int), val(val) {}
         ~IntegerNode() = default;
 
-        llvm::Type *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override;
         void print() override;
     };
 
@@ -156,10 +158,10 @@ namespace spc
     {
     public:
         double val;
-        RealNode(const double val = 0.0): type(Type::Real), val(val) {}
+        RealNode(const double val = 0.0): ConstValueNode(Type::Real), val(val) {}
         ~RealNode() = default;
 
-        llvm::Type *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override;
         void print() override;
     };
 
@@ -167,10 +169,10 @@ namespace spc
     {
     public:
         char val;
-        CharNode(const char val = '\0'): type(Type::Char), val(val) {}
+        CharNode(const char val = '\0'): ConstValueNode(Type::Char), val(val) {}
         ~CharNode() = default;
 
-        llvm::Type *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override;
         void print() override;
     };
 
@@ -178,11 +180,11 @@ namespace spc
     {
     public:
         std::string val;
-        StringNode(const char *val = ""): type(Type::String), val(val) {}
-        StringNode(const std::string &val): type(Type::String), val(val) {}
+        StringNode(const char *val = ""): ConstValueNode(Type::String), val(val) {}
+        StringNode(const std::string &val): ConstValueNode(Type::String), val(val) {}
         ~StringNode() = default;
 
-        llvm::Type *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override;
         void print() override;
     };
     

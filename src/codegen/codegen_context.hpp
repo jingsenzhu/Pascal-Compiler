@@ -50,7 +50,7 @@ namespace spc
     public:
         explicit CodegenException(const std::string &description, const unsigned &id = 0) : description(description), id(id) {};
         const char *what() const noexcept {
-            return ("Error " /*+ std::to_string(id)*/ + ": " + description).c_str();
+            return ("Error " + std::to_string(id) + ": " + description).c_str();
         }
     private:
         unsigned id;
