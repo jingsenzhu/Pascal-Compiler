@@ -48,10 +48,10 @@
 %type <std::shared_ptr<CharNode>> CHAR
 %type <std::shared_ptr<StringNode>> STRING
 %type <std::shared_ptr<IdentifierNode>> ID
-%type <std::shared_ptr<IdentifierNode>> ID
 %type <std::shared_ptr<SimpleTypeNode>> SYS_TYPE
 %type <spc::SysFunc> SYS_PROC SYS_FUNCT
 %type <spc::ForDirection> TO DOWNTO
+%type <std::shared_ptr<ConstValueNode>> SYS_CON
 
 %type <std::shared_ptr<ProgramNode>> program
 %type <std::shared_ptr<RoutineHeadNode>> routine_head
@@ -62,9 +62,7 @@
 %type <std::shared_ptr<VarDeclList>> var_part var_decl_list var_decl
 %type <std::shared_ptr<ConstValueNode>> const_value
 %type <std::shared_ptr<TypeNode>> type_decl simple_type_decl
-// %type <std::shared_ptr<SimpleTypeNode>> simple_type_decl
 %type <std::shared_ptr<ArrayTypeNode>> array_type_decl
-// %type <std::shared_ptr<ArgDeclNode>> record_type_decl field_decl field_decl_list
 %type <std::shared_ptr<RecordTypeNode>> record_type_decl field_decl field_decl_list 
 %type <std::pair<std::shared_ptr<ExprNode>, std::shared_ptr<ExprNode>> array_range
 %type <std::shared_ptr<TypeDeclNode>> type_definition 
@@ -72,7 +70,6 @@
 %type <std::shared_ptr<ParamList>> parameters para_decl_list para_type_list
 %type <std::shared_ptr<AssignStmtNode>> assign_stmt
 %type <std::shared_ptr<ProcStmtNode>> proc_stmt
-// %type <std::shared_ptr<StmtNode>> stmt_list stmt else_clause  不知道是哪个
 %type <std::shared_ptr<CompoundStmtNode>> compound_stmt stmt_list stmt else_clause routine_body
 %type <std::shared_ptr<IfStmtNode>> if_stmt
 %type <std::shared_ptr<RepeatStmtNode>> repeat_stmt
