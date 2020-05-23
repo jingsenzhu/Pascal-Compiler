@@ -26,7 +26,7 @@ namespace spc
             : constList(constList), varList(varList), typeList(typeList), subroutineList(subroutineList) {}
         ~RoutineHeadNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -43,7 +43,7 @@ namespace spc
         ~BaseRoutineNode() = default;
 
         std::string getName() const { return name->name; }
-        llvm::Value *codegen(CodegenContext &) = 0;
+        // llvm::Value *codegen(CodegenContext &) = 0;
         // void print() = 0;
         friend class ASTvis;
     };
@@ -64,7 +64,7 @@ namespace spc
             : BaseRoutineNode(name, header, body), params(params), retType(retType) {}
         ~RoutineNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -75,7 +75,7 @@ namespace spc
         using BaseRoutineNode::BaseRoutineNode;
         ~ProgramNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };   

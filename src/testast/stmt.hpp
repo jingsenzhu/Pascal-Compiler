@@ -28,7 +28,7 @@ namespace spc
             : expr(expr), if_stmt(if_stmt), else_stmt(else_stmt) {}
         ~IfStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -46,7 +46,7 @@ namespace spc
             : expr(expr), stmt(stmt) {}
         ~WhileStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -73,7 +73,7 @@ namespace spc
             : direction(dir), init_val(init_val), end_val(end_val), stmt(stmt) {}
         ~ForStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -91,7 +91,7 @@ namespace spc
             : expr(expr), stmt(stmt) {}
         ~RepeatStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -103,7 +103,7 @@ namespace spc
     public:
         ProcStmtNode(const std::shared_ptr<ProcNode> &call) : call(call) {}
         ~ProcStmtNode() = default;
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -114,7 +114,7 @@ namespace spc
     // public:
     //     ProcStmtNode() = default;
     //     ~ProcStmtNode() = default;
-    //     llvm::Value *codegen(CodegenContext &context) = 0;
+    //     // llvm::Value *codegen(CodegenContext &context) = 0;
     //     // void print() = 0;
     // };
 
@@ -134,7 +134,7 @@ namespace spc
     //     //     : name(name), args(nullptr) {}
     //     ~CustomProcStmtNode() = default;
 
-    //     llvm::Value *codegen(CodegenContext &context) override;
+    //     // llvm::Value *codegen(CodegenContext &context) override;
     //     // void print() override;
     // };
     
@@ -150,7 +150,7 @@ namespace spc
     //     //     : name(name), args(nullptr) {}
     //     ~SysProcStmtNode() = default;
 
-    //     llvm::Value *codegen(CodegenContext &context) override;
+    //     // llvm::Value *codegen(CodegenContext &context) override;
     //     // void print() override;
     // };
 
@@ -165,12 +165,12 @@ namespace spc
         {
             if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<ArrayRefNode>(lhs)) || is_ptr_of<RecordRefNode>(lhs))
             {
-                throw CodegenException("Left side of assignment must be identifier or array/record reference!");
+                throw std::logic_error("Left side of assignment must be identifier or array/record reference!");
             }
         }
         ~AssignStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -187,7 +187,7 @@ namespace spc
             : branch(branch), stmt(stmt) {}
         ~CaseBranchNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -204,9 +204,9 @@ namespace spc
             : expr(expr), branches(list->getChildren()) {}
         CaseStmtNode(const std::shared_ptr<ExprNode> &expr, std::shared_ptr<CaseBranchList> &&list)
             : expr(expr), branches(std::move(list->getChildren())) {}
-        ~CaseStmtNode();
+        ~CaseStmtNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };

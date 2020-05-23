@@ -23,7 +23,7 @@
     namespace spc {}
     using namespace spc;
     
-    std::shared_ptr<ProgramNode> program;
+    extern std::shared_ptr<ProgramNode> program;
 }
 
 

@@ -16,11 +16,11 @@ namespace spc {
             }
         }
         ~ASTvis() = default;
-        void travAST(const std::shared_ptr<ProgramNode>& program);
+        void travAST(const std::shared_ptr<ProgramNode>& prog);
 
     private:
-        int travProgram(const std::shared_ptr<ProgramNode>& program);
-        int travProgramBody(const std::shared_ptr<ProgramNode>& program);
+        int travProgram(const std::shared_ptr<ProgramNode>& prog);
+        int travRoutineBody(const std::shared_ptr<BaseRoutineNode>& prog);
 
         int travCONST(const std::shared_ptr<ConstDeclList>& const_declListAST);
         int travTYPE(const std::shared_ptr<TypeDeclList>& type_declListAST);
@@ -43,7 +43,7 @@ namespace spc {
         int travExpr(const std::shared_ptr<UnaryExprNode>& expr);
         int travExpr(const std::shared_ptr<ArrayRefNode>& expr);
         int travExpr(const std::shared_ptr<RecordRefNode>& expr);
-        int travExpr(const std::shared_ptr<ExprNode>& expr);
+        int travExpr(const std::shared_ptr<ProcNode>& expr);
         int travExpr(const std::shared_ptr<CustomProcNode>& expr);
         int travExpr(const std::shared_ptr<SysProcNode>& expr);
 

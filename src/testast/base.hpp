@@ -4,7 +4,6 @@
 #include <list>
 #include <memory>
 #include <iostream>
-#include "codegen/codegen_context.hpp"
 #include "utils/utils.hpp"
 
 namespace spc
@@ -14,8 +13,8 @@ namespace spc
     {
     public:
         BaseNode() {}
-        ~BaseNode() {}
-        virtual llvm::Value *codegen(CodegenContext &) = 0;
+        virtual ~BaseNode() = default;
+        // virtual llvm::Value *codegen(CodegenContext &)(CodegenContext &) = 0;
         // virtual void print() = 0;
     };
 
@@ -59,13 +58,13 @@ namespace spc
         {
             children.merge(std::move(lst));
         }
-        virtual llvm::Value *codegen(CodegenContext &context)
-        {
-            for (auto &c : children)
-            {
-                c->codegen(context);
-            }
-        }
+        // virtual llvm::Value *codegen(CodegenContext &)(CodegenContext &context)
+        // {
+        //     for (auto &c : children)
+        //     {
+        //         c->codegen(context);
+        //     }
+        // }
         // virtual void print()
         // {
         //     std::cout << "===== Start List =====" << std::endl;
@@ -81,7 +80,7 @@ namespace spc
     public:
         ExprNode() {}
         ~ExprNode() {}
-        virtual llvm::Value *codegen(CodegenContext &context) = 0;
+        // virtual llvm::Value *codegen(CodegenContext &)(CodegenContext &context) = 0;
         // virtual void print() = 0;
     };
     
@@ -90,7 +89,7 @@ namespace spc
     public:
         StmtNode() {}
         ~StmtNode() {}
-        virtual llvm::Value *codegen(CodegenContext &context) = 0;
+        // virtual llvm::Value *codegen(CodegenContext &)(CodegenContext &context) = 0;
         // virtual void print() = 0;
     };
     

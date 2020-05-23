@@ -6,54 +6,54 @@
 
 using namespace spc;
 
-void spc::ASTvis::travAST(const std::shared_ptr<ProgramNode>& program)
+void spc::ASTvis::travAST(const std::shared_ptr<ProgramNode>& prog)
 {
 
     of << texHeader;
-    travProgram(program);
+    travProgram(prog);
     of << texTail;
 
-    std::cout << "debug info:\n" << program->getName() << std::endl;
+    std::cout << "debug info:\n" << prog->getName() << std::endl;
     std::cout << "\n\n>>>>>>>>>>>>>>>==========  AST over!==========<<<<<<<<<<<<<<<" << std::endl;
 
     return;
 }
 
-int spc::ASTvis::travProgram(const std::shared_ptr<spc::ProgramNode>& program)
+int spc::ASTvis::travProgram(const std::shared_ptr<spc::ProgramNode>& prog)
 {
-    of << "\\node {Program: " << program->getName() << "}\n";
-    return travProgramBody(program);
+    of << "\\node {Program: " << prog->getName() << "}\n";
+    return travRoutineBody(spc::cast_node<spc::BaseRoutineNode>(prog));
 }
 
-int spc::ASTvis::travProgramBody(const std::shared_ptr<spc::ProgramNode>& program)
+int spc::ASTvis::travRoutineBody(const std::shared_ptr<spc::BaseRoutineNode>& prog)
 {
     int tmp = 0, lines = 6;
     of << "child { node {CONST}";
-    tmp = travCONST(program->header->constList);
+    tmp = travCONST(prog->header->constList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
 
     of << "child { node {TYPE}";
-    tmp = travTYPE(program->header->typeList);
+    tmp = travTYPE(prog->header->typeList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
 
     of << "child { node {VAR}";
-    tmp = travVAR(program->header->varList);
+    tmp = travVAR(prog->header->varList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
 
     of << "child { node {PROC or FUNC}";
-    tmp = travSubprocList(program->header->subroutineList);
+    tmp = travSubprocList(prog->header->subroutineList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
 
     of << "child { node {STMT}";
-    tmp = travCompound(program->body);
+    tmp = travCompound(prog->body);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
@@ -149,13 +149,13 @@ int spc::ASTvis::travSubproc(const std::shared_ptr<spc::RoutineNode>& subProc_AS
 {
     int lines = 0;
     of << "child { node {";
-    if (subProc_AST->retType == spc::Type::Void )
+    if (subProc_AST->retType->type == spc::Type::Void )
         of << "PROCEDURE: " << subProc_AST->getName();
     else
     {
         of << "FUNCTION: " << subProc_AST->getName();
         of << "$ ---- $RET$-$TYPE: ";
-        switch (subProc_AST->retType) {
+        switch (subProc_AST->retType->type) {
             case spc::Type::Void    : of << "VOID"   ; break;
             case spc::Type::Array   : of << "ARRAY"  ; break;
             case spc::Type::Record  : of << "RECORD" ; break;
@@ -188,7 +188,7 @@ int spc::ASTvis::travSubproc(const std::shared_ptr<spc::RoutineNode>& subProc_AS
         }
     }
     of << "}";
-    lines = travProgramBody(subProc_AST);
+    lines = travRoutineBody(spc::cast_node<spc::BaseRoutineNode>(subProc_AST));
     of << "}\n";
     return lines;
 }
@@ -214,21 +214,26 @@ int spc::ASTvis::travCompound(const std::shared_ptr<spc::CompoundStmtNode>& comp
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::CaseStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
+    std::list<std::shared_ptr<spc::CaseBranchNode>>& stmtList(p_stmp->branches);
     int tmp = 0, lines = stmtList.size();
     of << "child { node {CASE Statment case expr}\n";
     tmp = travExpr(p_stmp->expr);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
-    std::list<std::shared_ptr<spc::CaseBranchNode>>& stmtList(p_stmp->getChildren());
+    of << "child { node {CASE Statement case branches}\n";
+    int sublines = stmtList.size();
     for (auto &p : stmtList)
     {
-        of << "child { node {Case branch}\n";
+        int val = spc::cast_node<IntegerNode>(p->branch)->val;
+        of << "child { node {Case " + std::to_string(val) + "}\n";
         tmp = travCompound(p->stmt);
         of << "}\n";
         for (int i=0; i<tmp; ++i) of << texNone;
-        lines += tmp; tmp = 0;
+        lines += tmp; sublines += tmp; tmp = 0;
     }
+    of << "}\n";
+    for (int i=0; i<sublines; ++i) of << texNone;
     return lines;
 }
 
@@ -249,7 +254,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::IfStmtNode>&p_stmp)
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
     of << "child { node {IF Statment if stmt}\n";
-    tmp = travCompound(p_stmp->stmt);
+    tmp = travCompound(p_stmp->if_stmt);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
@@ -418,7 +423,7 @@ int spc::ASTvis::travExpr(const std::shared_ptr<spc::ArrayRefNode>& expr)
     of << "}\n}\n";
     return lines;
 }
-int spc::ASTvis::travExpr(const std::shared_ptr<spc::RecordAccessNode>& expr)
+int spc::ASTvis::travExpr(const std::shared_ptr<spc::RecordRefNode>& expr)
 {
     if (expr == nullptr) return 0;
     int tmp = 0, lines = 0;

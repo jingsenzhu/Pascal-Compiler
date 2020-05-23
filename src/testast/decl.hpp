@@ -22,7 +22,7 @@ namespace spc
         VarDeclNode(const std::shared_ptr<IdentifierNode>& name, const std::shared_ptr<TypeNode>& type) : name(name), type(type) {}
         ~VarDeclNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -36,7 +36,7 @@ namespace spc
         ConstDeclNode(const std::shared_ptr<IdentifierNode>& name, const std::shared_ptr<ConstValueNode>& val) : name(name), val(val) {}
         ~ConstDeclNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -50,7 +50,7 @@ namespace spc
         TypeDeclNode(const std::shared_ptr<IdentifierNode>& name, const std::shared_ptr<TypeNode>& type) : name(name), type(type) {}
         ~TypeDeclNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -64,7 +64,7 @@ namespace spc
         ParamNode(const std::shared_ptr<IdentifierNode>& name, const std::shared_ptr<TypeNode>& type) : name(name), type(type) {}
         ~ParamNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };

@@ -27,7 +27,7 @@ namespace spc
             : op(op), lhs(lval), rhs(rval) {}
         ~BinaryExprNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -45,7 +45,7 @@ namespace spc
             : op(op), rhs(rval) {}
         ~UnaryExprNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -60,8 +60,8 @@ namespace spc
             : arr(arr), index(index) {}
         ~ArrayRefNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
-        llvm::Value *getPtr();
+        // llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *getPtr();
         // void print() override;
         friend class ASTvis;
     };
@@ -76,7 +76,7 @@ namespace spc
             : name(name), field(field) {}
         ~RecordRefNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
+        // llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
     };
@@ -86,7 +86,7 @@ namespace spc
     public:
         ProcNode() = default;
         ~ProcNode() = default;
-        llvm::Value *codegen(CodegenContext &context) = 0;
+        // llvm::Value *codegen(CodegenContext &context) = 0;
         // void print() = 0;
     };
 
@@ -106,7 +106,7 @@ namespace spc
         //     : name(name), args(nullptr) {}
         ~CustomProcNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };
@@ -125,7 +125,7 @@ namespace spc
         //     : name(name), args(nullptr) {}
         ~SysProcNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
     };

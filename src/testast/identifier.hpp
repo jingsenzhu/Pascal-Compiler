@@ -23,8 +23,8 @@ namespace spc
         }
         ~IdentifierNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
-        llvm::Value *getPtr(CodegenContext &context);
+        // llvm::Value *codegen(CodegenContext &context) override;
+        // llvm::Value *getPtr(CodegenContext &context);
         // void print() override;
     };
 

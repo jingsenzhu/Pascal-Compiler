@@ -1,7 +1,8 @@
 %{
 #include<iostream>
 #include<stdio.h>
-#include<string>    
+#include<string>
+#include "parser.hpp"
 #include "utils/ast.hpp"
 
 #undef YY_DECL
@@ -161,6 +162,11 @@ NQUOTE [^']
 "INTEGER"   {
     std::cout << yytext; 
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Int)); 
+    return token::SYS_TYPE;
+}
+"LONGINT"   {
+    std::cout << yytext; 
+    yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Long)); 
     return token::SYS_TYPE;
 }
 "REAL"      {

@@ -16,8 +16,8 @@ namespace spc
         Type type;
         TypeNode(const Type type = Unknown) : type(type) {}
         ~TypeNode() {}
-        llvm::Value *codegen(CodegenContext &) override { return nullptr; };
-        llvm::Type *getLLVMType(CodegenContext &);
+        // llvm::Value *codegen(CodegenContext &) override { return nullptr; };
+        // llvm::Type *getLLVMType(CodegenContext &);
         // void print() override;
     };
 
@@ -116,19 +116,19 @@ namespace spc
         ConstValueNode(const Type type): type(Type::Unknown) {}
         ~ConstValueNode() = default;
 
-        llvm::Type *getLLVMType(CodegenContext &context)
-        {
-            // switch (type) 
-            // {
-            //     case Type::Bool: return context.GetBuilder().getInt1Ty();
-            //     case Type::Int: return context.GetBuilder().getInt32Ty();
-            //     case Type::Long: return context.GetBuilder().getInt32Ty();
-            //     case Type::Real: return context.GetBuilder().getDoubleTy();
-            //     case Type::String: throw CodegenException("String currently not supported.\n");
-            //     default: return nullptr;
-            // }
-            return nullptr;
-        }
+        // llvm::Type *getLLVMType(CodegenContext &context)
+        // {
+        //     // switch (type) 
+        //     // {
+        //     //     case Type::Bool: return context.GetBuilder().getInt1Ty();
+        //     //     case Type::Int: return context.GetBuilder().getInt32Ty();
+        //     //     case Type::Long: return context.GetBuilder().getInt32Ty();
+        //     //     case Type::Real: return context.GetBuilder().getDoubleTy();
+        //     //     case Type::String: throw std::logic_error("String currently not supported.\n");
+        //     //     default: return nullptr;
+        //     // }
+        //     return nullptr;
+        // }
         // void print() override;
     };
     
@@ -139,7 +139,7 @@ namespace spc
         BooleanNode(const bool val = false): ConstValueNode(Type::Bool), val(val) {}
         ~BooleanNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
     };
 
@@ -150,7 +150,7 @@ namespace spc
         IntegerNode(const int val = 0): ConstValueNode(Type::Int), val(val) {}
         ~IntegerNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
     };
 
@@ -161,7 +161,7 @@ namespace spc
         RealNode(const double val = 0.0): ConstValueNode(Type::Real), val(val) {}
         ~RealNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
     };
 
@@ -172,7 +172,7 @@ namespace spc
         CharNode(const char val = '\0'): ConstValueNode(Type::Char), val(val) {}
         ~CharNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
     };
 
@@ -184,7 +184,7 @@ namespace spc
         StringNode(const std::string &val): ConstValueNode(Type::String), val(val) {}
         ~StringNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        // llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
     };
     
