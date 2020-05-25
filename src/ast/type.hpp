@@ -17,7 +17,7 @@ namespace spc
         TypeNode(const Type type = Unknown) : type(type) {}
         ~TypeNode() {}
         llvm::Value *codegen(CodegenContext &) override { return nullptr; };
-        llvm::Type *getLLVMType(CodegenContext &);
+        llvm::Type *getLLVMType(CodegenContext &) = 0;
         // void print() override;
     };
 
@@ -26,6 +26,7 @@ namespace spc
     public:
         VoidTypeNode() : TypeNode(Type::Void) {}
         ~VoidTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) { throw CodegenException("Unknown type!"); }
         // void print() override;
     };
     
@@ -34,6 +35,7 @@ namespace spc
     public:
         SimpleTypeNode(const Type type) : TypeNode(type) {}
         ~SimpleTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) override;
         // void print() override;
     };
     
@@ -42,6 +44,7 @@ namespace spc
     public:
         StringTypeNode() : TypeNode(Type::String) {}
         ~StringTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
         // void print() override;
     };
 
@@ -58,6 +61,7 @@ namespace spc
             const std::shared_ptr<TypeNode> &itype
         ) : TypeNode(Type::Array), range_start(start), range_end(end), itemType(itype) {}
         ~ArrayTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
         // void print() override;
     };
 
@@ -69,6 +73,7 @@ namespace spc
         AliasTypeNode(const std::shared_ptr<IdentifierNode> &name)
             : name(name) {}
         ~AliasTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
         // void print() override;
     };
 
@@ -105,6 +110,7 @@ namespace spc
         {
             field.merge(std::move(rhs->field));
         }
+        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
         // void print() override;
     };
     
@@ -118,15 +124,16 @@ namespace spc
 
         llvm::Type *getLLVMType(CodegenContext &context)
         {
-            // switch (type) 
-            // {
-            //     case Type::Bool: return context.GetBuilder().getInt1Ty();
-            //     case Type::Int: return context.GetBuilder().getInt32Ty();
-            //     case Type::Long: return context.GetBuilder().getInt32Ty();
-            //     case Type::Real: return context.GetBuilder().getDoubleTy();
-            //     case Type::String: throw CodegenException("String currently not supported.\n");
-            //     default: return nullptr;
-            // }
+            switch (type) 
+            {
+                case Type::Bool: return context.getBuilder().getInt1Ty();
+                case Type::Int: return context.getBuilder().getInt32Ty();
+                case Type::Long: return context.getBuilder().getInt32Ty();
+                case Type::Char: return context.getBuilder().getInt8Ty();
+                case Type::Real: return context.getBuilder().getDoubleTy();
+                case Type::String: throw CodegenException("String currently not supported.\n");
+                default: return nullptr;
+            }
             return nullptr;
         }
         // void print() override;

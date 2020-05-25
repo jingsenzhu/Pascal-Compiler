@@ -25,6 +25,8 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
+        llvm::Value *createGlobalArray( CodegenContext &context);
+        friend llvm::Value *createArray(CodegenContext &context);
     };
 
     class ConstDeclNode: public DeclNode
@@ -64,7 +66,7 @@ namespace spc
         ParamNode(const std::shared_ptr<IdentifierNode>& name, const std::shared_ptr<TypeNode>& type) : name(name), type(type) {}
         ~ParamNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
     };

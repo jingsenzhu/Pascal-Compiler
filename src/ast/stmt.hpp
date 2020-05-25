@@ -180,7 +180,7 @@ namespace spc
     class CaseBranchNode: public StmtNode
     {
     private:
-        std::shared_ptr<ConstValueNode> branch;
+        std::shared_ptr<ExprNode> branch;
         std::shared_ptr<CompoundStmtNode> stmt;
     public:
         CaseBranchNode(const std::shared_ptr<ConstValueNode> &branch, const std::shared_ptr<CompoundStmtNode> &stmt)

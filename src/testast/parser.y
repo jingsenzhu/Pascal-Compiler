@@ -330,8 +330,12 @@ case_expr_list: case_expr_list case_expr {
     | case_expr { $$ = make_node<CaseBranchList>($1); }
     ;
 
-case_expr: const_value COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
-//    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
+case_expr: const_value COLON stmt SEMI {
+        if (!is_ptr_of<IntegerNode>($1) && !is_ptr_of<CharNode>($1))
+            throw std::logic_error("Case branch must be integer type!");
+        $$ = make_node<CaseBranchNode>($1, $3); 
+    }
+    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
     ;
 // 不会真有人写goto吧
 goto_stmt: GOTO INTEGER {

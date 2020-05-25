@@ -26,9 +26,11 @@ namespace spc
             : constList(constList), varList(varList), typeList(typeList), subroutineList(subroutineList) {}
         ~RoutineHeadNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
+        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
+        friend class ProgramNode;
+        friend class RoutineNode;
     };
 
     class BaseRoutineNode: public BaseNode
