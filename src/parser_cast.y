@@ -156,11 +156,11 @@ array_type_decl: ARRAY LB array_range RB OF type_decl {
 array_range: const_value DOTDOT const_value { 
             // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); // 这咋写啊
         if (!is_ptr_of<IntegerNode>($1) || !is_ptr_of<IntegerNode>($3)) throw std::logic_error("Array index must be integer!");
-        $$ = std::make_pair($1, $3);
+        $$ = std::make_pair(cast_node<ExprNode>($1), cast_node<ExprNode>($3));
     }
     | ID DOTDOT ID { 
         // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); //这咋写啊
-        $$ = std::make_pair($1, $3);
+        $$ = std::make_pair(cast_node<ExprNode>($1), cast_node<ExprNode>($3));
     }
     ;
 
@@ -365,19 +365,19 @@ term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::Mul, $1, $3); }
 // call node & ref node
 factor: ID { $$ = $1; }
     | ID LP args_list RP
-        { $$ = make_node<CustomProcNode>($1, $3); }
+        { $$ = cast_node<ExprNode>(make_node<CustomProcNode>($1, $3)); }
     | SYS_FUNCT LP args_list RP
-        { $$ = make_node<SysProcNode>($1, $3); }
-    | const_value { $$ = $1; }
-    | LP expression RP { $$ = $2; }
+        { $$ = cast_node<ExprNode>(make_node<SysProcNode>($1, $3)); }
+    | const_value { $$ = cast_node<ExprNode>($1); }
+    | LP expression RP { $$ = cast_node<ExprNode>($2); }
     | NOT factor
-        { $$ = make_node<UnaryExprNode>(UnaryOp::Not, $2); }
+        { $$ = cast_node<ExprNode>(make_node<UnaryExprNode>(UnaryOp::Not, $2)); }
     | MINUS factor
-        { $$ = make_node<UnaryExprNode>(UnaryOp::Neg, $2); }
+        { $$ = cast_node<ExprNode>(make_node<UnaryExprNode>(UnaryOp::Neg, $2)); }
     | ID LB expression RB
-        { $$ = make_node<ArrayRefNode>($1, $3); }
+        { $$ = cast_node<ExprNode>(make_node<ArrayRefNode>($1, $3)); }
     | ID DOT ID
-        { $$ = make_node<RecordRefNode>($1, $3); }
+        { $$ = cast_node<ExprNode>(make_node<RecordRefNode>($1, $3)); }
     ;
 
 args_list: args_list COMMA expression {
