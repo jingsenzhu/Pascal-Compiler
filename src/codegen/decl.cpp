@@ -69,8 +69,8 @@ namespace spc
 
         llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), len);
         auto *local = context.builder.CreateAlloca(ty, space);
-        auto success = context.setLocal(context.trace + "_" + this->name->name, local);
-        if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.trace + ": " + this->name->name);
+        auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
+        if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
         return local;
     }
     
@@ -81,8 +81,8 @@ namespace spc
             if (type->type != Type::Array)
             {
                 auto *local = context.builder.CreateAlloca(type->getLLVMType(context));
-                auto success = context.setLocal(context.trace + "_" + name->name, local);
-                if (!success) throw CodegenException("Duplicate identifier in function " + context.trace + ": " + name->name);
+                auto success = context.setLocal(context.getTrace() + "_" + name->name, local);
+                if (!success) throw CodegenException("Duplicate identifier in function " + context.getTrace() + ": " + name->name);
                 return local;
             }
             else
@@ -115,18 +115,18 @@ namespace spc
             {
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
-                bool success = context.setLocal(context.trace + "_" + name->name, constant);
-                success &= context.setLocalConst(context.trace + "_" + name->name, constant);
-                if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.trace + ": " + name->name);
-                return new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.trace + "_" + name->name);
+                bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
+                success &= context.setConst(context.getTrace() + "_" + name->name, constant);
+                if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
+                return new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
             }
             else
             {
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
-                bool success = context.setLocal(context.trace + "_" + name->name, constant);
-                success &= context.setLocalConst(context.trace + "_" + name->name, constant);
-                if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.trace + ": " + name->name);
-                return new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.trace + "_" + name->name);
+                bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
+                success &= context.setConst(context.getTrace() + "_" + name->name, constant);
+                if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
+                return new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
             } 
         }
         else
@@ -135,11 +135,13 @@ namespace spc
             {
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
+                context.setConst(name->name, constant);
                 return new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
             }
             else
             {
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
+                context.setConst(name->name, constant);
                 return new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
             } 
         }  
@@ -147,8 +149,8 @@ namespace spc
 
     llvm::Value *TypeDeclNode::codegen(CodegenContext &context)
     {
-        bool success = context.setAlias(context.trace + "_" + name->name, type->getLLVMType(context));
-        if (!success) throw CodegenException("Duplicate type alias in function " + context.trace + ": " + name->name);
+        bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
+        if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
         return nullptr;
     }
 

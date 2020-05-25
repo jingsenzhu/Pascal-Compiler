@@ -330,8 +330,12 @@ case_expr_list: case_expr_list case_expr {
     | case_expr { $$ = make_node<CaseBranchList>($1); }
     ;
 
-case_expr: const_value COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
-//    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
+case_expr: const_value COLON stmt SEMI {
+        if (!is_ptr_of<IntegerNode>($1) && !is_ptr_of<CharNode>($1))
+            throw std::logic_error("Case branch must be integer type!");
+        $$ = make_node<CaseBranchNode>($1, $3); 
+    }
+    | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
     ;
 // 不会真有人写goto吧
 goto_stmt: GOTO INTEGER {
@@ -371,9 +375,10 @@ factor: ID { $$ = $1; }
     | const_value { $$ = $1; }
     | LP expression RP { $$ = $2; }
     | NOT factor
-        { $$ = make_node<UnaryExprNode>(UnaryOp::Not, $2); }
+        { $$ = make_node<BinaryExprNode>(BinaryOp::Xor, make_node<BooleanNode>(true), $2); }
     | MINUS factor
-        { $$ = make_node<UnaryExprNode>(UnaryOp::Neg, $2); }
+        { $$ = make_node<BinaryExprNode>(BinaryOp::Minus, make_node<IntegerNode>(0), $2); }
+    | PLUS factor { $$ = $2; }
     | ID LB expression RB
         { $$ = make_node<ArrayRefNode>($1, $3); }
     | ID DOT ID

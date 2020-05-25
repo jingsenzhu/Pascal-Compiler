@@ -6,7 +6,7 @@
 namespace spc
 {
     
-    enum UnaryOp { Pos, Neg, Not };
+    // enum UnaryOp { Pos, Neg, Not };
     enum BinaryOp
     {
         Plus, Minus, Mul, Div, Mod, Truediv, And, Or, Xor,
@@ -32,23 +32,23 @@ namespace spc
         friend class ASTvis;
     };
 
-    class UnaryExprNode: public ExprNode
-    {
-    private:
-        UnaryOp op;
-        std::shared_ptr<ExprNode> rhs;
-    public:
-        UnaryExprNode(
-            const UnaryOp op, 
-            const std::shared_ptr<ExprNode>& rval
-            ) 
-            : op(op), rhs(rval) {}
-        ~UnaryExprNode() = default;
+    // class UnaryExprNode: public ExprNode
+    // {
+    // private:
+    //     UnaryOp op;
+    //     std::shared_ptr<ExprNode> rhs;
+    // public:
+    //     UnaryExprNode(
+    //         const UnaryOp op, 
+    //         const std::shared_ptr<ExprNode>& rval
+    //         ) 
+    //         : op(op), rhs(rval) {}
+    //     ~UnaryExprNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override;
-        // void print() override;
-        friend class ASTvis;
-    };
+    //     llvm::Value *codegen(CodegenContext &) override;
+    //     // void print() override;
+    //     friend class ASTvis;
+    // };
     
     class ArrayRefNode: public ExprNode
     {
@@ -61,9 +61,11 @@ namespace spc
         ~ArrayRefNode() = default;
 
         llvm::Value *codegen(CodegenContext &) override;
-        llvm::Value *getPtr();
+        llvm::Value *getPtr(CodegenContext &);
+        llvm::Value *getAssignPtr(CodegenContext &);
         // void print() override;
         friend class ASTvis;
+        friend class AssignStmtNode;
     };
 
     class RecordRefNode: public ExprNode

@@ -25,7 +25,7 @@
 #include <llvm/Transforms/Scalar/GVN.h>
 
 #include <string>
-#include <vector>
+#include <list>
 #include <map>
 
 static llvm::LLVMContext llvm_context;
@@ -40,10 +40,10 @@ namespace spc
         llvm::IRBuilder<> builder;
         std::map<std::string, llvm::Type *> aliases;
         std::map<std::string, llvm::Value*> locals;
-        std::map<std::string, llvm::Value*> localConsts;
+        std::map<std::string, llvm::Value*> consts;
     public:
         bool is_subroutine;
-        std::string trace;
+        std::list<std::string> traces;
         llvm::Function *printfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc;
 
         CodegenContext(const std::string &module_id)
@@ -72,6 +72,12 @@ namespace spc
         }
         ~CodegenContext();
 
+        std::string getTrace() 
+        {
+            if (traces.empty()) return "main";
+            return traces.back(); 
+        }
+
         llvm::Value *getLocal(const std::string &key) 
         {
             auto V = locals.find(key);
@@ -86,18 +92,18 @@ namespace spc
             locals[key] = value;
             return true;
         }
-        llvm::Value *getLocalConst(const std::string &key) 
+        llvm::Value *getConst(const std::string &key) 
         {
-            auto V = localConsts.find(key);
-            if (V == localConsts.end())
+            auto V = consts.find(key);
+            if (V == consts.end())
                 return nullptr;
             return V->second;
         };
-        bool setLocalConst(const std::string &key, llvm::Value *value) 
+        bool setConst(const std::string &key, llvm::Value *value) 
         {
-            if (getLocalConst(key))
+            if (getConst(key))
                 return false;
-            localConsts[key] = value;
+            consts[key] = value;
             return true;
         }
         llvm::Type *getAlias(const std::string &key) 

@@ -25,6 +25,7 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         llvm::Value *getPtr(CodegenContext &context);
+        llvm::Value *getAssignPtr(CodegenContext &context);
         // void print() override;
     };
 

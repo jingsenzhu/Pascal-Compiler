@@ -29,8 +29,7 @@ namespace spc
 
     llvm::Value *RoutineNode::codegen(CodegenContext &context)
     {
-        std::string oldTrace = context.trace;
-        context.trace = name->name;
+        context.traces.push_back(name->name);
         std::vector<llvm::Type *> types;
         std::vector<std::string> names;
         for (auto &p : params->getChildren()) 
@@ -88,7 +87,7 @@ namespace spc
         llvm::verifyFunction(*func, &llvm::errs());
 
         // context.resetLocal();
-        context.trace = oldTrace;
+        context.traces.pop_back();
 
         return nullptr;
     }
