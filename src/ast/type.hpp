@@ -73,7 +73,10 @@ namespace spc
         AliasTypeNode(const std::shared_ptr<IdentifierNode> &name)
             : name(name) {}
         ~AliasTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
+        llvm::Type *getLLVMType(CodegenContext &context) override 
+        { 
+            return context.getAlias(name->name); 
+        }
         // void print() override;
     };
 
