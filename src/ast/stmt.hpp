@@ -187,7 +187,7 @@ namespace spc
             : branch(branch), stmt(stmt) {}
         ~CaseBranchNode() = default;
 
-        llvm::Value *codegen(CodegenContext &context) override;
+        llvm::Value *codegen(CodegenContext &context) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
     };
