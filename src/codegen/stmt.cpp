@@ -123,18 +123,25 @@ namespace spc
         {
             if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8))
                 throw CodegenException("Cannot assign to a non-char array");
-            context.getBuilder().CreateCall(context.strcpyFunc, {lhs, rhs});
+            std::cout << "Sysfunc STRCPY" << std::endl;
+            llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
+            auto *rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+            context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
             return nullptr;
         }
         else if (lhs_type->isArrayTy())
         {
-            if (!is_ptr_of<IdentifierNode>(this->rhs)
+            if (!is_ptr_of<IdentifierNode>(this->rhs))
                 throw CodegenException("Incompatible type in assignment");
-            auto *rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr();
+            auto *rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
             auto *rhsPtr_type = rhsPtr->getType()->getPointerElementType();
             if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8) || !llvm::cast<llvm::ArrayType>(rhsPtr_type)->getElementType()->isIntegerTy(8))
                 throw CodegenException("Cannot assign to a non-char array");
-            context.getBuilder().CreateCall(context.strcpyFunc, {lhs, rhsPtr});
+            llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
+            auto *rhsCPtr = context.getBuilder().CreateInBoundsGEP(rhsPtr, {zero, zero});
+            context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsCPtr});
             return nullptr;
         }      
         else if (!((lhs_type->isIntegerTy(1) && rhs_type->isIntegerTy(1))  // bool

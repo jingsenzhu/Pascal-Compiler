@@ -48,28 +48,6 @@ namespace spc
         // void print() override;
     };
 
-    class ArrayTypeNode: public TypeNode
-    {
-    public:
-        std::shared_ptr<ExprNode> range_start;
-        std::shared_ptr<ExprNode> range_end;
-        std::shared_ptr<TypeNode> itemType;
-
-        ArrayTypeNode(
-            const std::shared_ptr<ExprNode> &start,
-            const std::shared_ptr<ExprNode> &end,
-            const std::shared_ptr<TypeNode> &itype
-        ) : TypeNode(Type::Array), range_start(start), range_end(end), itemType(itype) {}
-        ArrayTypeNode(
-            const size_t start,
-            const size_t end,
-            const Type itype
-        ) : TypeNode(Type::Array), range_start(make_node<IntegerNode>(start)), range_end(make_node<IntegerNode>(end)), itemType(make_node<SimpleTypeNode>(type)) {}
-        ~ArrayTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
-        // void print() override;
-    };
-
     class AliasTypeNode: public TypeNode
     {
     public:
@@ -199,7 +177,32 @@ namespace spc
         // void print() override;
     };
     
-    
+    class ArrayTypeNode: public TypeNode
+    {
+    public:
+        std::shared_ptr<ExprNode> range_start;
+        std::shared_ptr<ExprNode> range_end;
+        std::shared_ptr<TypeNode> itemType;
+
+        ArrayTypeNode(
+            const std::shared_ptr<ExprNode> &start,
+            const std::shared_ptr<ExprNode> &end,
+            const std::shared_ptr<TypeNode> &itype
+        ) : TypeNode(Type::Array), range_start(start), range_end(end), itemType(itype) {}
+        ArrayTypeNode(
+            int start,
+            int end,
+            Type itype
+        ) : TypeNode(Type::Array), 
+            range_start(cast_node<ExprNode>(make_node<IntegerNode>(start))), range_end(cast_node<ExprNode>(make_node<IntegerNode>(end))),
+            itemType(make_node<SimpleTypeNode>(itype))
+        {
+            // std::shared_ptr<ConstValueNode> rs = make_node<IntegerNode>(start), re = make_node<IntegerNode>(end);
+        }
+        ~ArrayTypeNode() = default;
+        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
+        // void print() override;
+    };
     
 
 } // namespace spc

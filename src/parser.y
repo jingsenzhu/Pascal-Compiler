@@ -39,7 +39,7 @@
 // 定义terminal：token
 %token PROGRAM ID CONST ARRAY VAR FUNCTION PROCEDURE PBEGIN END TYPE RECORD
 %token INTEGER REAL CHAR STRING
-%token SYS_CON SYS_FUNCT SYS_PROC SYS_TYPE
+%token SYS_CON SYS_FUNCT SYS_PROC SYS_TYPE STR_TYPE
 %token IF THEN ELSE REPEAT UNTIL WHILE DO FOR TO DOWNTO CASE OF GOTO
 %token ASSIGN EQUAL UNEQUAL LE LT GE GT
 %token PLUS MINUS MUL DIV MOD TRUEDIV AND OR XOR NOT
@@ -64,6 +64,7 @@
 %type <std::shared_ptr<VarDeclList>> var_part var_decl_list var_decl
 %type <std::shared_ptr<ConstValueNode>> const_value
 %type <std::shared_ptr<TypeNode>> type_decl simple_type_decl
+%type <std::shared_ptr<StringTypeNode>> string_type_decl
 %type <std::shared_ptr<ArrayTypeNode>> array_type_decl
 %type <std::pair<std::shared_ptr<IdentifierList>, std::shared_ptr<TypeNode>>> field_decl
 %type <std::shared_ptr<RecordTypeNode>> record_type_decl field_decl_list 
@@ -140,6 +141,7 @@ type_decl: simple_type_decl {
         $$ = $1;
     }
     | array_type_decl {$$ = $1;}
+    | string_type_decl {$$ = $1;}
     | record_type_decl {$$ = $1;}
     ;
 
@@ -150,6 +152,11 @@ simple_type_decl: SYS_TYPE {$$ = $1;}
 
 array_type_decl: ARRAY LB array_range RB OF type_decl {
         $$ = make_node<ArrayTypeNode>($3.first, $3.second, $6);
+    }
+    ;
+
+string_type_decl: STR_TYPE {
+        $$ = make_node<StringTypeNode>();
     }
     ;
 

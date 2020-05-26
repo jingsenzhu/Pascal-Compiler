@@ -72,15 +72,15 @@ namespace spc
             strcpyFunc = llvm::Function::Create(strcpyTy, llvm::Function::ExternalLinkage, "strcpy", *_module);
 
             auto getsTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, false);
-            getsFunc = llvm::Function::Create(getsTy, llvm::Function::ExternalLinkage, "strcpy", *_module);
+            getsFunc = llvm::Function::Create(getsTy, llvm::Function::ExternalLinkage, "gets", *_module);
 
             printfFunc->setCallingConv(llvm::CallingConv::C);
             scanfFunc->setCallingConv(llvm::CallingConv::C);
             absFunc->setCallingConv(llvm::CallingConv::C);
             fabsFunc->setCallingConv(llvm::CallingConv::C);
             sqrtFunc->setCallingConv(llvm::CallingConv::C);
-            strcpyTy->setCallingConv(llvm::CallingConv::C);
-            getsTy->setCallingConv(llvm::CallingConv::C);
+            strcpyFunc->setCallingConv(llvm::CallingConv::C);
+            getsFunc->setCallingConv(llvm::CallingConv::C);
         }
         ~CodegenContext() = default;
 

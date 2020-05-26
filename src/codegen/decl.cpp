@@ -7,6 +7,7 @@ namespace spc
     llvm::Value *VarDeclNode::createGlobalArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &arrTy)
     {
         // std::shared_ptr<ArrayTypeNode> arrTy = cast_node<ArrayTypeNode>(this->type);
+        std::cout << "Creating array" << std::endl;
         auto *ty = arrTy->itemType->getLLVMType(context);
         llvm::Constant *z; // zero
         if (ty->isIntegerTy()) 
@@ -37,12 +38,15 @@ namespace spc
             initVector.push_back(z);
         auto *variable = llvm::ConstantArray::get(arr, initVector);
 
+        std::cout << "Created array" << std::endl;
+
         return new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, this->name->name);
     }
 
     llvm::Value *VarDeclNode::createArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &arrTy)
     {
         // std::shared_ptr<ArrayTypeNode> arrTy = cast_node<ArrayTypeNode>(this->type);
+        std::cout << "Creating array" << std::endl;
         auto *ty = arrTy->itemType->getLLVMType(context);
         llvm::Constant *constant;
         if (ty->isIntegerTy()) 
@@ -71,6 +75,7 @@ namespace spc
         auto *local = context.getBuilder().CreateAlloca(ty, space);
         auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
+        std::cout << "Created array" << std::endl;
         return local;
     }
     

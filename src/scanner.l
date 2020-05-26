@@ -67,6 +67,11 @@ NQUOTE [^']
 "BEGIN"     {std::cout << yytext;  return token::PBEGIN;}
 "PROCEDURE" {std::cout << yytext;  return token::PROCEDURE;}
 "PROGRAM"   {std::cout << yytext;  return token::PROGRAM;}
+"READLN"      {
+    std::cout << yytext;  
+    yylval->build<spc::SysFunc>(spc::SysFunc::Readln);
+    return token::SYS_PROC;
+}
 "READ"      {
     std::cout << yytext;  
     yylval->build<spc::SysFunc>(spc::SysFunc::Read);
@@ -176,9 +181,8 @@ NQUOTE [^']
     return token::SYS_TYPE;
 }
 "STRING"    {
-    std::cout << yytext; 
-    yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::String)); 
-    return token::STRING;
+    std::cout << yytext;
+    return token::STR_TYPE;
 }
 
 [0-9]+      {

@@ -121,6 +121,7 @@ namespace spc
     llvm::Value *SysProcNode::codegen(CodegenContext &context)
     {
         if (name == SysFunc::Write || name == SysFunc::Writeln) {
+            std::cout << "Sysfunc WRITE" << std::endl;
             for (auto &arg : this->args->getChildren()) {
                 auto *value = arg->codegen(context);
                 auto x = value->getType();
@@ -142,7 +143,7 @@ namespace spc
                 }
                 else if (value->getType()->isArrayTy()) // String
                 {
-                    auto *a = llvm::cast<ArrayType>(x);
+                    auto *a = llvm::cast<llvm::ArrayType>(x);
                     if (!a->getElementType()->isIntegerTy(8))
                         throw CodegenException("Cannot print a non-char array");
                     func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
@@ -166,6 +167,7 @@ namespace spc
         }
         else if (name == SysFunc::Read)
         {
+            std::cout << "Sysfunc READ" << std::endl;
             for (auto &arg : args->getChildren())
             {
                 llvm::Value *ptr;
@@ -205,6 +207,7 @@ namespace spc
         }
         else if (name == SysFunc::Readln)
         {
+            std::cout << "Sysfunc READLN" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in readln(), i.e. gets(): expected 1");
             llvm::Value *ptr;
@@ -213,12 +216,17 @@ namespace spc
             {
                 ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
                 if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
-                    return context.getBuilder().CreateCall(context.getsFunc, ptr);
+                {
+                    llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+                    auto cptr = context.getBuilder().CreateInBoundsGEP(ptr, {zero, zero});
+                    return context.getBuilder().CreateCall(context.getsFunc, cptr);
+                }
             }
             throw CodegenException("Incompatible type in readln(): expected string");
         }
         else if (name == SysFunc::Abs)
         {
+            std::cout << "Sysfunc ABS" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in abs(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -231,6 +239,7 @@ namespace spc
         }
         else if (name == SysFunc::Sqrt)
         {
+            std::cout << "Sysfunc SQRT" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in sqrt(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -243,6 +252,7 @@ namespace spc
         }
         else if (name == SysFunc::Sqr)
         {
+            std::cout << "Sysfunc SQR" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: sqr()");
             auto *value = args->getChildren().front()->codegen(context);
@@ -255,6 +265,7 @@ namespace spc
         }
         else if (name == SysFunc::Chr)
         {
+            std::cout << "Sysfunc CHR" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in chr(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -264,6 +275,7 @@ namespace spc
         }
         else if (name == SysFunc::Ord)
         {
+            std::cout << "Sysfunc ORD" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in ord(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -273,6 +285,7 @@ namespace spc
         }
         else if (name == SysFunc::Pred)
         {
+            std::cout << "Sysfunc PRED" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: pred()");
             auto *value = args->getChildren().front()->codegen(context);
@@ -282,6 +295,7 @@ namespace spc
         }
         else if (name == SysFunc::Succ)
         {
+            std::cout << "Sysfunc SUCC" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: succ()");
             auto *value = args->getChildren().front()->codegen(context);
