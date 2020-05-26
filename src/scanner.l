@@ -2,6 +2,7 @@
 #include<iostream>
 #include<stdio.h>
 #include<string>
+#include<stdexcept>
 #include "parser.hpp"
 #include "utils/ast.hpp"
 
@@ -243,7 +244,9 @@ NQUOTE [^']
     }
 }
 
-. {}
+. {
+    throw std::invalid_argument("Invalid token: " + yytext);
+}
 
 %%
 
