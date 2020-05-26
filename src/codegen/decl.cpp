@@ -168,8 +168,16 @@ namespace spc
 
     llvm::Value *TypeDeclNode::codegen(CodegenContext &context)
     {
-        bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
-        if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
+        if (context.is_subroutine)
+        {
+            bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
+            if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
+        }
+        else
+        {
+            bool success = context.setAlias(name->name, type->getLLVMType(context));
+            if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
+        }
         return nullptr;
     }
 

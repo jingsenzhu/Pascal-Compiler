@@ -1,11 +1,12 @@
 program prog;
 const
   st = 'wow';
-{type
-  intarr = array [0..10] of integer;}
+type
+  long = longint;
+  intarr = array [0..10] of integer;
 var
   x: integer;
-  ar: array [0..10] of integer;
+  ar: intarr;
 
 function f(x: integer): integer;
   begin
@@ -32,7 +33,7 @@ procedure g(x: integer);
 
 procedure printAr;
   var
-    i: longint;
+    i: long;
   begin
     for i := 0 to 9 do write(ar[i], ' ');
     writeln(ar[10]);

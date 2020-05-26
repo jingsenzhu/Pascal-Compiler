@@ -17,6 +17,23 @@ namespace spc
         }
     }
 
+    llvm::Type *AliasTypeNode::getLLVMType(CodegenContext &context) 
+    {
+        if (context.is_subroutine)
+        {
+            for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+            {
+                llvm::Type *ret = nullptr;
+                if ((ret = context.getAlias(*rit + "_" + name->name)) != nullptr)
+                    return ret;
+            }
+        }
+        llvm::Type *ret = context.getAlias(name->name);
+        if (ret == nullptr)
+            throw CodegenException("Undefined alias in function " + context.getTrace() + ": " + name->name);
+        return ret;
+    }
+
     llvm::Type *ConstValueNode::getLLVMType(CodegenContext &context)
     {
         switch (type) 
