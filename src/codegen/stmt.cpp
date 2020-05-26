@@ -22,7 +22,8 @@ namespace spc
 
         func->getBasicBlockList().push_back(else_block);
         context.getBuilder().SetInsertPoint(else_block);
-        else_stmt->codegen(context);
+        if (else_stmt != nullptr)
+            else_stmt->codegen(context);
         context.getBuilder().CreateBr(cont_block);
 
         func->getBasicBlockList().push_back(cont_block);

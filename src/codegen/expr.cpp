@@ -106,11 +106,15 @@ namespace spc
         auto *func = context.getModule()->getFunction(name->name);
         if (!func)
             throw CodegenException("Function not found: " + name->name + "()");
-        if (func->arg_size() != args->getChildren().size())
+        size_t argCnt = 0;
+        if (args != nullptr)
+            argCnt = args->getChildren().size();
+        if (func->arg_size() != argCnt)
             throw CodegenException("Wrong number of arguments: " + name->name + "()");
         std::vector<llvm::Value*> values;
-        for (auto &arg : args->getChildren()) 
-            values.push_back(arg->codegen(context));
+        if (args != nullptr)
+            for (auto &arg : args->getChildren()) 
+                values.push_back(arg->codegen(context));
         return context.getBuilder().CreateCall(func, values);
     }
 

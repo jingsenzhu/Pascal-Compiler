@@ -281,6 +281,7 @@ assign_stmt: ID ASSIGN expression {
     ;
 // routine call
 proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
+    | ID LP RP {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
     | ID LP args_list RP
         { $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1, $3)); }
     | SYS_PROC
