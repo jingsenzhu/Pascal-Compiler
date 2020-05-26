@@ -96,15 +96,20 @@ namespace spc
                     return createArray(context, arrTy);
                 }
             }
-            if (type->type != Type::Array)
+            if (type->type == Type::Array)
+                return createArray(context, cast_node<ArrayTypeNode>(this->type));
+            else if (type->type == Type::String)
+            {
+                auto arrTy = make_node<ArrayTypeNode>(0, 255, Type::Char);
+                return createArray(context, arrTy);
+            }
+            else
             {
                 auto *local = context.getBuilder().CreateAlloca(type->getLLVMType(context));
                 auto success = context.setLocal(context.getTrace() + "_" + name->name, local);
                 if (!success) throw CodegenException("Duplicate identifier in function " + context.getTrace() + ": " + name->name);
                 return local;
             }
-            else
-                return createArray(context, cast_node<ArrayTypeNode>(this->type));
         }
         else
         {
@@ -119,7 +124,14 @@ namespace spc
                     return createGlobalArray(context, arrTy);
                 }
             }
-            if (type->type != Type::Array)
+            if (type->type == Type::Array)
+                return createGlobalArray(context, cast_node<ArrayTypeNode>(this->type));
+            else if (type->type == Type::String)
+            {
+                auto arrTy = make_node<ArrayTypeNode>(0, 255, Type::Char);
+                return createGlobalArray(context, arrTy);
+            }
+            else
             {
                 auto *ty = type->getLLVMType(context);
                 llvm::Constant *constant;
@@ -131,8 +143,6 @@ namespace spc
                     throw CodegenException("Unknown type");
                 return new llvm::GlobalVariable(*context.getModule(), ty, false, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
             }
-            else
-                return createGlobalArray(context, cast_node<ArrayTypeNode>(this->type));
         }
     }
 

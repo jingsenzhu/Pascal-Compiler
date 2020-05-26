@@ -60,6 +60,11 @@ namespace spc
             const std::shared_ptr<ExprNode> &end,
             const std::shared_ptr<TypeNode> &itype
         ) : TypeNode(Type::Array), range_start(start), range_end(end), itemType(itype) {}
+        ArrayTypeNode(
+            const size_t start,
+            const size_t end,
+            const Type itype
+        ) : TypeNode(Type::Array), range_start(make_node<IntegerNode>(start)), range_end(make_node<IntegerNode>(end)), itemType(make_node<SimpleTypeNode>(type)) {}
         ~ArrayTypeNode() = default;
         llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
         // void print() override;

@@ -119,6 +119,24 @@ namespace spc
         {
             rhs = context.getBuilder().CreateSIToFP(rhs, context.getBuilder().getDoubleTy());
         }
+        else if (lhs_type->isArrayTy() && rhs_type->isPointerTy()) // const string
+        {
+            if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8))
+                throw CodegenException("Cannot assign to a non-char array");
+            context.getBuilder().CreateCall(context.strcpyFunc, {lhs, rhs});
+            return nullptr;
+        }
+        else if (lhs_type->isArrayTy())
+        {
+            if (!is_ptr_of<IdentifierNode>(this->rhs)
+                throw CodegenException("Incompatible type in assignment");
+            auto *rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr();
+            auto *rhsPtr_type = rhsPtr->getType()->getPointerElementType();
+            if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8) || !llvm::cast<llvm::ArrayType>(rhsPtr_type)->getElementType()->isIntegerTy(8))
+                throw CodegenException("Cannot assign to a non-char array");
+            context.getBuilder().CreateCall(context.strcpyFunc, {lhs, rhsPtr});
+            return nullptr;
+        }      
         else if (!((lhs_type->isIntegerTy(1) && rhs_type->isIntegerTy(1))  // bool
                    || (lhs_type->isIntegerTy(32) && rhs_type->isIntegerTy(32))  // int
                    || (lhs_type->isIntegerTy(8) && rhs_type->isIntegerTy(8))  // char

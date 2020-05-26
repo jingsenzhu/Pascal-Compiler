@@ -48,7 +48,7 @@ namespace spc
     public:
         bool is_subroutine;
         std::list<std::string> traces;
-        llvm::Function *printfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc;
+        llvm::Function *printfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *getsFunc;
 
         CodegenContext(const std::string &module_id)
             : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false)
@@ -68,11 +68,19 @@ namespace spc
             auto sqrtTy = llvm::FunctionType::get(llvm::Type::getDoubleTy(llvm_context), {llvm::Type::getDoubleTy(llvm_context)}, false);
             sqrtFunc = llvm::Function::Create(sqrtTy, llvm::Function::ExternalLinkage, "sqrt", *_module);
 
+            auto strcpyTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context), llvm::Type::getInt8PtrTy(llvm_context)}, false);
+            strcpyFunc = llvm::Function::Create(strcpyTy, llvm::Function::ExternalLinkage, "strcpy", *_module);
+
+            auto getsTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, false);
+            getsFunc = llvm::Function::Create(getsTy, llvm::Function::ExternalLinkage, "strcpy", *_module);
+
             printfFunc->setCallingConv(llvm::CallingConv::C);
             scanfFunc->setCallingConv(llvm::CallingConv::C);
             absFunc->setCallingConv(llvm::CallingConv::C);
             fabsFunc->setCallingConv(llvm::CallingConv::C);
             sqrtFunc->setCallingConv(llvm::CallingConv::C);
+            strcpyTy->setCallingConv(llvm::CallingConv::C);
+            getsTy->setCallingConv(llvm::CallingConv::C);
         }
         ~CodegenContext() = default;
 

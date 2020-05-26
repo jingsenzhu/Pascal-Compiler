@@ -71,6 +71,11 @@ NQUOTE [^']
     yylval->build<spc::SysFunc>(spc::SysFunc::Read);
     return token::SYS_PROC;
 }
+"READLN"      {
+    std::cout << yytext;  
+    yylval->build<spc::SysFunc>(spc::SysFunc::Readln);
+    return token::SYS_PROC;
+}
 "REPEAT"    {std::cout << yytext;  return token::REPEAT;}
 "THEN"      {std::cout << yytext;  return token::THEN;}
 "TO"        {

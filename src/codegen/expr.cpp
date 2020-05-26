@@ -142,6 +142,9 @@ namespace spc
                 }
                 else if (value->getType()->isArrayTy()) // String
                 {
+                    auto *a = llvm::cast<ArrayType>(x);
+                    if (!a->getElementType()->isIntegerTy(8))
+                        throw CodegenException("Cannot print a non-char array");
                     func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
                     auto argId = cast_node<IdentifierNode>(arg);
                     auto *valuePtr = argId->getPtr(context);
@@ -165,7 +168,13 @@ namespace spc
         {
             for (auto &arg : args->getChildren())
             {
-                auto ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
+                llvm::Value *ptr;
+                if (is_ptr_of<IdentifierNode>(arg))
+                    ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
+                else if (is_ptr_of<ArrayRefNode>(arg))
+                    ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
+                else
+                    throw CodegenException("Argument in read() must be identifier or array reference");
                 std::vector<llvm::Value*> args;
                 if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
                 { 
@@ -183,11 +192,30 @@ namespace spc
                     args.push_back(ptr); 
                 }
                 // TODO: String support
+                else if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
+                {
+                    args.push_back(context.getBuilder().CreateGlobalStringPtr("%s")); 
+                    args.push_back(ptr);
+                }
                 else
-                    throw CodegenException("Incompatible type in read(): expected char, integer, real");
+                    throw CodegenException("Incompatible type in read(): expected char, integer, real, string");
                 context.getBuilder().CreateCall(context.scanfFunc, args);
             }
             return nullptr;
+        }
+        else if (name == SysFunc::Readln)
+        {
+            if (args->getChildren().size() != 1)
+                throw CodegenException("Wrong number of arguments in readln(), i.e. gets(): expected 1");
+            llvm::Value *ptr;
+            auto arg = args->getChildren().front();
+            if (is_ptr_of<IdentifierNode>(arg))
+            {
+                ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
+                if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
+                    return context.getBuilder().CreateCall(context.getsFunc, ptr);
+            }
+            throw CodegenException("Incompatible type in readln(): expected string");
         }
         else if (name == SysFunc::Abs)
         {
