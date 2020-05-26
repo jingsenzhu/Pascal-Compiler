@@ -121,6 +121,7 @@ namespace spc
         {
             if (getArrayAlias(key))
                 return false;
+            assert(value != nullptr);
             arrAliases[key] = value;
             return true;
         }
@@ -135,6 +136,7 @@ namespace spc
         {
             if (getRecordAlias(key))
                 return false;
+            assert(value != nullptr);
             recAliases[key] = value;
             return true;
         }

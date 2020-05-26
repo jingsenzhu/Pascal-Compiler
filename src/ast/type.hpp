@@ -67,9 +67,8 @@ namespace spc
 
     class AliasTypeNode: public TypeNode
     {
-    private:
-        std::shared_ptr<IdentifierNode> name;
     public:
+        std::shared_ptr<IdentifierNode> name;
         AliasTypeNode(const std::shared_ptr<IdentifierNode> &name)
             : TypeNode(Type::Alias), name(name) {}
         ~AliasTypeNode() = default;

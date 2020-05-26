@@ -80,16 +80,21 @@ namespace spc
         {
             if (type->type == Type::Alias)
             {
+                std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
+                std::cout << "Searching alias " << std::endl;
                 std::shared_ptr<ArrayTypeNode> arrTy;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
-                    if ((arrTy = context.getArrayAlias(*rit + "_" + name->name)) != nullptr)
+                    if ((arrTy = context.getArrayAlias(*rit + "_" + aliasName)) != nullptr)
                         break;
                 }
                 if (arrTy == nullptr)
-                    arrTy = context.getArrayAlias(name->name);
+                    arrTy = context.getArrayAlias(aliasName);
                 if (arrTy != nullptr)
+                {
+                    std::cout << "Alias is array" << std::endl;
                     return createArray(context, arrTy);
+                }
             }
             if (type->type != Type::Array)
             {
@@ -105,9 +110,14 @@ namespace spc
         {
             if (type->type == Type::Alias)
             {
-                std::shared_ptr<ArrayTypeNode> arrTy = context.getArrayAlias(name->name);
+                std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
+                std::cout << "Searching alias " << std::endl;
+                std::shared_ptr<ArrayTypeNode> arrTy = context.getArrayAlias(aliasName);
                 if (arrTy != nullptr)
+                {
+                    std::cout << "Alias is array" << std::endl;
                     return createGlobalArray(context, arrTy);
+                }
             }
             if (type->type != Type::Array)
             {
@@ -193,6 +203,7 @@ namespace spc
             {
                 bool success = context.setArrayAlias(context.getTrace() + "_" + name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
+                std::cout << "Array alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
             else if (type->type == Type::Record)
             {
@@ -211,6 +222,7 @@ namespace spc
             {
                 bool success = context.setArrayAlias(name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
+                std::cout << "Global array alias: " << name->name << std::endl;
             }
             else if (type->type == Type::Record)
             {
