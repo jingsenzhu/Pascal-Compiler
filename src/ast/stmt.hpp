@@ -70,7 +70,7 @@ namespace spc
             const std::shared_ptr<ExprNode> &end_val, 
             const std::shared_ptr<CompoundStmtNode> &stmt
             )
-            : direction(dir), init_val(init_val), end_val(end_val), stmt(stmt) {}
+            : direction(dir), id(id), init_val(init_val), end_val(end_val), stmt(stmt) {}
         ~ForStmtNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;
@@ -183,13 +183,14 @@ namespace spc
         std::shared_ptr<ExprNode> branch;
         std::shared_ptr<CompoundStmtNode> stmt;
     public:
-        CaseBranchNode(const std::shared_ptr<ConstValueNode> &branch, const std::shared_ptr<CompoundStmtNode> &stmt)
+        CaseBranchNode(const std::shared_ptr<ExprNode> &branch, const std::shared_ptr<CompoundStmtNode> &stmt)
             : branch(branch), stmt(stmt) {}
         ~CaseBranchNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
+        friend class CaseStmtNode;
     };
 
     using CaseBranchList = ListNode<CaseBranchNode>;
@@ -204,7 +205,7 @@ namespace spc
             : expr(expr), branches(list->getChildren()) {}
         CaseStmtNode(const std::shared_ptr<ExprNode> &expr, std::shared_ptr<CaseBranchList> &&list)
             : expr(expr), branches(std::move(list->getChildren())) {}
-        ~CaseStmtNode();
+        ~CaseStmtNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;

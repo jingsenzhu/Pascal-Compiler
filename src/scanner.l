@@ -208,7 +208,7 @@ NQUOTE [^']
     yylval->build<std::shared_ptr<IdentifierNode>>(make_node<IdentifierNode>(yytext));  
     return token::ID;
 }
-[\t\f]    {std::cout << ' '; continue;}
+[ \t\f]    {std::cout << ' '; continue;}
 [\n\r]     {std::cout << std::endl;}
 
 "(*" {
@@ -245,7 +245,7 @@ NQUOTE [^']
 }
 
 . {
-    throw std::invalid_argument("Invalid token: " + yytext);
+    throw std::invalid_argument(std::string("Invalid token: ") + yytext);
 }
 
 %%

@@ -26,7 +26,7 @@ namespace spc
         // void print() override;
         friend class ASTvis;
         llvm::Value *createGlobalArray( CodegenContext &context);
-        friend llvm::Value *createArray(CodegenContext &context);
+        llvm::Value *createArray(CodegenContext &context);
     };
 
     class ConstDeclNode: public DeclNode
@@ -69,6 +69,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override { return nullptr; }
         // void print() override;
         friend class ASTvis;
+        friend class RoutineNode;
     };
     
     using TypeDeclList = ListNode<TypeDeclNode>;

@@ -40,7 +40,7 @@ namespace spc {
 
         int travExpr(const std::shared_ptr<ExprNode>& expr);
         int travExpr(const std::shared_ptr<BinaryExprNode>& expr);
-        int travExpr(const std::shared_ptr<UnaryExprNode>& expr);
+        // int travExpr(const std::shared_ptr<UnaryExprNode>& expr);
         int travExpr(const std::shared_ptr<ArrayRefNode>& expr);
         int travExpr(const std::shared_ptr<RecordRefNode>& expr);
         int travExpr(const std::shared_ptr<ProcNode>& expr);

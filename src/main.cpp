@@ -75,7 +75,7 @@ void emit_target(llvm::raw_fd_ostream &dest, llvm::TargetMachine::CodeGenFileTyp
     dest.flush();
 }
 
-int main(const int argc, const char** argv)
+int main(int argc, char* argv[])
 {
     enum Target { UNDEFINED, LLVM, ASM, OBJ };
 
@@ -130,11 +130,13 @@ int main(const int argc, const char** argv)
     {
         std::cerr << e.what() << std::endl;
         std::cerr << "Terminated due to error during scanning" << std::endl;
+        exit(1);
     }
     catch(const std::logic_error& e)
     {
         std::cerr << e.what() << std::endl;
         std::cerr << "Terminated due to error during parsing" << std::endl;
+        exit(1);
     }
 
     spc::ASTvis astVis;
@@ -146,14 +148,16 @@ int main(const int argc, const char** argv)
     } 
     catch (spc::CodegenException &e) 
     {
-        std::cout << e.what() << std::endl;
+        std::cerr << "Codegen error: ";
+        std::cerr << e.what() << std::endl;
         std::cerr << "Terminated due to error during code generation" << std::endl;
+        exit(1);
     }
 
     genContext.dump();
     std::cout << "\n\n>>>>>>>>>>>>>>>==========  IR over!==========<<<<<<<<<<<<<<<" << std::endl;
 
-    std::string output
+    std::string output;
     if (outputP == nullptr)
         output = input;
     else

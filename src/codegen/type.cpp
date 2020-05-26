@@ -4,7 +4,7 @@
 namespace spc
 {
     
-    llvm::Type *SimpleTypeNode::getLLVMType(CodegenContext &)
+    llvm::Type *SimpleTypeNode::getLLVMType(CodegenContext &context)
     {
         switch (type)
         {
@@ -15,6 +15,21 @@ namespace spc
             case Type::Real: return context.getBuilder().getDoubleTy();
             default: throw CodegenException("Unknown type");
         }
+    }
+
+    llvm::Type *ConstValueNode::getLLVMType(CodegenContext &context)
+    {
+        switch (type) 
+        {
+            case Type::Bool: return context.getBuilder().getInt1Ty();
+            case Type::Int: return context.getBuilder().getInt32Ty();
+            case Type::Long: return context.getBuilder().getInt32Ty();
+            case Type::Char: return context.getBuilder().getInt8Ty();
+            case Type::Real: return context.getBuilder().getDoubleTy();
+            case Type::String: throw CodegenException("String currently not supported.");
+            default: throw CodegenException("Unknown type!"); return nullptr;
+        }
+        return nullptr;
     }
 
     llvm::Value *BooleanNode::codegen(CodegenContext &context)
@@ -37,7 +52,7 @@ namespace spc
     llvm::Value *RealNode::codegen(CodegenContext &context)
     {
         auto *ty = context.getBuilder().getDoubleTy();
-        return llvm::ConstantInt::getSigned(ty, val);
+        return llvm::ConstantFP::get(ty, val);
     }
 
     llvm::Value *StringNode::codegen(CodegenContext &context) 

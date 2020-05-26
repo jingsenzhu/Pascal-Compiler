@@ -17,7 +17,7 @@ namespace spc
         context.getBuilder().CreateCondBr(cond, then_block, else_block);
 
         context.getBuilder().SetInsertPoint(then_block);
-        stmt->codegen(context);
+        if_stmt->codegen(context);
         context.getBuilder().CreateBr(cont_block);
 
         func->getBasicBlockList().push_back(else_block);
@@ -78,9 +78,9 @@ namespace spc
         auto *func = context.getBuilder().GetInsertBlock()->getParent();
         auto *block = llvm::BasicBlock::Create(context.getModule()->getContext(), "repeat", func);
         context.getBuilder().CreateBr(block);
-        stmt->codegen(context);
         context.getBuilder().SetInsertPoint(block);
         
+        stmt->codegen(context);
         auto *cond = expr->codegen(context);
         if (!cond->getType()->isIntegerTy(1))
             throw CodegenException("Incompatible type in repeat condition: expected boolean");

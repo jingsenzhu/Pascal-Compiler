@@ -117,13 +117,18 @@ namespace spc
     llvm::Value *SysProcNode::codegen(CodegenContext &context)
     {
         if (name == SysFunc::Write || name == SysFunc::Writeln) {
-            for (auto &arg : this->args->get_getChildren()) {
+            for (auto &arg : this->args->getChildren()) {
                 auto *value = arg->codegen(context);
                 auto x = value->getType();
                 std::vector<llvm::Value*> func_args;
-                if (value->getType()->isIntegerTy()) 
+                if (value->getType()->isIntegerTy(32)) 
                 {
                     func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%d"));
+                    func_args.push_back(value);
+                }
+                else if (value->getType()->isIntegerTy(8)) 
+                {
+                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c"));
                     func_args.push_back(value);
                 }
                 else if (value->getType()->isDoubleTy()) 
@@ -145,10 +150,10 @@ namespace spc
                 }
                 else 
                     throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");
-                context.getBuilder().CreateCall(context.PrintfFunction, func_args);
+                context.getBuilder().CreateCall(context.printfFunc, func_args);
             }
             if (name == SysFunc::Writeln) {
-                context.getBuilder().CreateCall(context.PrintfFunction, context.getBuilder().CreateGlobalStringPtr("\n"));
+                context.getBuilder().CreateCall(context.printfFunc, context.getBuilder().CreateGlobalStringPtr("\n"));
             }
             return nullptr;
         }

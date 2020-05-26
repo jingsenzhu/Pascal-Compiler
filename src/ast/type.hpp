@@ -17,7 +17,7 @@ namespace spc
         TypeNode(const Type type = Unknown) : type(type) {}
         ~TypeNode() {}
         llvm::Value *codegen(CodegenContext &) override { return nullptr; };
-        llvm::Type *getLLVMType(CodegenContext &) = 0;
+        virtual llvm::Type *getLLVMType(CodegenContext &) = 0;
         // void print() override;
     };
 
@@ -26,7 +26,7 @@ namespace spc
     public:
         VoidTypeNode() : TypeNode(Type::Void) {}
         ~VoidTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &) { throw CodegenException("Unknown type!"); }
+        llvm::Type *getLLVMType(CodegenContext &context) override { return context.getBuilder().getVoidTy(); }
         // void print() override;
     };
     
@@ -122,23 +122,23 @@ namespace spc
     {
     public:
         Type type;
-        ConstValueNode(const Type type): type(Type::Unknown) {}
+        ConstValueNode(const Type type = Type::Unknown): type(type) {}
         ~ConstValueNode() = default;
 
-        llvm::Type *getLLVMType(CodegenContext &context)
-        {
-            switch (type) 
-            {
-                case Type::Bool: return context.getBuilder().getInt1Ty();
-                case Type::Int: return context.getBuilder().getInt32Ty();
-                case Type::Long: return context.getBuilder().getInt32Ty();
-                case Type::Char: return context.getBuilder().getInt8Ty();
-                case Type::Real: return context.getBuilder().getDoubleTy();
-                case Type::String: throw CodegenException("String currently not supported.\n");
-                default: return nullptr;
-            }
-            return nullptr;
-        }
+        llvm::Type *getLLVMType(CodegenContext &context);
+        // {
+        //     switch (type) 
+        //     {
+        //         case Type::Bool: return context.getBuilder().getInt1Ty();
+        //         case Type::Int: return context.getBuilder().getInt32Ty();
+        //         case Type::Long: return context.getBuilder().getInt32Ty();
+        //         case Type::Char: return context.getBuilder().getInt8Ty();
+        //         case Type::Real: return context.getBuilder().getDoubleTy();
+        //         case Type::String: throw CodegenException("String currently not supported.\n");
+        //         default: return nullptr;
+        //     }
+        //     return nullptr;
+        // }
         // void print() override;
     };
     

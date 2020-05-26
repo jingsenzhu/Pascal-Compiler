@@ -70,7 +70,7 @@ namespace spc
             fabsFunc->setCallingConv(llvm::CallingConv::C);
             sqrtFunc->setCallingConv(llvm::CallingConv::C);
         }
-        ~CodegenContext();
+        ~CodegenContext() = default;
 
         std::string getTrace() 
         {
@@ -131,10 +131,6 @@ namespace spc
         {
             _module->print(llvm::errs(), nullptr);
         }
-        std::vector<std::string> &getTrace() 
-        {
-            return traces;
-        }
 
     };
 
@@ -142,10 +138,10 @@ namespace spc
     public:
         explicit CodegenException(const std::string &description) : description(description) {};
         const char *what() const noexcept {
-            return ("Codegen Error: " + description).c_str();
+            return description.c_str();
         }
     private:
-        unsigned id;
+        // unsigned id;
         std::string description;
     };
     
