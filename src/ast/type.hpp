@@ -8,7 +8,7 @@
 namespace spc
 {
     
-    enum Type { Unknown, Void, Int, Real, String, Array, Record, Bool, Long, Char };
+    enum Type { Unknown, Void, Int, Real, String, Array, Record, Bool, Long, Char, Alias };
 
     class TypeNode: public BaseNode
     {
@@ -71,7 +71,7 @@ namespace spc
         std::shared_ptr<IdentifierNode> name;
     public:
         AliasTypeNode(const std::shared_ptr<IdentifierNode> &name)
-            : name(name) {}
+            : TypeNode(Type::Alias), name(name) {}
         ~AliasTypeNode() = default;
         llvm::Type *getLLVMType(CodegenContext &context) override;
         // void print() override;

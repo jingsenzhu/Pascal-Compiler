@@ -32,6 +32,8 @@ static llvm::LLVMContext llvm_context;
 
 namespace spc
 {
+    class ArrayTypeNode;
+    class RecordTypeNode;
 
     class CodegenContext
     {
@@ -39,6 +41,8 @@ namespace spc
         std::unique_ptr<llvm::Module> _module;
         llvm::IRBuilder<> builder;
         std::map<std::string, llvm::Type *> aliases;
+        std::map<std::string, std::shared_ptr<ArrayTypeNode>> arrAliases;
+        std::map<std::string, std::shared_ptr<RecordTypeNode>> recAliases;
         std::map<std::string, llvm::Value*> locals;
         std::map<std::string, llvm::Value*> consts;
     public:
@@ -104,6 +108,34 @@ namespace spc
             if (getConst(key))
                 return false;
             consts[key] = value;
+            return true;
+        }
+        std::shared_ptr<ArrayTypeNode> getArrayAlias(const std::string &key) 
+        {
+            auto V = arrAliases.find(key);
+            if (V == arrAliases.end())
+                return nullptr;
+            return V->second;
+        }
+        bool setArrayAlias(const std::string &key, const std::shared_ptr<ArrayTypeNode> &value) 
+        {
+            if (getArrayAlias(key))
+                return false;
+            arrAliases[key] = value;
+            return true;
+        }
+        std::shared_ptr<RecordTypeNode> getRecordAlias(const std::string &key) 
+        {
+            auto V = recAliases.find(key);
+            if (V == recAliases.end())
+                return nullptr;
+            return V->second;
+        }
+        bool setRecordAlias(const std::string &key, const std::shared_ptr<RecordTypeNode> &value) 
+        {
+            if (getRecordAlias(key))
+                return false;
+            recAliases[key] = value;
             return true;
         }
         llvm::Type *getAlias(const std::string &key) 

@@ -25,8 +25,8 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
-        llvm::Value *createGlobalArray( CodegenContext &context);
-        llvm::Value *createArray(CodegenContext &context);
+        llvm::Value *createGlobalArray( CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &);
+        llvm::Value *createArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &);
     };
 
     class ConstDeclNode: public DeclNode
