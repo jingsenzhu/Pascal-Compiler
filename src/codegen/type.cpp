@@ -34,7 +34,7 @@ namespace spc
         return ret;
     }
 
-    llvm::Type *RecordTypeNode::getLLVMType(CodegenContext &context) override 
+    llvm::Type *RecordTypeNode::getLLVMType(CodegenContext &context)
     { 
         std::vector<llvm::Type *> fieldTy;
         for (auto &decl: field)
