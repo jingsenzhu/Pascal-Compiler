@@ -4,6 +4,7 @@
 #include "base.hpp"
 #include "identifier.hpp"
 #include <string>
+#include <vector>
 
 namespace spc
 {
@@ -92,7 +93,25 @@ namespace spc
         {
             field.merge(std::move(rhs->field));
         }
-        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
+        llvm::Type *getLLVMType(CodegenContext &context) override 
+        { 
+            std::vector<llvm::Type *> fieldTy;
+            for (auto &decl: field)
+                fieldTy.push_back(decl->type->getLLVMType(context));
+            return llvm::StructType::create(fieldTy);
+        }
+        llvm::Type *getFieldIdx(const std::string &name)
+        {
+            unsigned i = 0;
+            for (auto &f : field)
+            {
+                if (f->name->name == name)
+                    return llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), i, false);
+                ++i;
+            }
+            throw CodegenException("Unknown name in record field");
+            return nullptr;
+        }
         // void print() override;
     };
     

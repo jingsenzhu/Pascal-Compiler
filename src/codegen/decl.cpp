@@ -110,6 +110,8 @@ namespace spc
             }
             else
             {
+                if (type->type == Type::Record)
+                    context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
                 auto *local = context.getBuilder().CreateAlloca(type->getLLVMType(context));
                 auto success = context.setLocal(context.getTrace() + "_" + name->name, local);
                 if (!success) throw CodegenException("Duplicate identifier in function " + context.getTrace() + ": " + name->name);
@@ -138,6 +140,8 @@ namespace spc
             }
             else
             {
+                if (type->type == Type::Record)
+                    context.setRecordAlias(name->name, cast_node<RecordTypeNode>(type));
                 auto *ty = type->getLLVMType(context);
                 llvm::Constant *constant;
                 if (ty->isIntegerTy()) 

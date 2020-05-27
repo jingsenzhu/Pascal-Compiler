@@ -350,6 +350,28 @@ namespace spc
         }
     }
 
+    llvm::Value *RecordRefNode::codegen(CodegenContext &context)
+    {
+        return context.getBuilder().CreateLoad(this->getPtr(context));
+    }
+    llvm::Value *RecordRefNode::getPtr(CodegenContext &context)
+    {
+        llvm::Value *value = name->getPtr(context);
+        assert(value != nullptr);
+        std::shared_ptr<RecordTypeNode> recTy = nullptr;
+        for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+        {
+            if ((recTy = context.getRecordAlias(*rit + "_" + name)) != nullptr)
+                break;
+        }
+        if (recTy == nullptr) recTy = context.getRecordAlias(name);
+        if (recTy == nullptr) throw CodegenException(name->name + " is not a record");
+        assert(value->getType()->getPointerElementType()->isStructTy());
+        auto *idx = recTy->getFieldIdx(field->name);
+        auto *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
+        return context.getBuilder().CreateInBoundsGEP(value, {zero, idx});
+    }
+
     llvm::Value *ArrayRefNode::codegen(CodegenContext &context) 
     {
         return context.getBuilder().CreateLoad(this->getPtr(context));

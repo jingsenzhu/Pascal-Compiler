@@ -78,7 +78,8 @@ namespace spc
             : name(name), field(field) {}
         ~RecordRefNode() = default;
 
-        llvm::Value *codegen(CodegenContext &) override { return nullptr; }
+        llvm::Value *codegen(CodegenContext &) override;
+        llvm::Value *getPtr(CodegenContext &);
         // void print() override;
         friend class ASTvis;
     };
