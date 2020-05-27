@@ -34,6 +34,19 @@ namespace spc
         return ret;
     }
 
+    llvm::Type *RecordTypeNode::getFieldIdx(const std::string &name, CodegenContext &context)
+    {
+        unsigned i = 0;
+        for (auto &f : field)
+        {
+            if (f->name->name == name)
+                return llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), i, false);
+            ++i;
+        }
+        throw CodegenException("Unknown name in record field");
+        return nullptr;
+    }
+
     llvm::Type *ConstValueNode::getLLVMType(CodegenContext &context)
     {
         switch (type) 

@@ -100,18 +100,18 @@ namespace spc
                 fieldTy.push_back(decl->type->getLLVMType(context));
             return llvm::StructType::create(fieldTy);
         }
-        llvm::Type *getFieldIdx(const std::string &name)
-        {
-            unsigned i = 0;
-            for (auto &f : field)
-            {
-                if (f->name->name == name)
-                    return llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), i, false);
-                ++i;
-            }
-            throw CodegenException("Unknown name in record field");
-            return nullptr;
-        }
+        llvm::Type *getFieldIdx(const std::string &name, CodegenContext &context);
+        // {
+        //     unsigned i = 0;
+        //     for (auto &f : field)
+        //     {
+        //         if (f->name->name == name)
+        //             return llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), i, false);
+        //         ++i;
+        //     }
+        //     throw CodegenException("Unknown name in record field");
+        //     return nullptr;
+        // }
         // void print() override;
     };
     
