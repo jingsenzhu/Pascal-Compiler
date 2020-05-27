@@ -8,7 +8,7 @@
 namespace spc {
     class ASTvis {
     public:
-        ASTvis() : of("spc.output.tex", of.trunc | of.out)
+        ASTvis(const std::string &output = "spc.output.tex") : of(output, of.trunc | of.out)
         {
             if (!of.is_open())
             {

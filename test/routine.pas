@@ -1,6 +1,8 @@
 program prog;
 const
   st = 'wow';
+  ZERO = 0;
+  ONE = 1;
 type
   long = longint;
   intarr = array [0..10] of integer;
@@ -10,22 +12,26 @@ var
 
 function f(x: integer): integer;
   begin
-    if x = 0 then f := 0
-    else f := f(x-1) + sqr(x);
+    if x = ZERO then f := 0
+    else f := f(x-ONE) + sqr(x);
     ar[x] := f;
   end;
 
 procedure g(x: integer);
   const
-    s = '233333';
+    s = 'wow';
+    cg = 233333;
   var
     i: integer;
   procedure h;
-    begin 
-      writeln(s); 
+  const
+    cs = 'wowow';
+    ch = 666;
+    begin
+      writeln(concat(s, ' ', ch, ' ', cg, ' ', cs)); 
     end;
   begin
-    for i := 1 to x do begin
+    for i := ONE to x do begin
         writeln(f(i));
         h;
     end;

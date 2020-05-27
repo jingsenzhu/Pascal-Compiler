@@ -24,6 +24,7 @@ namespace spc
         ~IdentifierNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;
+        llvm::Constant *getConstVal(CodegenContext &context);
         llvm::Value *getPtr(CodegenContext &context);
         llvm::Value *getAssignPtr(CodegenContext &context);
         // void print() override;

@@ -259,8 +259,12 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::CaseStmtNode>&p_stmp)
     int sublines = stmtList.size();
     for (auto &p : stmtList)
     {
-        int val = spc::cast_node<IntegerNode>(p->branch)->val;
-        of << "child { node {Case " + std::to_string(val) + "}\n";
+        std::string br;
+        if (spc::is_ptr_of<spc::IntegerNode>(p->branch))
+            br = std::to_string(spc::cast_node<IntegerNode>(p->branch)->val);
+        else if (spc::is_ptr_of<spc::IdentifierNode>(p->branch))
+            br = spc::cast_node<spc::IdentifierNode>(p->branch)->name;
+        of << "child { node {Case " + br + "}\n";
         tmp = travCompound(p->stmt);
         of << "}\n";
         for (int i=0; i<tmp; ++i) of << texNone;

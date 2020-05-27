@@ -6,6 +6,7 @@
 %define api.namespace {spc}
 // 使得类型与token定义可以使用各种复杂的结构与类型
 %define api.value.type variant
+%locations
 // 开启断言功能
 %define parse.assert
 
@@ -24,6 +25,7 @@
     using namespace spc;
     
     extern std::shared_ptr<ProgramNode> program;
+    extern int line_no;
 }
 
 
@@ -291,6 +293,8 @@ proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
     | ID LP RP {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
     | ID LP args_list RP
         { $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1, $3)); }
+    | SYS_PROC LP RP
+        { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1)); }
     | SYS_PROC
         { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1)); }
     | SYS_PROC LP args_list RP
@@ -404,6 +408,8 @@ args_list: args_list COMMA expression {
 %%
 
 void spc::parser::error(const spc::parser::location_type &loc, const std::string& msg) {
-    std::cerr << loc << ": " << msg << std::endl;
-    throw std::logic_error("Syntax error: invalid syntax");
+    std::cerr << std::endl << "Parser: Error at " << loc << ":" << std::endl;
+    std::string msg2 = msg;
+    msg2[0] = toupper(msg2[0]);
+    throw std::logic_error(msg2);
 }

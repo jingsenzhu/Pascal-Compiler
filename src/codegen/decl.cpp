@@ -175,12 +175,13 @@ namespace spc
                 assert(constant != nullptr);
                 bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
                 success &= context.setConst(context.getTrace() + "_" + name->name, constant);
+                success &= context.setConstVal(context.getTrace() + "_" + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
                 std::cout << "Added to symbol table" << std::endl;
-                auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
-                // auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
-                std::cout << "Created global variable" << std::endl;
-                return gv;
+                // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
+                // std::cout << "Created global variable" << std::endl;
+                // return gv;
+                return nullptr;
             } 
         }
         else
@@ -200,12 +201,14 @@ namespace spc
             {
                 std::cout << "Const declare" << std::endl;
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
-                context.setConst(name->name, constant);
+                bool success = context.setConst(name->name, constant);
+                success &= context.setConstVal(name->name, constant);
+                if (!success) throw CodegenException("Duplicate identifier in const section of main program: " + name->name);
                 std::cout << "Added to symbol table" << std::endl;
-                auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
-                // auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
-                std::cout << "Created global variable" << std::endl;
-                return gv;
+                // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
+                // std::cout << "Created global variable" << std::endl;
+                // return gv;
+                return nullptr;
             } 
         }  
     }

@@ -126,7 +126,11 @@ namespace spc
             std::cout << "Sysfunc STRCPY" << std::endl;
             llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
             auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
-            auto *rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+            llvm::Value *rhsPtr;
+            if (llvm::cast<llvm::PointerType>(rhs_type)->getPointerElementType()->isArrayTy())
+                rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+            else
+                rhsPtr = rhs;
             context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
             return nullptr;
         }
@@ -140,10 +144,10 @@ namespace spc
                 throw CodegenException("Cannot assign to a non-char array");
             llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
             auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
-            auto *rhsCPtr = context.getBuilder().CreateInBoundsGEP(rhsPtr, {zero, zero});
-            context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsCPtr});
+            // auto *rhsCPtr = context.getBuilder().CreateInBoundsGEP(rhsPtr, {zero, zero});
+            context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});
             return nullptr;
-        }      
+        }
         else if (!((lhs_type->isIntegerTy(1) && rhs_type->isIntegerTy(1))  // bool
                    || (lhs_type->isIntegerTy(32) && rhs_type->isIntegerTy(32))  // int
                    || (lhs_type->isIntegerTy(8) && rhs_type->isIntegerTy(8))  // char
@@ -164,7 +168,11 @@ namespace spc
         auto *switch_inst = context.getBuilder().CreateSwitch(value, cont, static_cast<unsigned int>(branches.size()));
         for (auto &branch : branches)
         {
-            auto *constant = llvm::cast<llvm::ConstantInt>(branch->branch->codegen(context));
+            llvm::ConstantInt *constant;
+            if (is_ptr_of<ConstValueNode>(branch->branch))
+                constant = llvm::cast<llvm::ConstantInt>(branch->branch->codegen(context));
+            else // ID node
+                constant = context.getConstInt(cast_node<IdentifierNode>(branch->branch)->name);
             auto *block = llvm::BasicBlock::Create(context.getModule()->getContext(), "case", func);
             context.getBuilder().SetInsertPoint(block);
             branch->stmt->codegen(context);

@@ -56,6 +56,7 @@ namespace spc
         std::map<std::string, std::shared_ptr<RecordTypeNode>> recAliases;
         std::map<std::string, llvm::Value*> locals;
         std::map<std::string, llvm::Value*> consts;
+        std::map<std::string, llvm::Constant*> constVals;
 
         void createTempStr()
         {
@@ -63,13 +64,13 @@ namespace spc
             llvm::Constant *z = llvm::ConstantInt::get(ty, 0);
             llvm::ArrayType* arr = llvm::ArrayType::get(ty, 256);
             std::vector<llvm::Constant *> initVector;
-            for (int i = 0; i < len; i++)
+            for (int i = 0; i < 256; i++)
                 initVector.push_back(z);
             auto *variable = llvm::ConstantArray::get(arr, initVector);
 
             std::cout << "Created array" << std::endl;
 
-            new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, "__tmp_str");
+            new llvm::GlobalVariable(*_module, variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, "__tmp_str");
         }
 
     public:
@@ -162,6 +163,30 @@ namespace spc
             if (getConst(key))
                 return false;
             consts[key] = value;
+            return true;
+        }
+        llvm::Constant* getConstVal(const std::string &key) 
+        {
+            auto V = constVals.find(key);
+            if (V == constVals.end())
+                return nullptr;
+            return V->second;
+        };
+        llvm::ConstantInt* getConstInt(const std::string &key) 
+        {
+            auto V = constVals.find(key);
+            if (V == constVals.end())
+                return nullptr;
+            llvm::Constant *val = V->second;
+            if (!val->getType()->isIntegerTy())
+                throw CodegenException("Case branch must be integer type!");
+            return llvm::cast<llvm::ConstantInt>(val);
+        };
+        bool setConstVal(const std::string &key, llvm::Constant* value) 
+        {
+            if (getConstVal(key))
+                return false;
+            constVals[key] = value;
             return true;
         }
         std::shared_ptr<ArrayTypeNode> getArrayAlias(const std::string &key) 

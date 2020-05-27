@@ -17,12 +17,12 @@ begin
   else writeln('x = y');
 
   { case statement }
-  case x mod 3 of
+  case x of
     0: x := ZERO;
     1: x := ONE;
-    2: x := TWO;
+    TWO: x := TWO;
   end;
-  writeln('x mod 3 = ', x);
+  writeln;
 
   { repeat statement }
   i := 0;
@@ -30,12 +30,12 @@ begin
     write(i);
     i := i + 1;
   until i = 10;
-  writeln();
+  writeln;
 
   { while statement }
   while i > 0 do begin
     i := i - 1;
     write(i);
   end;
-  writeln();
+  writeln;
 end.

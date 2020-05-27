@@ -122,44 +122,45 @@ namespace spc
     {
         if (name == SysFunc::Write || name == SysFunc::Writeln) {
             std::cout << "Sysfunc WRITE" << std::endl;
-            for (auto &arg : this->args->getChildren()) {
-                auto *value = arg->codegen(context);
-                auto x = value->getType();
-                std::vector<llvm::Value*> func_args;
-                if (value->getType()->isIntegerTy(32)) 
-                {
-                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%d"));
-                    func_args.push_back(value);
+            if (this->args != nullptr)
+                for (auto &arg : this->args->getChildren()) {
+                    auto *value = arg->codegen(context);
+                    auto x = value->getType();
+                    std::vector<llvm::Value*> func_args;
+                    if (value->getType()->isIntegerTy(32)) 
+                    {
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%d"));
+                        func_args.push_back(value);
+                    }
+                    else if (value->getType()->isIntegerTy(8)) 
+                    {
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c"));
+                        func_args.push_back(value);
+                    }
+                    else if (value->getType()->isDoubleTy()) 
+                    {
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%f"));
+                        func_args.push_back(value);
+                    }
+                    else if (value->getType()->isArrayTy()) // String
+                    {
+                        auto *a = llvm::cast<llvm::ArrayType>(x);
+                        if (!a->getElementType()->isIntegerTy(8))
+                            throw CodegenException("Cannot print a non-char array");
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                        auto argId = cast_node<IdentifierNode>(arg);
+                        auto *valuePtr = argId->getPtr(context);
+                        func_args.push_back(valuePtr);
+                    }
+                    else if (value->getType()->isPointerTy()) // String
+                    {
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                        func_args.push_back(value);
+                    }
+                    else 
+                        throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");
+                    context.getBuilder().CreateCall(context.printfFunc, func_args);
                 }
-                else if (value->getType()->isIntegerTy(8)) 
-                {
-                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c"));
-                    func_args.push_back(value);
-                }
-                else if (value->getType()->isDoubleTy()) 
-                {
-                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%f"));
-                    func_args.push_back(value);
-                }
-                else if (value->getType()->isArrayTy()) // String
-                {
-                    auto *a = llvm::cast<llvm::ArrayType>(x);
-                    if (!a->getElementType()->isIntegerTy(8))
-                        throw CodegenException("Cannot print a non-char array");
-                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                    auto argId = cast_node<IdentifierNode>(arg);
-                    auto *valuePtr = argId->getPtr(context);
-                    func_args.push_back(valuePtr);
-                }
-                else if (value->getType()->isPointerTy()) // String
-                {
-                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                    func_args.push_back(value);
-                }
-                else 
-                    throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");
-                context.getBuilder().CreateCall(context.printfFunc, func_args);
-            }
             if (name == SysFunc::Writeln) {
                 context.getBuilder().CreateCall(context.printfFunc, context.getBuilder().CreateGlobalStringPtr("\n"));
             }
@@ -168,54 +169,55 @@ namespace spc
         else if (name == SysFunc::Read || name == SysFunc::Readln)
         {
             std::cout << "Sysfunc READ" << std::endl;
-            for (auto &arg : args->getChildren())
-            {
-                llvm::Value *ptr;
-                if (is_ptr_of<IdentifierNode>(arg))
-                    ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
-                else if (is_ptr_of<ArrayRefNode>(arg))
-                    ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
-                else
-                    throw CodegenException("Argument in read() must be identifier or array reference");
-                std::vector<llvm::Value*> args;
-                if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
-                { 
-                    args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                    args.push_back(ptr); 
-                }
-                else if (ptr->getType()->getPointerElementType()->isIntegerTy(32))
-                { 
-                    args.push_back(context.getBuilder().CreateGlobalStringPtr("%d")); 
-                    args.push_back(ptr); 
-                }
-                else if (ptr->getType()->getPointerElementType()->isDoubleTy())
-                { 
-                    args.push_back(context.getBuilder().CreateGlobalStringPtr("%lf")); 
-                    args.push_back(ptr); 
-                }
-                // String support
-                else if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
+            if (this->args != nullptr)
+                for (auto &arg : args->getChildren())
                 {
-                    if (name == SysFunc::Read)
-                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                    else // Readln
-                    {
-                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
-                        if (arg != this->args->getChildren().back())
-                            std::cerr << "Warning in readln(): string type should be the last argument in readln(), otherwise the subsequent arguments cannot be read!" << std::endl;
+                    llvm::Value *ptr;
+                    if (is_ptr_of<IdentifierNode>(arg))
+                        ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
+                    else if (is_ptr_of<ArrayRefNode>(arg))
+                        ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
+                    else
+                        throw CodegenException("Argument in read() must be identifier or array reference");
+                    std::vector<llvm::Value*> args;
+                    if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
+                    { 
+                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
+                        args.push_back(ptr); 
                     }
-                    args.push_back(ptr);
+                    else if (ptr->getType()->getPointerElementType()->isIntegerTy(32))
+                    { 
+                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%d")); 
+                        args.push_back(ptr); 
+                    }
+                    else if (ptr->getType()->getPointerElementType()->isDoubleTy())
+                    { 
+                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%lf")); 
+                        args.push_back(ptr); 
+                    }
+                    // String support
+                    else if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
+                    {
+                        if (name == SysFunc::Read)
+                            args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                        else // Readln
+                        {
+                            args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
+                            if (arg != this->args->getChildren().back())
+                                std::cerr << "Warning in readln(): string type should be the last argument in readln(), otherwise the subsequent arguments cannot be read!" << std::endl;
+                        }
+                        args.push_back(ptr);
+                    }
+                    else
+                        throw CodegenException("Incompatible type in read(): expected char, integer, real, string");
+                    context.getBuilder().CreateCall(context.scanfFunc, args);
                 }
-                else
-                    throw CodegenException("Incompatible type in read(): expected char, integer, real, string");
-                context.getBuilder().CreateCall(context.scanfFunc, args);
-            }
             if (name == SysFunc::Readln)
             {
                 // Flush all other inputs in this line
                 context.getBuilder().CreateCall(context.scanfFunc, context.getBuilder().CreateGlobalStringPtr("%*[^\n]"));
                 // Flush the final '\n'
-                context.builder.CreateCall(context.getcharFunc);
+                context.getBuilder().CreateCall(context.getcharFunc);
             }
             return nullptr;
         }
@@ -223,7 +225,7 @@ namespace spc
         {
             std::cout << "Sysfunc CONCAT" << std::endl;
             std::string format;
-            std::vector<llvm::Value*> func_args;
+            std::list<llvm::Value*> func_args;
             for (auto &arg : this->args->getChildren()) {
                 auto *value = arg->codegen(context);
                 auto x = value->getType();
@@ -260,10 +262,11 @@ namespace spc
                 else 
                     throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");        
             }
-            func_args.push_front(context.getBuilder().CreateGlobalStringPtr(format.c_str())););
+            func_args.push_front(context.getBuilder().CreateGlobalStringPtr(format.c_str()));
             func_args.push_front(context.getTempStrPtr());
             // sprintf(__tmp_str, "...formats", ...args);
-            context.getBuilder().CreateCall(context.sprintfFunc, func_args);
+            std::vector<llvm::Value*> func_args_vec(func_args.begin(), func_args.end());
+            context.getBuilder().CreateCall(context.sprintfFunc, func_args_vec);
             return context.getTempStrPtr();
         }
         else if (name == SysFunc::Abs)

@@ -6,7 +6,21 @@ namespace spc
     
     llvm::Value *IdentifierNode::codegen(CodegenContext &context)
     {
+        llvm::Constant *cv;
+        if ((cv = this->getConstVal(context)) != nullptr)
+            return cv;
         return context.getBuilder().CreateLoad(getPtr(context));
+    }
+    llvm::Constant *IdentifierNode::getConstVal(CodegenContext &context)
+    {
+        llvm::Constant *value = nullptr;
+        for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+        {
+            if ((value = context.getConstVal(*rit + "_" + name)) != nullptr)
+                break;
+        }
+        if (value == nullptr) value = context.getConstVal(name);
+        return value;
     }
     llvm::Value *IdentifierNode::getPtr(CodegenContext &context)
     {

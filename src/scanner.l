@@ -8,6 +8,7 @@
 
 #undef YY_DECL
 #define YY_DECL int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc)
+#define YY_USER_ACTION loc->step(); loc->columns(yyleng);
 
 using token = spc::parser::token::yytokentype;
 %}
@@ -113,10 +114,12 @@ NQUOTE [^']
 "CHR"       {
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Chr);
+    return token::SYS_FUNCT;
 }
 "CONCAT"       {
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Concat);
+    return token::SYS_FUNCT;
 }
 "ODD"       {
     std::cout << yytext; 
@@ -189,12 +192,12 @@ NQUOTE [^']
     return token::STR_TYPE;
 }
 
-[0-9]+      {
+[+-]?[0-9]+      {
     std::cout << "Integer: " << yytext;
     yylval->build<std::shared_ptr<IntegerNode>>(make_node<IntegerNode>(atoi(yytext))); 
     return token::INTEGER;
 }
-[0-9]+"."[0-9]+("e"[+-]?[0-9]+)?   {
+[+-]?[0-9]+"."[0-9]+("e"[+-]?[0-9]+)?   {
     std::cout << "Real Number: " << yytext; 
     yylval->build<std::shared_ptr<RealNode>>(make_node<RealNode>(atof(yytext))); 
     return token::REAL;
@@ -217,13 +220,14 @@ NQUOTE [^']
     return token::ID;
 }
 [ \t\f]    {std::cout << ' '; continue;}
-[\n\r]     {std::cout << std::endl;}
+[\n\r]     {std::cout << std::endl; loc->lines();}
 
 "(*" {
     char c;
     while(c = yyinput()) 
     {
-        if(c == '*') 
+        if (c == '\n') loc->lines();
+        else if(c == '*') 
         {
             if((c = yyinput()) == ')')
                 break;
@@ -235,7 +239,8 @@ NQUOTE [^']
     char c;
     while(c = yyinput()) 
     {
-        if(c == '}') break;
+        if (c == '\n') loc->lines();
+        else if(c == '}') break;
     }
 }
 "//" {
@@ -244,6 +249,7 @@ NQUOTE [^']
     {
         if(c == '\n') 
         {
+            loc->lines();
             break;
         }
         else if(c == EOF) {
@@ -253,7 +259,8 @@ NQUOTE [^']
 }
 
 . {
-    throw std::invalid_argument(std::string("Invalid token: ") + yytext);
+    std::cerr << std::endl << "Scanner: Error at " << *loc << ":" << std::endl;
+    throw std::invalid_argument(std::string("Invalid token \'") + yytext + "\'");
 }
 
 %%
