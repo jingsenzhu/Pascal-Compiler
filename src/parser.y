@@ -164,7 +164,7 @@ string_type_decl: STR_TYPE {
 
 array_range: const_value DOTDOT const_value { 
             // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); // 这咋写啊
-        if (!is_ptr_of<IntegerNode>($1) || !is_ptr_of<IntegerNode>($3)) throw std::logic_error("Array index must be integer!");
+        if (!is_ptr_of<IntegerNode>($1) || !is_ptr_of<IntegerNode>($3)) throw std::logic_error("\nArray index must be integer!");
         $$ = std::make_pair($1, $3);
     }
     | ID DOTDOT ID { 
@@ -344,14 +344,14 @@ case_expr_list: case_expr_list case_expr {
 
 case_expr: const_value COLON stmt SEMI {
         if (!is_ptr_of<IntegerNode>($1) && !is_ptr_of<CharNode>($1))
-            throw std::logic_error("Case branch must be integer type!");
+            throw std::logic_error("\nCase branch must be integer type!");
         $$ = make_node<CaseBranchNode>($1, $3); 
     }
     | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
     ;
 // 不会真有人写goto吧
 goto_stmt: GOTO INTEGER {
-        throw std::logic_error("Goto not supported yet");
+        throw std::logic_error("\nGoto not supported yet");
     }
     ;
 

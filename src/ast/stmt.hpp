@@ -163,9 +163,9 @@ namespace spc
         AssignStmtNode(const std::shared_ptr<ExprNode> &lhs, const std::shared_ptr<ExprNode> &rhs)
             : lhs(lhs), rhs(rhs)
         {
-            if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<ArrayRefNode>(lhs)) || is_ptr_of<RecordRefNode>(lhs))
+            if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<ArrayRefNode>(lhs) || is_ptr_of<RecordRefNode>(lhs)))
             {
-                throw CodegenException("Left side of assignment must be identifier or array/record reference!");
+                throw std::logic_error("\nLeft side of assignment must be identifier or array/record reference!");
             }
         }
         ~AssignStmtNode() = default;

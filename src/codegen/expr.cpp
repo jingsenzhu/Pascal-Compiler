@@ -125,6 +125,7 @@ namespace spc
             if (this->args != nullptr)
                 for (auto &arg : this->args->getChildren()) {
                     auto *value = arg->codegen(context);
+                    assert(value != nullptr);
                     auto x = value->getType();
                     std::vector<llvm::Value*> func_args;
                     if (value->getType()->isIntegerTy(32)) 
@@ -148,8 +149,19 @@ namespace spc
                         if (!a->getElementType()->isIntegerTy(8))
                             throw CodegenException("Cannot print a non-char array");
                         func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                        auto argId = cast_node<IdentifierNode>(arg);
-                        auto *valuePtr = argId->getPtr(context);
+                        llvm::Value *valuePtr;
+                        if (is_ptr_of<IdentifierNode>(arg))
+                        {
+                            auto argId = cast_node<IdentifierNode>(arg);
+                            valuePtr = argId->getPtr(context);
+                        }
+                        else if (is_ptr_of<RecordRefNode>(arg))
+                        {
+                            auto argId = cast_node<RecordRefNode>(arg);
+                            valuePtr = argId->getPtr(context);
+                        }
+                        else
+                            assert(0);
                         func_args.push_back(valuePtr);
                     }
                     else if (value->getType()->isPointerTy()) // String
@@ -177,8 +189,10 @@ namespace spc
                         ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
                     else if (is_ptr_of<ArrayRefNode>(arg))
                         ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
+                    else if (is_ptr_of<RecordRefNode>(arg))
+                        ptr = cast_node<RecordRefNode>(arg)->getPtr(context);
                     else
-                        throw CodegenException("Argument in read() must be identifier or array reference");
+                        throw CodegenException("Argument in read() must be identifier or array/record reference");
                     std::vector<llvm::Value*> args;
                     if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
                     { 
@@ -250,8 +264,19 @@ namespace spc
                     if (!a->getElementType()->isIntegerTy(8))
                         throw CodegenException("Cannot concat a non-char array");
                     format += "%s";
-                    auto argId = cast_node<IdentifierNode>(arg);
-                    auto *valuePtr = argId->getPtr(context);
+                    llvm::Value *valuePtr;
+                    if (is_ptr_of<IdentifierNode>(arg))
+                    {
+                        auto argId = cast_node<IdentifierNode>(arg);
+                        valuePtr = argId->getPtr(context);
+                    }
+                    else if (is_ptr_of<RecordRefNode>(arg))
+                    {
+                        auto argId = cast_node<RecordRefNode>(arg);
+                        valuePtr = argId->getPtr(context);
+                    }
+                    else
+                        assert(0);
                     func_args.push_back(valuePtr);
                 }
                 else if (value->getType()->isPointerTy()) // String
@@ -352,7 +377,15 @@ namespace spc
 
     llvm::Value *RecordRefNode::codegen(CodegenContext &context)
     {
-        return context.getBuilder().CreateLoad(this->getPtr(context));
+        auto *ptr = this->getPtr(context);
+        // if (ptr->getType()->getPointerElementType()->isArrayTy())
+        // {
+        //     // llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
+        //     std::cout << "STRING in RECORD" << std::endl;
+        //     // return context.getBuilder().CreateInBoundsGEP(ptr, {zero, zero});
+        //     return ptr;
+        // }
+        return context.getBuilder().CreateLoad(ptr);
     }
     llvm::Value *RecordRefNode::getPtr(CodegenContext &context)
     {
@@ -361,14 +394,14 @@ namespace spc
         std::shared_ptr<RecordTypeNode> recTy = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((recTy = context.getRecordAlias(*rit + "_" + name)) != nullptr)
+            if ((recTy = context.getRecordAlias(*rit + "_" + name->name)) != nullptr)
                 break;
         }
-        if (recTy == nullptr) recTy = context.getRecordAlias(name);
+        if (recTy == nullptr) recTy = context.getRecordAlias(name->name);
         if (recTy == nullptr) throw CodegenException(name->name + " is not a record");
         assert(value->getType()->getPointerElementType()->isStructTy());
-        auto *idx = recTy->getFieldIdx(field->name);
-        auto *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
+	    llvm::Value *idx = recTy->getFieldIdx(field->name, context);
+        llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
         return context.getBuilder().CreateInBoundsGEP(value, {zero, idx});
     }
 

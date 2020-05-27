@@ -53,7 +53,9 @@ namespace spc
             constant = llvm::ConstantInt::get(ty, 0);
         else if (ty->isDoubleTy())
             constant = llvm::ConstantFP::get(ty, 0.0);
-        else 
+        else if (ty->isStructTy())
+            constant = nullptr;
+        else
             throw CodegenException("Unknown type");
 
         llvm::ConstantInt *startIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_start->codegen(context));
@@ -100,6 +102,12 @@ namespace spc
                     std::cout << "Alias is array" << std::endl;
                     return createArray(context, arrTy);
                 }
+                std::shared_ptr<RecordTypeNode> recTy = context.getRecordAlias(aliasName);
+                if (recTy != nullptr)
+                {
+                    std::cout << "Alias is record" << std::endl;
+                    context.setRecordAlias(context.getTrace() + "_" + name->name, recTy);
+                }
             }
             if (type->type == Type::Array)
                 return createArray(context, cast_node<ArrayTypeNode>(this->type));
@@ -130,6 +138,12 @@ namespace spc
                     std::cout << "Alias is array" << std::endl;
                     return createGlobalArray(context, arrTy);
                 }
+                std::shared_ptr<RecordTypeNode> recTy = context.getRecordAlias(aliasName);
+                if (recTy != nullptr)
+                {
+                    std::cout << "Alias is record" << std::endl;
+                    context.setRecordAlias(name->name, recTy);
+                }
             }
             if (type->type == Type::Array)
                 return createGlobalArray(context, cast_node<ArrayTypeNode>(this->type));
@@ -148,7 +162,20 @@ namespace spc
                     constant = llvm::ConstantInt::get(ty, 0);
                 else if (ty->isDoubleTy())
                     constant = llvm::ConstantFP::get(ty, 0.0);
-                else 
+                else if (ty->isStructTy())
+       	        {
+                    std::vector<llvm::Constant*> zeroes;
+                    auto *recTy = llvm::cast<llvm::StructType>(ty);
+                    for (auto itr = recTy->element_begin(); itr != recTy->element_end(); itr++)
+                        zeroes.push_back(llvm::Constant::getNullValue(*itr));
+                    constant = llvm::ConstantStruct::get(recTy, zeroes);
+                    // int n = recTy->getNumElements();
+                    // for (int i = 0; i < n; i++)
+                    // {
+                    //     zeroes.push_back(llvm::Constant::getNullValue(recTy->getTypeAtIndex(i)));
+                    // }
+                }
+                else
                     throw CodegenException("Unknown type");
                 return new llvm::GlobalVariable(*context.getModule(), ty, false, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
             }
@@ -229,7 +256,8 @@ namespace spc
             }
             else if (type->type == Type::Record)
             {
-                bool success = context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
+                bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
+                success &= context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
             }
             else
@@ -248,7 +276,8 @@ namespace spc
             }
             else if (type->type == Type::Record)
             {
-                bool success = context.setRecordAlias(name->name, cast_node<RecordTypeNode>(type));
+                bool success = context.setAlias(name->name, type->getLLVMType(context));
+                success &= context.setRecordAlias(name->name, cast_node<RecordTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
             }
             else

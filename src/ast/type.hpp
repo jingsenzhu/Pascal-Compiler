@@ -5,6 +5,7 @@
 #include "identifier.hpp"
 #include <string>
 #include <vector>
+#include <set>
 
 namespace spc
 {
@@ -45,7 +46,7 @@ namespace spc
     public:
         StringTypeNode() : TypeNode(Type::String) {}
         ~StringTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
+        llvm::Type *getLLVMType(CodegenContext &context) override;
         // void print() override;
     };
 
@@ -78,40 +79,11 @@ namespace spc
         }
         ~RecordTypeNode() = default;
         
-        void append(const std::shared_ptr<VarDeclNode> &var)
-        {
-            field.push_back(var);
-        }
-        void merge(const std::shared_ptr<RecordTypeNode> &rhs)
-        {
-            for (auto &var : rhs->field)
-            {
-                field.push_back(var);
-            }
-        }
-        void merge(std::shared_ptr<RecordTypeNode> &&rhs)
-        {
-            field.merge(std::move(rhs->field));
-        }
+        void append(const std::shared_ptr<VarDeclNode> &var);
+        void merge(const std::shared_ptr<RecordTypeNode> &rhs);
+        void merge(std::shared_ptr<RecordTypeNode> &&rhs);
         llvm::Type *getLLVMType(CodegenContext &context) override;
-        // { 
-        //     std::vector<llvm::Type *> fieldTy;
-        //     for (auto &decl: field)
-        //         fieldTy.push_back(decl->type->getLLVMType(context));
-        //     return llvm::StructType::create(fieldTy);
-        // }
-        llvm::Type *getFieldIdx(const std::string &name, CodegenContext &context);
-        // {
-        //     unsigned i = 0;
-        //     for (auto &f : field)
-        //     {
-        //         if (f->name->name == name)
-        //             return llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), i, false);
-        //         ++i;
-        //     }
-        //     throw CodegenException("Unknown name in record field");
-        //     return nullptr;
-        // }
+        llvm::Value *getFieldIdx(const std::string &name, CodegenContext &context);
         // void print() override;
     };
     

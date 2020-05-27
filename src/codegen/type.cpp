@@ -34,15 +34,61 @@ namespace spc
         return ret;
     }
 
+    llvm::Type *StringTypeNode::getLLVMType(CodegenContext &context)
+    {
+        return llvm::ArrayType::get(context.getBuilder().getInt8Ty(), 256);
+        // return nullptr;
+    }
+
+    void RecordTypeNode::append(const std::shared_ptr<VarDeclNode> &var)
+    {
+        for (auto &f : field)
+        {
+            if (f->name->name == var->name->name)
+                throw std::logic_error("Duplicate name \'" + f->name->name + "\' in record field declare!");
+        }
+        field.push_back(var);
+    }
+    void RecordTypeNode::merge(const std::shared_ptr<RecordTypeNode> &rhs)
+    {
+        for (auto &var : rhs->field)
+        {
+            field.push_back(var);
+        }
+        // Check duplicate
+        std::set<std::string> nameSet;
+        for (auto &f : field)
+        {
+            if (!nameSet.insert(f->name->name).second)
+                throw std::logic_error("Duplicate name \'" + f->name->name + "\' in record field declare!");
+        }
+    }
+    void RecordTypeNode::merge(std::shared_ptr<RecordTypeNode> &&rhs)
+    {
+        field.merge(std::move(rhs->field));
+        // Check duplicate
+        std::set<std::string> nameSet;
+        for (auto &f : field)
+        {
+            if (!nameSet.insert(f->name->name).second)
+                throw std::logic_error("Duplicate name \'" + f->name->name + "\' in record field declare!");
+        }
+    }
+
     llvm::Type *RecordTypeNode::getLLVMType(CodegenContext &context)
     { 
         std::vector<llvm::Type *> fieldTy;
         for (auto &decl: field)
-            fieldTy.push_back(decl->type->getLLVMType(context));
+        {
+            auto *ty = decl->type->getLLVMType(context);
+            if (ty == nullptr || ty->isStructTy())
+                throw CodegenException("Unsupported type in record declaration");
+            fieldTy.push_back(ty);
+        }
         return llvm::StructType::create(fieldTy);
     }
 
-    llvm::Type *RecordTypeNode::getFieldIdx(const std::string &name, CodegenContext &context)
+    llvm::Value *RecordTypeNode::getFieldIdx(const std::string &name, CodegenContext &context)
     {
         unsigned i = 0;
         for (auto &f : field)

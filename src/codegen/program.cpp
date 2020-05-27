@@ -43,7 +43,10 @@ namespace spc
         std::vector<std::string> names;
         for (auto &p : params->getChildren()) 
         {
-            types.push_back(p->type->getLLVMType(context));
+            auto *ty = p->type->getLLVMType(context);
+            if (ty == nullptr)
+                throw CodegenException("Unsupported function param type");
+            types.push_back(ty);
             names.push_back(p->name->name);
         }
         auto *funcTy = llvm::FunctionType::get(this->retType->getLLVMType(context), types, false);
@@ -55,8 +58,8 @@ namespace spc
         for (auto &arg : func->args()) 
         {
             auto *type = arg.getType();
-            if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
-                throw CodegenException("Unknown function param type");
+            // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
+            //     throw CodegenException("Unknown function param type");
             auto *local = context.getBuilder().CreateAlloca(type);
             context.setLocal(name->name + "_" + names[index++], local);
             context.getBuilder().CreateStore(&arg, local);
