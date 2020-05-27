@@ -33,7 +33,18 @@ static llvm::LLVMContext llvm_context;
 namespace spc
 {
     class ArrayTypeNode;
-    class RecordTypeNode;
+    class RecordTypeNode;  
+
+    class CodegenException : public std::exception {
+    public:
+        explicit CodegenException(const std::string &description) : description(description) {};
+        const char *what() const noexcept {
+            return description.c_str();
+        }
+    private:
+        // unsigned id;
+        std::string description;
+    };
 
     class CodegenContext
     {
@@ -45,16 +56,37 @@ namespace spc
         std::map<std::string, std::shared_ptr<RecordTypeNode>> recAliases;
         std::map<std::string, llvm::Value*> locals;
         std::map<std::string, llvm::Value*> consts;
+
+        void createTempStr()
+        {
+            auto *ty = llvm::Type::getInt8Ty(llvm_context);
+            llvm::Constant *z = llvm::ConstantInt::get(ty, 0);
+            llvm::ArrayType* arr = llvm::ArrayType::get(ty, 256);
+            std::vector<llvm::Constant *> initVector;
+            for (int i = 0; i < len; i++)
+                initVector.push_back(z);
+            auto *variable = llvm::ConstantArray::get(arr, initVector);
+
+            std::cout << "Created array" << std::endl;
+
+            new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, "__tmp_str");
+        }
+
     public:
         bool is_subroutine;
         std::list<std::string> traces;
-        llvm::Function *printfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *getsFunc;
+        llvm::Function *printfFunc, *sprintfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *strcatFunc, *getcharFunc;
 
         CodegenContext(const std::string &module_id)
             : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false)
         {
+            createTempStr();
+
             auto printfTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, true);
             printfFunc = llvm::Function::Create(printfTy, llvm::Function::ExternalLinkage, "printf", *_module);
+
+            auto sprintfTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context), llvm::Type::getInt8PtrTy(llvm_context)}, true);
+            sprintfFunc = llvm::Function::Create(sprintfTy, llvm::Function::ExternalLinkage, "sprintf", *_module);
 
             auto scanfTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, true);
             scanfFunc = llvm::Function::Create(scanfTy, llvm::Function::ExternalLinkage, "scanf", *_module);
@@ -71,18 +103,32 @@ namespace spc
             auto strcpyTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context), llvm::Type::getInt8PtrTy(llvm_context)}, false);
             strcpyFunc = llvm::Function::Create(strcpyTy, llvm::Function::ExternalLinkage, "strcpy", *_module);
 
-            auto getsTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, false);
-            getsFunc = llvm::Function::Create(getsTy, llvm::Function::ExternalLinkage, "gets", *_module);
+            auto strcatTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context), llvm::Type::getInt8PtrTy(llvm_context)}, false);
+            strcatFunc = llvm::Function::Create(strcatTy, llvm::Function::ExternalLinkage, "strcat", *_module);
+
+            auto getcharTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), false);
+            getcharFunc = llvm::Function::Create(getcharTy, llvm::Function::ExternalLinkage, "getchar", *_module);
 
             printfFunc->setCallingConv(llvm::CallingConv::C);
+            sprintfFunc->setCallingConv(llvm::CallingConv::C);
             scanfFunc->setCallingConv(llvm::CallingConv::C);
             absFunc->setCallingConv(llvm::CallingConv::C);
             fabsFunc->setCallingConv(llvm::CallingConv::C);
             sqrtFunc->setCallingConv(llvm::CallingConv::C);
             strcpyFunc->setCallingConv(llvm::CallingConv::C);
-            getsFunc->setCallingConv(llvm::CallingConv::C);
+            strcatFunc->setCallingConv(llvm::CallingConv::C);
+            getcharFunc->setCallingConv(llvm::CallingConv::C);
         }
         ~CodegenContext() = default;
+
+        llvm::Value *getTempStrPtr()
+        {
+            auto *value = _module->getGlobalVariable("__tmp_str");
+            if (value == nullptr)
+                throw CodegenException("Global temp string not found");
+            llvm::Value *zero = llvm::ConstantInt::getSigned(builder.getInt32Ty(), 0);
+            return builder.CreateInBoundsGEP(value, {zero, zero});
+        }
 
         std::string getTrace() 
         {
@@ -174,17 +220,6 @@ namespace spc
             _module->print(llvm::errs(), nullptr);
         }
 
-    };
-
-    class CodegenException : public std::exception {
-    public:
-        explicit CodegenException(const std::string &description) : description(description) {};
-        const char *what() const noexcept {
-            return description.c_str();
-        }
-    private:
-        // unsigned id;
-        std::string description;
     };
     
     

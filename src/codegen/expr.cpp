@@ -165,7 +165,7 @@ namespace spc
             }
             return nullptr;
         }
-        else if (name == SysFunc::Read)
+        else if (name == SysFunc::Read || name == SysFunc::Readln)
         {
             std::cout << "Sysfunc READ" << std::endl;
             for (auto &arg : args->getChildren())
@@ -193,36 +193,78 @@ namespace spc
                     args.push_back(context.getBuilder().CreateGlobalStringPtr("%lf")); 
                     args.push_back(ptr); 
                 }
-                // TODO: String support
+                // String support
                 else if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
                 {
-                    args.push_back(context.getBuilder().CreateGlobalStringPtr("%s")); 
+                    if (name == SysFunc::Read)
+                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                    else // Readln
+                    {
+                        args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
+                        if (arg != this->args->getChildren().back())
+                            std::cerr << "Warning in readln(): string type should be the last argument in readln(), otherwise the subsequent arguments cannot be read!" << std::endl;
+                    }
                     args.push_back(ptr);
                 }
                 else
                     throw CodegenException("Incompatible type in read(): expected char, integer, real, string");
                 context.getBuilder().CreateCall(context.scanfFunc, args);
             }
+            if (name == SysFunc::Readln)
+            {
+                // Flush all other inputs in this line
+                context.getBuilder().CreateCall(context.scanfFunc, context.getBuilder().CreateGlobalStringPtr("%*[^\n]"));
+                // Flush the final '\n'
+                context.builder.CreateCall(context.getcharFunc);
+            }
             return nullptr;
         }
-        else if (name == SysFunc::Readln)
+        else if (name == SysFunc::Concat)
         {
-            std::cout << "Sysfunc READLN" << std::endl;
-            if (args->getChildren().size() != 1)
-                throw CodegenException("Wrong number of arguments in readln(), i.e. gets(): expected 1");
-            llvm::Value *ptr;
-            auto arg = args->getChildren().front();
-            if (is_ptr_of<IdentifierNode>(arg))
-            {
-                ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
-                if (ptr->getType()->getPointerElementType()->isArrayTy() && llvm::cast<llvm::ArrayType>(ptr->getType()->getPointerElementType())->getElementType()->isIntegerTy(8))
+            std::cout << "Sysfunc CONCAT" << std::endl;
+            std::string format;
+            std::vector<llvm::Value*> func_args;
+            for (auto &arg : this->args->getChildren()) {
+                auto *value = arg->codegen(context);
+                auto x = value->getType();
+                if (value->getType()->isIntegerTy(32)) 
                 {
-                    llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
-                    auto cptr = context.getBuilder().CreateInBoundsGEP(ptr, {zero, zero});
-                    return context.getBuilder().CreateCall(context.getsFunc, cptr);
+                    format += "%d";
+                    func_args.push_back(value);
                 }
+                else if (value->getType()->isIntegerTy(8)) 
+                {
+                    format += "%c";
+                    func_args.push_back(value);
+                }
+                else if (value->getType()->isDoubleTy()) 
+                {
+                    format += "%f";
+                    func_args.push_back(value);
+                }
+                else if (value->getType()->isArrayTy()) // String
+                {
+                    auto *a = llvm::cast<llvm::ArrayType>(x);
+                    if (!a->getElementType()->isIntegerTy(8))
+                        throw CodegenException("Cannot concat a non-char array");
+                    format += "%s";
+                    auto argId = cast_node<IdentifierNode>(arg);
+                    auto *valuePtr = argId->getPtr(context);
+                    func_args.push_back(valuePtr);
+                }
+                else if (value->getType()->isPointerTy()) // String
+                {
+                    format += "%s";
+                    func_args.push_back(value);
+                }
+                else 
+                    throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");        
             }
-            throw CodegenException("Incompatible type in readln(): expected string");
+            func_args.push_front(context.getBuilder().CreateGlobalStringPtr(format.c_str())););
+            func_args.push_front(context.getTempStrPtr());
+            // sprintf(__tmp_str, "...formats", ...args);
+            context.getBuilder().CreateCall(context.sprintfFunc, func_args);
+            return context.getTempStrPtr();
         }
         else if (name == SysFunc::Abs)
         {

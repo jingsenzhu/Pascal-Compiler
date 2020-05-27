@@ -113,7 +113,7 @@ namespace spc
         friend class ASTvis;
     };
 
-    enum SysFunc { Read, Readln, Write, Writeln, Abs, Chr, Odd, Ord, Pred, Sqr, Sqrt, Succ };
+    enum SysFunc { Read, Readln, Write, Writeln, Abs, Chr, Odd, Ord, Pred, Sqr, Sqrt, Succ, Concat };
     
     class SysProcNode: public ProcNode
     {

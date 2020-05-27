@@ -114,6 +114,10 @@ NQUOTE [^']
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Chr);
 }
+"CONCAT"       {
+    std::cout << yytext; 
+    yylval->build<spc::SysFunc>(spc::SysFunc::Concat);
+}
 "ODD"       {
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Odd);
