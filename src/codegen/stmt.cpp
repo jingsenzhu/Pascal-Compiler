@@ -139,15 +139,22 @@ namespace spc
             context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
             return nullptr;
         }
-        else if (lhs_type->isArrayTy())
+        else if (lhs_type->isArrayTy() && rhs_type->isArrayTy())
         {
-            if (!is_ptr_of<IdentifierNode>(this->rhs))
-                throw CodegenException("Incompatible type in assignment");
-            auto *rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
-            auto *rhsPtr_type = rhsPtr->getType()->getPointerElementType();
-            if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8) || !llvm::cast<llvm::ArrayType>(rhsPtr_type)->getElementType()->isIntegerTy(8))
-                throw CodegenException("Cannot assign to a non-char array");
             llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            llvm::Value *rhsPtr;
+            if (is_ptr_of<IdentifierNode>(this->rhs))
+                rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
+            else if (is_ptr_of<RecordRefNode>(this->rhs))
+                rhsPtr = cast_node<RecordRefNode>(this->rhs)->getPtr(context);
+            else if (is_ptr_of<CustomProcNode>(this->rhs))
+                rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+            // if (!is_ptr_of<IdentifierNode>(this->rhs))
+            //     throw CodegenException("Incompatible type in assignment");
+            // auto *rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
+            // auto *rhsPtr_type = rhsPtr->getType()->getPointerElementType();
+            if (!llvm::cast<llvm::ArrayType>(lhs_type)->getElementType()->isIntegerTy(8) || !llvm::cast<llvm::ArrayType>(rhs_type)->getElementType()->isIntegerTy(8))
+                throw CodegenException("Cannot assign to a non-char array");
             auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
             // auto *rhsCPtr = context.getBuilder().CreateInBoundsGEP(rhsPtr, {zero, zero});
             context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});

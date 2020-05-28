@@ -85,7 +85,8 @@ namespace spc
                 throw CodegenException("Unsupported type in record declaration");
             fieldTy.push_back(ty);
         }
-        return llvm::StructType::create(fieldTy);
+        // return llvm::StructType::create(fieldTy);
+        return llvm::StructType::get(context.getBuilder().getContext(), fieldTy);
     }
 
     llvm::Value *RecordTypeNode::getFieldIdx(const std::string &name, CodegenContext &context)

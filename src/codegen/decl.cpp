@@ -89,7 +89,7 @@ namespace spc
             {
                 std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
                 std::cout << "Searching alias " << std::endl;
-                std::shared_ptr<ArrayTypeNode> arrTy;
+                std::shared_ptr<ArrayTypeNode> arrTy = nullptr;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
                     if ((arrTy = context.getArrayAlias(*rit + "_" + aliasName)) != nullptr)
@@ -102,7 +102,14 @@ namespace spc
                     std::cout << "Alias is array" << std::endl;
                     return createArray(context, arrTy);
                 }
-                std::shared_ptr<RecordTypeNode> recTy = context.getRecordAlias(aliasName);
+                std::shared_ptr<RecordTypeNode> recTy = nullptr;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                {
+                    if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
+                        break;
+                }
+                if (recTy == nullptr)
+                    recTy = context.getRecordAlias(aliasName);
                 if (recTy != nullptr)
                 {
                     std::cout << "Alias is record" << std::endl;
@@ -138,7 +145,14 @@ namespace spc
                     std::cout << "Alias is array" << std::endl;
                     return createGlobalArray(context, arrTy);
                 }
-                std::shared_ptr<RecordTypeNode> recTy = context.getRecordAlias(aliasName);
+                std::shared_ptr<RecordTypeNode> recTy = nullptr;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                {
+                    if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
+                        break;
+                }
+                if (recTy == nullptr)
+                    recTy = context.getRecordAlias(aliasName);
                 if (recTy != nullptr)
                 {
                     std::cout << "Alias is record" << std::endl;

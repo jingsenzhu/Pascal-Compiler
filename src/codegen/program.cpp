@@ -48,14 +48,36 @@ namespace spc
                 throw CodegenException("Unsupported function param type");
             types.push_back(ty);
             names.push_back(p->name->name);
+            if (ty->isStructTy())
+            {
+                assert(is_ptr_of<RecordTypeNode>(p->type) || is_ptr_of<AliasTypeNode>(p->type));
+                if (is_ptr_of<RecordTypeNode>(p->type))
+                    context.setRecordAlias(name->name + "_" + p->name->name, cast_node<RecordTypeNode>(p->type));
+                else
+                {
+                    std::string aliasName = cast_node<AliasTypeNode>(p->type)->name->name;
+                    std::shared_ptr<RecordTypeNode> recTy = nullptr;
+                    for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                    {
+                        if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
+                            break;
+                    }
+                    if (recTy == nullptr) recTy = context.getRecordAlias(aliasName);
+                    if (recTy == nullptr) assert(0);
+                    context.setRecordAlias(name->name + "_" + p->name->name, recTy);
+                }
+            }
         }
-        auto *funcTy = llvm::FunctionType::get(this->retType->getLLVMType(context), types, false);
+        llvm::Type *retTy = this->retType->getLLVMType(context);
+        if (retTy == nullptr) throw CodegenException("Unsupported function return type");
+        if (retTy->isArrayTy()) retTy = context.getBuilder().getInt8PtrTy();
+        auto *funcTy = llvm::FunctionType::get(retTy, types, false);
         auto *func = llvm::Function::Create(funcTy, llvm::Function::ExternalLinkage, name->name, *context.getModule());
         auto *block = llvm::BasicBlock::Create(context.getModule()->getContext(), "entry", func);
         context.getBuilder().SetInsertPoint(block);
 
         auto index = 0;
-        for (auto &arg : func->args()) 
+        for (auto &arg : func->args())
         {
             auto *type = arg.getType();
             // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
@@ -79,8 +101,8 @@ namespace spc
         if (retType->type != Type::Void)  // set the return variable
         {  
             auto *type = retType->getLLVMType(context);
-            if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
-                throw CodegenException("Unknown function param type");
+            // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
+            //     throw CodegenException("Unknown function return type");
             auto *local = context.getBuilder().CreateAlloca(type);
             context.setLocal(name->name + "_" + name->name, local);
         }
@@ -94,8 +116,20 @@ namespace spc
         if (retType->type != Type::Void) 
         {
             auto *local = context.getLocal(name->name + "_" + name->name);
-            auto *ret = context.getBuilder().CreateLoad(local);
-            context.getBuilder().CreateRet(ret);
+            llvm::Value *ret = context.getBuilder().CreateLoad(local);
+            if (ret->getType()->isArrayTy())
+            {
+                // assert(ret->getType()->isArrayTy());
+                llvm::Value *tmpStr = context.getTempStrPtr();
+                llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
+                llvm::Value *retPtr = context.getBuilder().CreateInBoundsGEP(local, {zero, zero});
+                std::cout << "Sysfunc STRCPY" << std::endl;
+                context.getBuilder().CreateCall(context.strcpyFunc, {tmpStr, retPtr});
+                std::cout << "STRING return" << std::endl;
+                context.getBuilder().CreateRet(tmpStr);
+            }
+            else
+                context.getBuilder().CreateRet(ret);
         } 
         else 
         {

@@ -115,6 +115,10 @@ namespace spc
         if (args != nullptr)
             for (auto &arg : args->getChildren()) 
                 values.push_back(arg->codegen(context));
+        // if (func->getReturnType()->isArrayTy())
+        // {
+
+        // }
         return context.getBuilder().CreateCall(func, values);
     }
 
@@ -160,6 +164,8 @@ namespace spc
                             auto argId = cast_node<RecordRefNode>(arg);
                             valuePtr = argId->getPtr(context);
                         }
+                        else if (is_ptr_of<CustomProcNode>(arg))
+                            valuePtr = value;
                         else
                             assert(0);
                         func_args.push_back(valuePtr);

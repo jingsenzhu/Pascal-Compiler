@@ -143,13 +143,14 @@ type_decl: simple_type_decl {
         $$ = $1;
     }
     | array_type_decl {$$ = $1;}
-    | string_type_decl {$$ = $1;}
-    | record_type_decl {$$ = $1;}
+    // | string_type_decl {$$ = $1;}
+    // | record_type_decl {$$ = $1;}
     ;
 
 simple_type_decl: SYS_TYPE {$$ = $1;}
     | ID {$$ = make_node<AliasTypeNode>($1);}
-    // | LP name_list RP {$$ = make_node<SetTypeNode>(); $$->append($2);//lift}
+    | string_type_decl {$$ = $1;}
+    | record_type_decl {$$ = $1;}
     ;
 
 array_type_decl: ARRAY LB array_range RB OF type_decl {
