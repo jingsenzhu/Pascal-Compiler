@@ -53,6 +53,7 @@ namespace spc
         llvm::IRBuilder<> builder;
         std::map<std::string, llvm::Type *> aliases;
         std::map<std::string, std::shared_ptr<ArrayTypeNode>> arrAliases;
+        std::map<std::string, std::shared_ptr<std::pair<int, int>>> arrTable;
         std::map<std::string, std::shared_ptr<RecordTypeNode>> recAliases;
         std::map<std::string, llvm::Value*> locals;
         std::map<std::string, llvm::Value*> consts;
@@ -195,6 +196,30 @@ namespace spc
             if (getConstVal(key))
                 return false;
             constVals[key] = value;
+            return true;
+        }
+        std::shared_ptr<std::pair<int, int>> getArrayEntry(const std::string &key) 
+        {
+            auto V = arrTable.find(key);
+            if (V == arrTable.end())
+                return nullptr;
+            return V->second;
+        }
+        bool setArrayEntry(const std::string &key, const std::shared_ptr<std::pair<int, int>> &value) 
+        {
+            if (getArrayEntry(key))
+                return false;
+            assert(value != nullptr);
+            arrTable[key] = value;
+            return true;
+        }
+        bool setArrayEntry(const std::string &key, const int start, const int end) 
+        {
+            if (getArrayEntry(key))
+                return false;
+            assert(start <= end);
+            auto value = std::make_shared<std::pair<int, int>>(start, end);
+            arrTable[key] = value;
             return true;
         }
         std::shared_ptr<ArrayTypeNode> getArrayAlias(const std::string &key) 

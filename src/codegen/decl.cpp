@@ -20,15 +20,19 @@ namespace spc
         llvm::ConstantInt *startIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_start->codegen(context));
         if (!startIdx)
             throw CodegenException("Start index invalid");
-        else if (startIdx->getSExtValue() < 0)
-            throw CodegenException("Start index must be greater than zero!");
+        // else if (startIdx->getSExtValue() < 0)
+        //     throw CodegenException("Start index must be greater than zero!");
+        int start = startIdx->getSExtValue();
         
         int len = 0;
         llvm::ConstantInt *endIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_end->codegen(context));
-        if (!endIdx || endIdx->getSExtValue() < 0)
+        int end = startIdx->getSExtValue();
+        if (!endIdx)
             throw CodegenException("End index invalid");
+        else if (start > end)
+            throw CodegenException("End index must be greater than start index!");
         else if (endIdx->getBitWidth() <= 32)
-            len = endIdx->getSExtValue() + 1;
+            len = end - start + 1;
         else
             throw CodegenException("End index overflow");
 
@@ -38,9 +42,13 @@ namespace spc
             initVector.push_back(z);
         auto *variable = llvm::ConstantArray::get(arr, initVector);
 
+        llvm::Value *gv = new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, this->name->name);
         std::cout << "Created array" << std::endl;
 
-        return new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, this->name->name);
+        context.setArrayEntry(this->name->name, start, end);
+        std::cout << "Inserted to array table" << std::endl;
+
+        return gv;
     }
 
     llvm::Value *VarDeclNode::createArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &arrTy)
@@ -61,15 +69,19 @@ namespace spc
         llvm::ConstantInt *startIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_start->codegen(context));
         if (!startIdx)
             throw CodegenException("Start index invalid");
-        else if (startIdx->getSExtValue() < 0)
-            throw CodegenException("Start index must be greater than zero!");
+        // else if (startIdx->getSExtValue() < 0)
+        //     throw CodegenException("Start index must be greater than zero!");
+        int start = startIdx->getSExtValue();
         
         int len = 0;
         llvm::ConstantInt *endIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_end->codegen(context));
-        if (!endIdx || endIdx->getSExtValue() < 0)
+        int end = startIdx->getSExtValue();
+        if (!endIdx)
             throw CodegenException("End index invalid");
+        else if (start > end)
+            throw CodegenException("End index must be greater than start index!");
         else if (endIdx->getBitWidth() <= 32)
-            len = endIdx->getSExtValue() + 1;
+            len = end - start + 1;
         else
             throw CodegenException("End index overflow");
 
@@ -78,6 +90,10 @@ namespace spc
         auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
         std::cout << "Created array" << std::endl;
+
+        context.setArrayEntry(context.getTrace() + "_" + this->name->name, start, end);
+        std::cout << "Inserted to array table" << std::endl;
+
         return local;
     }
     
