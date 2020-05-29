@@ -113,7 +113,7 @@ namespace spc
             throw CodegenException("Wrong number of arguments: " + name->name + "()");
         std::vector<llvm::Value*> values;
         if (args != nullptr)
-            for (auto &arg : args->getChildren()) 
+            for (auto &arg : args->getChildren())
                 values.push_back(arg->codegen(context));
         // if (func->getReturnType()->isArrayTy())
         // {
@@ -291,7 +291,7 @@ namespace spc
                     func_args.push_back(value);
                 }
                 else 
-                    throw CodegenException("Incompatible type in read(): expected char, integer, real, array, string");        
+                    throw CodegenException("Incompatible type in concat(): expected char, integer, real, array, string");        
             }
             func_args.push_front(context.getBuilder().CreateGlobalStringPtr(format.c_str()));
             func_args.push_front(context.getTempStrPtr());
@@ -299,6 +299,129 @@ namespace spc
             std::vector<llvm::Value*> func_args_vec(func_args.begin(), func_args.end());
             context.getBuilder().CreateCall(context.sprintfFunc, func_args_vec);
             return context.getTempStrPtr();
+        }
+        else if (name == SysFunc::Length)
+        {
+            std::cout << "Sysfunc LENGTH" << std::endl;
+            if (args->getChildren().size() != 1)
+                throw CodegenException("Wrong number of arguments in length(): expected 1");
+            auto arg = args->getChildren().front();
+            auto *value = arg->codegen(context);
+            auto *ty = value->getType();
+            llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            if (ty->isArrayTy() && llvm::cast<llvm::ArrayType>(ty)->getElementType()->isIntegerTy(8))
+            {
+                llvm::Value *valPtr;
+                if (is_ptr_of<IdentifierNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
+                else if (is_ptr_of<RecordRefNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
+                else if (is_ptr_of<CustomProcNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
+                // assert(valPtr->getType() == context.getBuilder().getInt8PtrTy());
+                // assert(context.getBuilder().getInt8PtrTy() == llvm::Type::getInt8PtrTy(context.getBuilder().getContext()));
+                // if (valPtr->getType()->isPointerTy()) std::cout << "pppppp" << std::endl;
+                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getPointerElementType()->isArrayTy()) std::cout << "aaaaaa" << std::endl;
+                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getPointerElementType()->isIntegerTy(8)) std::cout << "xxxxxx" << std::endl;
+                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getElementType()->isIntegerTy(8)) std::cout << "yyyyyy" << std::endl;
+                // if (valPtr->getType() == context.getBuilder().getInt8PtrTy()) std::cout << "zzzzzz" << std::endl;
+                // std::cout << valPtr->getType() << std::endl;
+                // std::cout << context.getBuilder().getInt8PtrTy() << std::endl;
+                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable(cast_node<IdentifierNode>(arg)->name), {zero, zero}) << std::endl;
+                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable("__tmp_str"), {zero, zero}) << std::endl;
+                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable(cast_node<IdentifierNode>(arg)->name), {zero, zero}) << std::endl;
+                return context.getBuilder().CreateCall(context.strlenFunc, valPtr);
+            }
+            else if (ty->isPointerTy())
+            {
+                if(ty == context.getBuilder().getInt8PtrTy())
+                    return context.getBuilder().CreateCall(context.strlenFunc, value);
+                else if (llvm::cast<llvm::PointerType>(ty)->getPointerElementType()->isArrayTy())
+                {
+                    // std::cout << "pppppp" << std::endl;
+                    llvm::Value *valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
+                    return context.getBuilder().CreateCall(context.strlenFunc, valPtr);
+                }
+                else
+                    throw CodegenException("Incompatible type in length(): expected string");
+            }
+            else
+                throw CodegenException("Incompatible type in length(): expected string");
+        }
+        else if (name == SysFunc::Abs)
+        {
+            std::cout << "Sysfunc ABS" << std::endl;
+            if (args->getChildren().size() != 1)
+                throw CodegenException("Wrong number of arguments in abs(): expected 1");
+            auto *value = args->getChildren().front()->codegen(context);
+            if (value->getType()->isIntegerTy(32))
+                return context.getBuilder().CreateCall(context.absFunc, value);
+            else if (value->getType()->isDoubleTy())
+                return context.getBuilder().CreateCall(context.fabsFunc, value);
+            else
+                throw CodegenException("Incompatible type in abs(): expected integer, real");
+        }
+        else if (name == SysFunc::Val)
+        {
+            std::cout << "Sysfunc VAL" << std::endl;
+            if (args->getChildren().size() != 1)
+                throw CodegenException("Wrong number of arguments in val(): expected 1");
+            auto arg = args->getChildren().front();
+            auto *value = arg->codegen(context);
+            auto *ty = value->getType();
+            llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            if (ty->isArrayTy() && llvm::cast<llvm::ArrayType>(ty)->getElementType()->isIntegerTy(8))
+            {
+                llvm::Value *valPtr;
+                if (is_ptr_of<IdentifierNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
+                else if (is_ptr_of<RecordRefNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
+                else if (is_ptr_of<CustomProcNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
+                return context.getBuilder().CreateCall(context.atoiFunc, valPtr);
+            }
+            else if (ty->isPointerTy())
+            {
+                if(ty == context.getBuilder().getInt8PtrTy())
+                    return context.getBuilder().CreateCall(context.atoiFunc, value);
+                else if (llvm::cast<llvm::PointerType>(ty)->getPointerElementType()->isArrayTy())
+                {
+                    llvm::Value *valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
+                    return context.getBuilder().CreateCall(context.atoiFunc, valPtr);
+                }
+                else
+                    throw CodegenException("Incompatible type in val(): expected string");
+            }
+            else
+                throw CodegenException("Incompatible type in val(): expected string");
+        }
+        else if (name == SysFunc::Str)
+        {
+            std::cout << "Sysfunc STR" << std::endl;
+            if (args->getChildren().size() != 1)
+                throw CodegenException("Wrong number of arguments in str(): expected 1");
+            auto arg = args->getChildren().front();
+            auto *value = arg->codegen(context);
+            auto *ty = value->getType();
+            llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+            if (ty->isIntegerTy(8))
+            {
+                context.getBuilder().CreateCall(context.sprintfFunc, {context.getTempStrPtr(), context.getBuilder().CreateGlobalStringPtr("%c"), value});
+                return context.getTempStrPtr();
+            }
+            else if (ty->isIntegerTy(32))
+            {
+                context.getBuilder().CreateCall(context.sprintfFunc, {context.getTempStrPtr(), context.getBuilder().CreateGlobalStringPtr("%d"), value});
+                return context.getTempStrPtr();
+            }
+            else if (ty->isDoubleTy())
+            {
+                context.getBuilder().CreateCall(context.sprintfFunc, {context.getTempStrPtr(), context.getBuilder().CreateGlobalStringPtr("%f"), value});
+                return context.getTempStrPtr();
+            }
+            else
+                throw CodegenException("Incompatible type in str(): expected integer, char, real");
         }
         else if (name == SysFunc::Abs)
         {

@@ -144,7 +144,8 @@ namespace spc
             llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
             llvm::Value *rhsPtr;
             if (is_ptr_of<IdentifierNode>(this->rhs))
-                rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
+                // rhsPtr = cast_node<IdentifierNode>(this->rhs)->getPtr(context);
+                rhsPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(this->rhs)->getPtr(context), {zero, zero});
             else if (is_ptr_of<RecordRefNode>(this->rhs))
                 rhsPtr = cast_node<RecordRefNode>(this->rhs)->getPtr(context);
             else if (is_ptr_of<CustomProcNode>(this->rhs))

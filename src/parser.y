@@ -383,6 +383,8 @@ term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::Mul, $1, $3); }
 factor: ID { $$ = $1; }
     | ID LP args_list RP
         { $$ = make_node<CustomProcNode>($1, $3); }
+    | ID LP RP
+        { $$ = make_node<CustomProcNode>($1); }
     | SYS_FUNCT LP args_list RP
         { $$ = make_node<SysProcNode>($1, $3); }
     | const_value { $$ = $1; }

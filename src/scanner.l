@@ -93,17 +93,17 @@ NQUOTE [^']
 
 "FALSE"     {
     std::cout << yytext; 
-    yylval->build<std::shared_ptr<BooleanNode>>(make_node<BooleanNode>(false)); 
+    yylval->build<std::shared_ptr<ConstValueNode>>(make_node<BooleanNode>(false)); 
     return token::SYS_CON;
 }
 "MAXINT"    {
     std::cout << yytext; 
-    yylval->build<std::shared_ptr<IntegerNode>>(make_node<IntegerNode>(std::numeric_limits<int>::max()));
+    yylval->build<std::shared_ptr<ConstValueNode>>(make_node<IntegerNode>(std::numeric_limits<int>::max()));
     return token::SYS_CON;
 }
 "TRUE"      {
     std::cout << yytext;
-    yylval->build<std::shared_ptr<BooleanNode>>(make_node<BooleanNode>(true)); 
+    yylval->build<std::shared_ptr<ConstValueNode>>(make_node<BooleanNode>(true)); 
     return token::SYS_CON;
 }
 "ABS"       {
@@ -119,6 +119,11 @@ NQUOTE [^']
 "CONCAT"       {
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Concat);
+    return token::SYS_FUNCT;
+}
+"LENGTH"       {
+    std::cout << yytext; 
+    yylval->build<spc::SysFunc>(spc::SysFunc::Length);
     return token::SYS_FUNCT;
 }
 "ODD"       {
@@ -146,9 +151,19 @@ NQUOTE [^']
     yylval->build<spc::SysFunc>(spc::SysFunc::Sqrt);
     return token::SYS_FUNCT;
 }
+"STR"      {
+    std::cout << yytext; 
+    yylval->build<spc::SysFunc>(spc::SysFunc::Str);
+    return token::SYS_FUNCT;
+}
 "SUCC"      {
     std::cout << yytext; 
     yylval->build<spc::SysFunc>(spc::SysFunc::Succ);
+    return token::SYS_FUNCT;
+}
+"VAL"     {
+    std::cout << yytext; 
+    yylval->build<spc::SysFunc>(spc::SysFunc::Val);
     return token::SYS_FUNCT;
 }
 "WRITE"     {

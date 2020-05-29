@@ -76,7 +76,7 @@ namespace spc
     public:
         bool is_subroutine;
         std::list<std::string> traces;
-        llvm::Function *printfFunc, *sprintfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *strcatFunc, *getcharFunc;
+        llvm::Function *printfFunc, *sprintfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *strcatFunc, *getcharFunc, *strlenFunc, *atoiFunc;
 
         CodegenContext(const std::string &module_id)
             : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false)
@@ -107,6 +107,12 @@ namespace spc
             auto strcatTy = llvm::FunctionType::get(llvm::Type::getInt8PtrTy(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context), llvm::Type::getInt8PtrTy(llvm_context)}, false);
             strcatFunc = llvm::Function::Create(strcatTy, llvm::Function::ExternalLinkage, "strcat", *_module);
 
+            auto strlenTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, false);
+            strlenFunc = llvm::Function::Create(strlenTy, llvm::Function::ExternalLinkage, "strlen", *_module);
+
+            auto atoiTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, false);
+            atoiFunc = llvm::Function::Create(atoiTy, llvm::Function::ExternalLinkage, "atoi", *_module);
+
             auto getcharTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), false);
             getcharFunc = llvm::Function::Create(getcharTy, llvm::Function::ExternalLinkage, "getchar", *_module);
 
@@ -118,6 +124,8 @@ namespace spc
             sqrtFunc->setCallingConv(llvm::CallingConv::C);
             strcpyFunc->setCallingConv(llvm::CallingConv::C);
             strcatFunc->setCallingConv(llvm::CallingConv::C);
+            strlenFunc->setCallingConv(llvm::CallingConv::C);
+            atoiFunc->setCallingConv(llvm::CallingConv::C);
             getcharFunc->setCallingConv(llvm::CallingConv::C);
         }
         ~CodegenContext() = default;
