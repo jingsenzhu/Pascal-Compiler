@@ -14,8 +14,18 @@ namespace spc
             z = llvm::ConstantInt::get(ty, 0);
         else if (ty->isDoubleTy())
             z = llvm::ConstantFP::get(ty, 0.0);
+        else if (ty->isStructTy())
+        {
+            std::vector<llvm::Constant*> zeroes;
+            auto *recTy = llvm::cast<llvm::StructType>(ty);
+            for (auto itr = recTy->element_begin(); itr != recTy->element_end(); itr++)
+                zeroes.push_back(llvm::Constant::getNullValue(*itr));
+            z = llvm::ConstantStruct::get(recTy, zeroes);
+        }
+        else if (ty->isArrayTy()) // String
+            z = llvm::Constant::getNullValue(ty);
         else 
-            throw CodegenException("Unknown type");
+            throw CodegenException("Unsupported type of array");
 
         llvm::ConstantInt *startIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_start->codegen(context));
         if (!startIdx)
@@ -64,8 +74,10 @@ namespace spc
             constant = llvm::ConstantFP::get(ty, 0.0);
         else if (ty->isStructTy())
             constant = nullptr;
+        else if (ty->isArrayTy()) // String
+            constant = nullptr;
         else
-            throw CodegenException("Unknown type");
+            throw CodegenException("Unsupported type of array");
 
         llvm::ConstantInt *startIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_start->codegen(context));
         if (!startIdx)
