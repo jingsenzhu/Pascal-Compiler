@@ -26,7 +26,7 @@ namespace spc
         
         int len = 0;
         llvm::ConstantInt *endIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_end->codegen(context));
-        int end = startIdx->getSExtValue();
+        int end = endIdx->getSExtValue();
         if (!endIdx)
             throw CodegenException("End index invalid");
         else if (start > end)
@@ -36,6 +36,7 @@ namespace spc
         else
             throw CodegenException("End index overflow");
 
+        std::cout << "Array info: start: " << start << " end: " << end << " len: " << len << std::endl;
         llvm::ArrayType* arr = llvm::ArrayType::get(ty, len);
         std::vector<llvm::Constant *> initVector;
         for (int i = 0; i < len; i++)
@@ -43,7 +44,7 @@ namespace spc
         auto *variable = llvm::ConstantArray::get(arr, initVector);
 
         llvm::Value *gv = new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, this->name->name);
-        std::cout << "Created array" << std::endl;
+        std::cout << "Created array " << this->name->name << std::endl;
 
         context.setArrayEntry(this->name->name, start, end);
         std::cout << "Inserted to array table" << std::endl;
@@ -75,7 +76,7 @@ namespace spc
         
         int len = 0;
         llvm::ConstantInt *endIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_end->codegen(context));
-        int end = startIdx->getSExtValue();
+        int end = endIdx->getSExtValue();
         if (!endIdx)
             throw CodegenException("End index invalid");
         else if (start > end)
@@ -84,12 +85,13 @@ namespace spc
             len = end - start + 1;
         else
             throw CodegenException("End index overflow");
-
+        
+        std::cout << "Array info: start: " << start << " end: " << end << " len: " << len << std::endl;
         llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), len);
         auto *local = context.getBuilder().CreateAlloca(ty, space);
         auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
-        std::cout << "Created array" << std::endl;
+        std::cout << "Created array " << this->name->name << std::endl;
 
         context.setArrayEntry(context.getTrace() + "_" + this->name->name, start, end);
         std::cout << "Inserted to array table" << std::endl;
