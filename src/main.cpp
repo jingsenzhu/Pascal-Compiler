@@ -81,12 +81,14 @@ int main(int argc, char* argv[])
 
     Target target = Target::UNDEFINED;
     char *input = nullptr, *outputP = nullptr;
+    bool opt = false;
 
     for (int i = 1; i < argc; ++i)
     {
         if (strcmp(argv[i], "-ir") == 0) target = Target::LLVM;
         else if (strcmp(argv[i], "-S") == 0) target = Target::ASM;
         else if (strcmp(argv[i], "-c") == 0) target = Target::OBJ;
+        else if (strcmp(argv[i], "-O") == 0) opt = true;
         else if (strcmp(argv[i], "-o") == 0)
         {
             if (i == argc - 1) 
@@ -139,9 +141,12 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    spc::ASTvis astVis;
+    std::string astVisName = input;
+    astVisName.erase(astVisName.rfind('.'));
+    astVisName.append(".output.tex");
+    spc::ASTvis astVis(astVisName);
     astVis.travAST(program);
-    spc::CodegenContext genContext("main");
+    spc::CodegenContext genContext("main", opt);
     try 
     {
         program->codegen(genContext);

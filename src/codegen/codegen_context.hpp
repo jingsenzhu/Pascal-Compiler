@@ -79,7 +79,10 @@ namespace spc
         std::list<std::string> traces;
         llvm::Function *printfFunc, *sprintfFunc, *scanfFunc, *absFunc, *fabsFunc, *sqrtFunc, *strcpyFunc, *strcatFunc, *getcharFunc, *strlenFunc, *atoiFunc;
 
-        CodegenContext(const std::string &module_id)
+        std::unique_ptr<llvm::legacy::FunctionPassManager> fpm;
+        std::unique_ptr<llvm::legacy::PassManager> mpm;
+
+        CodegenContext(const std::string &module_id, bool opt = false)
             : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false)
         {
             createTempStr();
@@ -128,6 +131,20 @@ namespace spc
             strlenFunc->setCallingConv(llvm::CallingConv::C);
             atoiFunc->setCallingConv(llvm::CallingConv::C);
             getcharFunc->setCallingConv(llvm::CallingConv::C);
+
+            if (opt)
+            {
+                fpm = std::make_unique<llvm::legacy::FunctionPassManager>(_module.get());
+                // fpm->add(llvm::createPromoteMemoryToRegisterPass());
+                // fpm->add(llvm::createInstructionCombiningPass());
+                fpm->add(llvm::createReassociatePass());
+                fpm->add(llvm::createGVNPass());
+                fpm->add(llvm::createCFGSimplificationPass());
+                // fpm->doInitialization();
+                mpm = std::make_unique<llvm::legacy::PassManager>();
+                mpm->add(llvm::createConstantMergePass());
+                mpm->add(llvm::createFunctionInliningPass());
+            }
         }
         ~CodegenContext() = default;
 

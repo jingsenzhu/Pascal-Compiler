@@ -629,7 +629,10 @@ namespace spc
                 throw CodegenException("Wrong number of arguments: succ()");
             auto *value = args->getChildren().front()->codegen(context);
             if (!value->getType()->isIntegerTy(8))
+            {
+                std::cout << value->getType()->getTypeID() << std::endl;
                 throw CodegenException("Incompatible type in succ(): expected char");
+            }
             return context.getBuilder().CreateBinOp(llvm::Instruction::Add, value, context.getBuilder().getInt8(1));
         }
     }

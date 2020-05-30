@@ -31,6 +31,11 @@ namespace spc
 
         llvm::verifyFunction(*mainFunc, &llvm::errs());
 
+        // Optimizations
+        if (context.fpm)
+            context.fpm->run(*mainFunc);
+        if (context.mpm)
+            context.mpm->run(*context.getModule());
         return nullptr;
     }
 
@@ -48,7 +53,11 @@ namespace spc
                 throw CodegenException("Unsupported function param type");
             types.push_back(ty);
             names.push_back(p->name->name);
-            if (ty->isStructTy())
+            if (ty->isArrayTy()) // String
+            {
+                context.setArrayEntry(name->name + "_" + p->name->name, 0, 255);
+            }
+            else if (ty->isStructTy())
             {
                 assert(is_ptr_of<RecordTypeNode>(p->type) || is_ptr_of<AliasTypeNode>(p->type));
                 if (is_ptr_of<RecordTypeNode>(p->type))
@@ -70,7 +79,11 @@ namespace spc
         }
         llvm::Type *retTy = this->retType->getLLVMType(context);
         if (retTy == nullptr) throw CodegenException("Unsupported function return type");
-        if (retTy->isArrayTy()) retTy = context.getBuilder().getInt8PtrTy();
+        if (retTy->isArrayTy())
+        {
+            retTy = context.getBuilder().getInt8PtrTy();
+            context.setArrayEntry(name->name + "_" + name->name, 0, 255);
+        }
         auto *funcTy = llvm::FunctionType::get(retTy, types, false);
         auto *func = llvm::Function::Create(funcTy, llvm::Function::ExternalLinkage, name->name, *context.getModule());
         auto *block = llvm::BasicBlock::Create(context.getModule()->getContext(), "entry", func);
@@ -103,7 +116,22 @@ namespace spc
             auto *type = retType->getLLVMType(context);
             // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
             //     throw CodegenException("Unknown function return type");
-            auto *local = context.getBuilder().CreateAlloca(type);
+
+            llvm::Value *local;
+            if (type == nullptr) throw CodegenException("Unknown function return type");
+            else if (type->isArrayTy())
+            {
+                if (type->getArrayElementType()->isIntegerTy(8) && type->getArrayNumElements() == 256) // String
+                {
+                    llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 256);
+                    local = context.getBuilder().CreateAlloca(context.getBuilder().getInt8Ty(), space);
+                }
+                else
+                    throw CodegenException("Unknown function return type");
+            }
+            else
+                local = context.getBuilder().CreateAlloca(type);
+            assert(local != nullptr && "Fatal error: Local variable alloc failed!");
             context.setLocal(name->name + "_" + name->name, local);
         }
 
@@ -136,8 +164,10 @@ namespace spc
             context.getBuilder().CreateRetVoid();
         }
 
-        // ? terminator needed
         llvm::verifyFunction(*func, &llvm::errs());
+
+        if (context.fpm)
+            context.fpm->run(*func);
 
         // context.resetLocal();
         context.traces.pop_back();  
