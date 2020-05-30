@@ -12,7 +12,8 @@ namespace spc {
         {
             if (!of.is_open())
             {
-                std::cout << "failed to open file\n";
+                std::cerr << "failed to open file " << output << std::endl;
+                exit(1);
             }
         }
         ~ASTvis() = default;

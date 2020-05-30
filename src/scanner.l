@@ -43,199 +43,199 @@ NQUOTE [^']
 "="     {return token::EQUAL;}
 ":="    {return token::ASSIGN;}
 
-"AND"       {std::cout << yytext;  return token::AND;}
-"ARRAY"     {std::cout << yytext;  return token::ARRAY;}
-"CASE"      {std::cout << yytext;  return token::CASE;}
-"CONST"     {std::cout << yytext;  return token::CONST;}
-"DIV"       {std::cout << yytext;  return token::DIV;}
-"MOD"       {std::cout << yytext;  return token::MOD;}
-"DO"        {std::cout << yytext;  return token::DO;}
+"AND"       {/* std::cout << yytext; */  return token::AND;}
+"ARRAY"     {/* std::cout << yytext; */  return token::ARRAY;}
+"CASE"      {/* std::cout << yytext; */  return token::CASE;}
+"CONST"     {/* std::cout << yytext; */  return token::CONST;}
+"DIV"       {/* std::cout << yytext; */  return token::DIV;}
+"MOD"       {/* std::cout << yytext; */  return token::MOD;}
+"DO"        {/* std::cout << yytext; */  return token::DO;}
 "DOWNTO"    {
-    std::cout << yytext;  
+    /* std::cout << yytext; */  
     yylval->build<spc::ForDirection>(spc::ForDirection::Downto);
     return token::DOWNTO;
 }
-"ELSE"      {std::cout << yytext;  return token::ELSE;}
-"END"       {std::cout << yytext;  return token::END;}
-"FOR"       {std::cout << yytext;  return token::FOR;}
-"FUNCTION"  {std::cout << yytext;  return token::FUNCTION;}
-"GOTO"      {std::cout << yytext;  return token::GOTO;}
-"IF"        {std::cout << yytext;  return token::IF;}
-"NOT"       {std::cout << yytext;  return token::NOT;}
-"OF"        {std::cout << yytext;  return token::OF;}
-"OR"        {std::cout << yytext;  return token::OR;}
-"XOR"       {std::cout << yytext;  return token::XOR;}
-"BEGIN"     {std::cout << yytext;  return token::PBEGIN;}
-"PROCEDURE" {std::cout << yytext;  return token::PROCEDURE;}
-"PROGRAM"   {std::cout << yytext;  return token::PROGRAM;}
+"ELSE"      {/* std::cout << yytext; */  return token::ELSE;}
+"END"       {/* std::cout << yytext; */  return token::END;}
+"FOR"       {/* std::cout << yytext; */  return token::FOR;}
+"FUNCTION"  {/* std::cout << yytext; */  return token::FUNCTION;}
+"GOTO"      {/* std::cout << yytext; */  return token::GOTO;}
+"IF"        {/* std::cout << yytext; */  return token::IF;}
+"NOT"       {/* std::cout << yytext; */  return token::NOT;}
+"OF"        {/* std::cout << yytext; */  return token::OF;}
+"OR"        {/* std::cout << yytext; */  return token::OR;}
+"XOR"       {/* std::cout << yytext; */  return token::XOR;}
+"BEGIN"     {/* std::cout << yytext; */  return token::PBEGIN;}
+"PROCEDURE" {/* std::cout << yytext; */  return token::PROCEDURE;}
+"PROGRAM"   {/* std::cout << yytext; */  return token::PROGRAM;}
 "READLN"      {
-    std::cout << yytext;  
+    /* std::cout << yytext; */  
     yylval->build<spc::SysFunc>(spc::SysFunc::Readln);
     return token::SYS_PROC;
 }
 "READ"      {
-    std::cout << yytext;  
+    /* std::cout << yytext; */  
     yylval->build<spc::SysFunc>(spc::SysFunc::Read);
     return token::SYS_PROC;
 }
-"REPEAT"    {std::cout << yytext;  return token::REPEAT;}
-"THEN"      {std::cout << yytext;  return token::THEN;}
+"REPEAT"    {/* std::cout << yytext; */  return token::REPEAT;}
+"THEN"      {/* std::cout << yytext; */  return token::THEN;}
 "TO"        {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::ForDirection>(spc::ForDirection::To); 
     return token::TO;
 }
-"TYPE"      {std::cout << yytext;  return token::TYPE;}
-"UNTIL"     {std::cout << yytext;  return token::UNTIL;}
-"VAR"       {std::cout << yytext;  return token::VAR;}
-"WHILE"     {std::cout << yytext;  return token::WHILE;}
-"RECORD"    {std::cout << yytext;  return token::RECORD;}
+"TYPE"      {/* std::cout << yytext; */  return token::TYPE;}
+"UNTIL"     {/* std::cout << yytext; */  return token::UNTIL;}
+"VAR"       {/* std::cout << yytext; */  return token::VAR;}
+"WHILE"     {/* std::cout << yytext; */  return token::WHILE;}
+"RECORD"    {/* std::cout << yytext; */  return token::RECORD;}
 
 "FALSE"     {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<ConstValueNode>>(make_node<BooleanNode>(false)); 
     return token::SYS_CON;
 }
 "MAXINT"    {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<ConstValueNode>>(make_node<IntegerNode>(std::numeric_limits<int>::max()));
     return token::SYS_CON;
 }
 "TRUE"      {
-    std::cout << yytext;
+    /* std::cout << yytext; */
     yylval->build<std::shared_ptr<ConstValueNode>>(make_node<BooleanNode>(true)); 
     return token::SYS_CON;
 }
 "ABS"       {
-    std::cout << yytext;
+    /* std::cout << yytext; */
     yylval->build<spc::SysFunc>(spc::SysFunc::Abs);
     return token::SYS_FUNCT;
 }
 "CHR"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Chr);
     return token::SYS_FUNCT;
 }
 "CONCAT"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Concat);
     return token::SYS_FUNCT;
 }
 "LENGTH"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Length);
     return token::SYS_FUNCT;
 }
 "ODD"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Odd);
     return token::SYS_FUNCT;
 }
 "ORD"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Ord);
     return token::SYS_FUNCT;
 }
 "PRED"      {
-        std::cout << yytext; 
+        /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Pred);
     return token::SYS_FUNCT;
 }
 "SQR"       {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Sqr);
     return token::SYS_FUNCT;
 }
 "SQRT"      {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Sqrt);
     return token::SYS_FUNCT;
 }
 "STR"      {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Str);
     return token::SYS_FUNCT;
 }
 "SUCC"      {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Succ);
     return token::SYS_FUNCT;
 }
 "VAL"     {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Val);
     return token::SYS_FUNCT;
 }
 "WRITE"     {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Write);
     return token::SYS_PROC;
 }
 "WRITELN"   {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<spc::SysFunc>(spc::SysFunc::Writeln);
     return token::SYS_PROC;
 }
 
 "BOOLEAN"   {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Bool));
     return token::SYS_TYPE;
 }
 "CHAR"      {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Char));  
     return token::SYS_TYPE;
 }
 "INTEGER"   {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Int)); 
     return token::SYS_TYPE;
 }
 "LONGINT"   {
-    std::cout << yytext; 
+    /* std::cout << yytext; */ 
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Long)); 
     return token::SYS_TYPE;
 }
 "REAL"      {
-    std::cout << yytext;
+    /* std::cout << yytext; */
     yylval->build<std::shared_ptr<SimpleTypeNode>>(make_node<SimpleTypeNode>(spc::Type::Real)); 
     return token::SYS_TYPE;
 }
 "STRING"    {
-    std::cout << yytext;
+    /* std::cout << yytext; */
     return token::STR_TYPE;
 }
 
 [+-]?[0-9]+      {
-    std::cout << "Integer: " << yytext;
+    /* std::cout << "Integer: " << yytext; */
     yylval->build<std::shared_ptr<IntegerNode>>(make_node<IntegerNode>(atoi(yytext))); 
     return token::INTEGER;
 }
 [+-]?[0-9]+"."[0-9]+("e"[+-]?[0-9]+)?   {
-    std::cout << "Real Number: " << yytext; 
+    /* std::cout << "Real Number: " << yytext; */
     yylval->build<std::shared_ptr<RealNode>>(make_node<RealNode>(atof(yytext))); 
     return token::REAL;
 }
 '{NQUOTE}'  {
-    std::cout << "CHAR: " << yytext; 
+    /* std::cout << "CHAR: " << yytext; */
     yylval->build<std::shared_ptr<CharNode>>(make_node<CharNode>(yytext[1])); 
     return token::CHAR;
 }
 '({NQUOTE}|'')+'  {
-    std::cout << "STRING: " << yytext; 
+    /* std::cout << "STRING: " << yytext; */
     yytext[yyleng-1] = 0; 
     yylval->build<std::shared_ptr<StringNode>>(make_node<StringNode>(yytext + 1)); 
     return token::STRING;
 }
 [a-zA-Z_]([a-zA-Z0-9_])*  {
-    std::cout << "IDD: " << yytext << " "; 
+    /* std::cout << "IDD: " << yytext << " "; */
     yytext[yyleng] = 0;
     yylval->build<std::shared_ptr<IdentifierNode>>(make_node<IdentifierNode>(yytext));  
     return token::ID;
 }
-[ \t\f]    {std::cout << ' '; continue;}
-[\n\r]     {std::cout << std::endl; loc->lines();}
+[ \t\f]    {/* std::cout << ' '; */ continue;}
+[\n\r]     {/* std::cout << std::endl; */ loc->lines();}
 
 "(*" {
     char c;

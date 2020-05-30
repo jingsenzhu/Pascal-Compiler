@@ -68,9 +68,7 @@ void emit_target(llvm::raw_fd_ostream &dest, llvm::TargetMachine::CodeGenFileTyp
     }
 
     llvm::verifyModule(module, &llvm::errs());
-    std::cout << "flag1" << std::endl;
     pass.run(module);
-    std::cout << "flag2" << std::endl;
 
     dest.flush();
 }
@@ -141,11 +139,16 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
+    std::cout << "Scanning & Parsing completed!" << std::endl;
+
     std::string astVisName = input;
     astVisName.erase(astVisName.rfind('.'));
     astVisName.append(".output.tex");
     spc::ASTvis astVis(astVisName);
     astVis.travAST(program);
+
+    std::cout << "AST verification completed! Output AST structure to " << astVisName << std::endl;
+
     spc::CodegenContext genContext("main", opt);
     try 
     {
@@ -153,14 +156,16 @@ int main(int argc, char* argv[])
     } 
     catch (spc::CodegenException &e) 
     {
-        std::cerr << "Codegen error: ";
+        std::cerr << "[CODEGEN ERROR] ";
         std::cerr << e.what() << std::endl;
         std::cerr << "Terminated due to error during code generation" << std::endl;
-        exit(1);
+        if (genContext.log().is_open()) genContext.log().close();
+        abort();
     }
 
-    genContext.dump();
-    std::cout << "\n\n>>>>>>>>>>>>>>>==========  IR over!==========<<<<<<<<<<<<<<<" << std::endl;
+    // genContext.dump();
+    // std::cout << "\n\n>>>>>>>>>>>>>>>==========  IR over!==========<<<<<<<<<<<<<<<" << std::endl;
+    std::cout << "Code generation completed!" << std::endl;
 
     std::string output;
     if (outputP == nullptr)
@@ -190,6 +195,7 @@ int main(int argc, char* argv[])
         case Target::OBJ: emit_target(fd, llvm::TargetMachine::CGFT_ObjectFile, *(genContext.getModule())); break;
         default: break;
     }
+    std::cout << "Compile result output: " << output << std::endl;
 
     return 0;
 }

@@ -133,7 +133,7 @@ namespace spc
             llvm::Value *rhsPtr;
             if (rhs_type->isPointerTy())
             {
-                std::cout << "Sysfunc STRCPY" << std::endl;
+                context.log() << "\tString assign: call Sysfunc STRCPY" << std::endl;
                 if (rhs_type->getPointerElementType()->isArrayTy())
                     rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
                 else
@@ -143,7 +143,8 @@ namespace spc
             }
             else if (rhs_type->isArrayTy())
             {
-                std::cout << "Sysfunc SPRINTF" << std::endl;
+                context.log() << "\tString assign: Sysfunc SPRINTF" << std::endl;
+                context.log() << "\tString assign: call Sysfunc SPRINTF" << std::endl;
                 if (is_ptr_of<IdentifierNode>(this->rhs))
                     rhsPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(this->rhs)->getPtr(context), {zero, zero});
                 else if (is_ptr_of<RecordRefNode>(this->rhs))
@@ -157,7 +158,7 @@ namespace spc
             }
             // else if (rhs_type->isIntegerTy(8))
             // {
-            //     std::cout << "Sysfunc STRCPY" << std::endl;
+            //     context.log() << "\tSysfunc STRCPY" << std::endl;
             //     if (!is_ptr_of<IdentifierNode>(this->rhs))
             //         throw CodegenException("Incompatible type in assignment");
             //     auto rhsId = cast_node<IdentifierNode>(this->rhs);
@@ -182,7 +183,7 @@ namespace spc
         //         llvm::Value *rhsPtr;
         //         if (rhs_type->isPointerTy())
         //         {
-        //             std::cout << "Sysfunc STRCPY" << std::endl;
+        //             context.log() << "\tSysfunc STRCPY" << std::endl;
         //             if (rhs_type->getPointerElementType()->isArrayTy())
         //                 rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
         //             else
@@ -192,7 +193,7 @@ namespace spc
         //         }
         //         else if (rhs_type->isArrayTy())
         //         {
-        //             std::cout << "Sysfunc SPRINTF" << std::endl;
+        //             context.log() << "\tSysfunc SPRINTF" << std::endl;
         //             if (is_ptr_of<IdentifierNode>(this->rhs))
         //                 rhsPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(this->rhs)->getPtr(context), {zero, zero});
         //             else if (is_ptr_of<RecordRefNode>(this->rhs))
@@ -206,7 +207,7 @@ namespace spc
         //         }
         //         else if (rhs_type->isIntegerTy(8))
         //         {
-        //             std::cout << "Sysfunc STRCPY" << std::endl;
+        //             context.log() << "\tSysfunc STRCPY" << std::endl;
         //             if (!is_ptr_of<IdentifierNode>(this->rhs))
         //                 throw CodegenException("Incompatible type in assignment");
         //             auto rhsId = cast_node<IdentifierNode>(this->rhs);
@@ -223,7 +224,7 @@ namespace spc
         // {
         //     if (!lhs_type->getArrayElementType()->isIntegerTy(8))
         //         throw CodegenException("Cannot assign to a non-char array");
-        //     std::cout << "Sysfunc STRCPY" << std::endl;
+        //     context.log() << "\tSysfunc STRCPY" << std::endl;
         //     llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
         //     auto *lhsPtr = context.getBuilder().CreateInBoundsGEP(lhs, {zero, zero});
         //     llvm::Value *rhsPtr;
@@ -250,6 +251,19 @@ namespace spc
         //     context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});
         //     return nullptr;
         // }
+        else if (lhs_type->isDoubleTy() && rhs_type->isIntegerTy())
+        {
+            auto *rhsFP = context.getBuilder().CreateSIToFP(rhs, lhs_type);
+            context.getBuilder().CreateStore(rhsFP, lhs);
+            return nullptr;
+        }
+        else if (lhs_type->isIntegerTy(32) && rhs_type->isDoubleTy())
+        {
+            auto *rhsSI = context.getBuilder().CreateFPToSI(rhs, lhs_type);
+            std::cerr << "Warning: Assigning REAL type to INTEGER type, this may lose information" << std::endl;
+            context.getBuilder().CreateStore(rhsSI, lhs);
+            return nullptr;
+        }
         if (!((lhs_type->isIntegerTy(1) && rhs_type->isIntegerTy(1))  // bool
                    || (lhs_type->isIntegerTy(32) && rhs_type->isIntegerTy(32))  // int
                    || (lhs_type->isIntegerTy(8) && rhs_type->isIntegerTy(8))  // char

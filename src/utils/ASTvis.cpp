@@ -13,8 +13,8 @@ void spc::ASTvis::travAST(const std::shared_ptr<ProgramNode>& prog)
     travProgram(prog);
     of << texTail;
 
-    std::cout << "debug info:\n" << prog->getName() << std::endl;
-    std::cout << "\n\n>>>>>>>>>>>>>>>==========  AST over!==========<<<<<<<<<<<<<<<" << std::endl;
+    // std::cout << "debug info:\n" << prog->getName() << std::endl;
+    // std::cout << "\n\n>>>>>>>>>>>>>>>==========  AST over!==========<<<<<<<<<<<<<<<" << std::endl;
 
     return;
 }
@@ -33,35 +33,35 @@ int spc::ASTvis::travRoutineBody(const std::shared_ptr<spc::BaseRoutineNode>& pr
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    std::cout << "debug info: CONST part over" << std::endl;
+    // std::cout << "debug info: CONST part over" << std::endl;
 
     of << "child { node {TYPE}";
     tmp = travTYPE(prog->header->typeList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    std::cout << "debug info: TYPE part over" << std::endl;
+    // std::cout << "debug info: TYPE part over" << std::endl;
 
     of << "child { node {VAR}";
     tmp = travVAR(prog->header->varList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    std::cout << "debug info: VAR part over" << std::endl;
+    // std::cout << "debug info: VAR part over" << std::endl;
 
     of << "child { node {PROC or FUNC}";
     tmp = travSubprocList(prog->header->subroutineList);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    std::cout << "debug info: PROC part over" << std::endl;
+    // std::cout << "debug info: PROC part over" << std::endl;
 
     of << "child { node {STMT}";
     tmp = travCompound(prog->body);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    std::cout << "debug info: BODY part over" << std::endl;
+    // std::cout << "debug info: BODY part over" << std::endl;
 
     return lines;
 }
@@ -208,37 +208,37 @@ int spc::ASTvis::travCompound(const std::shared_ptr<spc::CompoundStmtNode>& comp
         if (spc::is_ptr_of<spc::IfStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::IfStmtNode>(p));
-            std::cout << "debug info: IF over" << std::endl;
+            // std::cout << "debug info: IF over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::WhileStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::WhileStmtNode>(p));
-            std::cout << "debug info: WHILE over" << std::endl;
+            // std::cout << "debug info: WHILE over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::ForStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::ForStmtNode>(p));
-            std::cout << "debug info: FOR over" << std::endl;
+            // std::cout << "debug info: FOR over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::RepeatStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::RepeatStmtNode>(p));
-            std::cout << "debug info: REPEAT over" << std::endl;
+            // std::cout << "debug info: REPEAT over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::ProcStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::ProcStmtNode>(p));
-            std::cout << "debug info: PROC over" << std::endl;
+            // std::cout << "debug info: PROC over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::AssignStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::AssignStmtNode>(p));
-            std::cout << "debug info: ASSIGN over" << std::endl;
+            // std::cout << "debug info: ASSIGN over" << std::endl;
         }
         else if (spc::is_ptr_of<spc::CaseStmtNode>(p))
         {
             tmp += travStmt(spc::cast_node<spc::CaseStmtNode>(p));
-            std::cout << "debug info: CASE over" << std::endl;
+            // std::cout << "debug info: CASE over" << std::endl;
         }
         lines += tmp;
     }
@@ -291,19 +291,19 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::IfStmtNode>&p_stmp)
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
-    std::cout << "debug info: IF expr over" << std::endl;
+    // std::cout << "debug info: IF expr over" << std::endl;
     of << "child { node {IF Statment if stmt}\n";
     tmp = travCompound(p_stmp->if_stmt);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
-    std::cout << "debug info: IF part over" << std::endl;
+    // std::cout << "debug info: IF part over" << std::endl;
     of << "child { node {IF Statment else stmt}\n";
     tmp = travCompound(p_stmp->else_stmt);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp; tmp = 0;
-    std::cout << "debug info: ELSE part over" << std::endl;
+    // std::cout << "debug info: ELSE part over" << std::endl;
 
     return lines;
 }
@@ -424,11 +424,11 @@ int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
         case spc::BinaryOp::Minus: of << "-";break;
         case spc::BinaryOp::Truediv: of << "/";break;
         case spc::BinaryOp::Div: of << "//";break;
-        case spc::BinaryOp::Mod: of << "%";break;
+        case spc::BinaryOp::Mod: of << "\\%";break;
         case spc::BinaryOp::Mul: of << "*";break;
         case spc::BinaryOp::Or:  of << "|";break;
         case spc::BinaryOp::And: of << "&";break;
-        case spc::BinaryOp::Xor: of << "^";break;
+        case spc::BinaryOp::Xor: of << "\\^";break;
         default: of << "ERROR"; break;
     }
     of << "}\n";

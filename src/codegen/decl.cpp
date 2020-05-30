@@ -7,7 +7,7 @@ namespace spc
     llvm::Value *VarDeclNode::createGlobalArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &arrTy)
     {
         // std::shared_ptr<ArrayTypeNode> arrTy = cast_node<ArrayTypeNode>(this->type);
-        std::cout << "Creating array" << std::endl;
+        context.log() << "\tCreating array " << this->name->name << std::endl;
         auto *ty = arrTy->itemType->getLLVMType(context);
         llvm::Constant *z; // zero
         if (ty->isIntegerTy()) 
@@ -46,7 +46,7 @@ namespace spc
         else
             throw CodegenException("End index overflow");
 
-        std::cout << "Array info: start: " << start << " end: " << end << " len: " << len << std::endl;
+        context.log() << "\tArray info: start: " << start << " end: " << end << " len: " << len << std::endl;
         llvm::ArrayType* arr = llvm::ArrayType::get(ty, len);
         std::vector<llvm::Constant *> initVector;
         for (int i = 0; i < len; i++)
@@ -54,10 +54,10 @@ namespace spc
         auto *variable = llvm::ConstantArray::get(arr, initVector);
 
         llvm::Value *gv = new llvm::GlobalVariable(*context.getModule(), variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, this->name->name);
-        std::cout << "Created array " << this->name->name << std::endl;
+        context.log() << "\tCreated array " << this->name->name << std::endl;
 
         context.setArrayEntry(this->name->name, start, end);
-        std::cout << "Inserted to array table" << std::endl;
+        context.log() << "\tInserted to array table" << std::endl;
 
         return gv;
     }
@@ -65,7 +65,7 @@ namespace spc
     llvm::Value *VarDeclNode::createArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &arrTy)
     {
         // std::shared_ptr<ArrayTypeNode> arrTy = cast_node<ArrayTypeNode>(this->type);
-        std::cout << "Creating array" << std::endl;
+        context.log() << "\tCreating array " << this->name->name << std::endl;
         auto *ty = arrTy->itemType->getLLVMType(context);
         llvm::Constant *constant;
         if (ty->isIntegerTy()) 
@@ -98,17 +98,17 @@ namespace spc
         else
             throw CodegenException("End index overflow");
         
-        std::cout << "Array info: start: " << start << " end: " << end << " len: " << len << std::endl;
+        context.log() << "\tArray info: start: " << start << " end: " << end << " len: " << len << std::endl;
         // llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), len);
         llvm::ArrayType *arrayTy = llvm::ArrayType::get(ty, len);
         // auto *local = context.getBuilder().CreateAlloca(ty, space);
         auto *local = context.getBuilder().CreateAlloca(arrayTy);
         auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
-        std::cout << "Created array " << this->name->name << std::endl;
+        context.log() << "\tCreated array " << this->name->name << std::endl;
 
         context.setArrayEntry(context.getTrace() + "_" + this->name->name, start, end);
-        std::cout << "Inserted to array table" << std::endl;
+        context.log() << "\tInserted to array table" << std::endl;
 
         return local;
     }
@@ -120,7 +120,7 @@ namespace spc
             if (type->type == Type::Alias)
             {
                 std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
-                std::cout << "Searching alias " << std::endl;
+                context.log() << "\tSearching alias " << aliasName << std::endl;
                 std::shared_ptr<ArrayTypeNode> arrTy = nullptr;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
@@ -131,7 +131,7 @@ namespace spc
                     arrTy = context.getArrayAlias(aliasName);
                 if (arrTy != nullptr)
                 {
-                    std::cout << "Alias is array" << std::endl;
+                    context.log() << "\tAlias is array" << std::endl;
                     return createArray(context, arrTy);
                 }
                 std::shared_ptr<RecordTypeNode> recTy = nullptr;
@@ -144,7 +144,7 @@ namespace spc
                     recTy = context.getRecordAlias(aliasName);
                 if (recTy != nullptr)
                 {
-                    std::cout << "Alias is record" << std::endl;
+                    context.log() << "\tAlias is record" << std::endl;
                     context.setRecordAlias(context.getTrace() + "_" + name->name, recTy);
                 }
             }
@@ -170,11 +170,11 @@ namespace spc
             if (type->type == Type::Alias)
             {
                 std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
-                std::cout << "Searching alias " << std::endl;
+                context.log() << "\tSearching alias " << aliasName << std::endl;
                 std::shared_ptr<ArrayTypeNode> arrTy = context.getArrayAlias(aliasName);
                 if (arrTy != nullptr)
                 {
-                    std::cout << "Alias is array" << std::endl;
+                    context.log() << "\tAlias is array" << std::endl;
                     return createGlobalArray(context, arrTy);
                 }
                 std::shared_ptr<RecordTypeNode> recTy = nullptr;
@@ -187,7 +187,7 @@ namespace spc
                     recTy = context.getRecordAlias(aliasName);
                 if (recTy != nullptr)
                 {
-                    std::cout << "Alias is record" << std::endl;
+                    context.log() << "\tAlias is record" << std::endl;
                     context.setRecordAlias(name->name, recTy);
                 }
             }
@@ -234,29 +234,29 @@ namespace spc
         {
             if (val->type == Type::String)
             {
-                std::cout << "Const string declare" << std::endl;
+                context.log() << "\tConst string declare" << std::endl;
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
                 bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
                 success &= context.setConst(context.getTrace() + "_" + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
-                std::cout << "Added to symbol table" << std::endl;
+                context.log() << "\tAdded to symbol table" << std::endl;
                 auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
-                std::cout << "Created global variable" << std::endl;
+                context.log() << "\tCreated global variable" << std::endl;
                 return gv;
             }
             else
             {
-                std::cout << "Const declare" << std::endl;
+                context.log() << "\tConst declare" << std::endl;
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
                 assert(constant != nullptr);
                 bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
                 success &= context.setConst(context.getTrace() + "_" + name->name, constant);
                 success &= context.setConstVal(context.getTrace() + "_" + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
-                std::cout << "Added to symbol table" << std::endl;
+                context.log() << "\tAdded to symbol table" << std::endl;
                 // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
-                // std::cout << "Created global variable" << std::endl;
+                // context.log() << "\tCreated global variable" << std::endl;
                 // return gv;
                 return nullptr;
             } 
@@ -265,25 +265,25 @@ namespace spc
         {
             if (val->type == Type::String)
             {
-                std::cout << "Const string declare" << std::endl;
+                context.log() << "\tConst string declare" << std::endl;
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
                 context.setConst(name->name, constant);
-                std::cout << "Added to symbol table" << std::endl;
+                context.log() << "\tAdded to symbol table" << std::endl;
                 auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
-                std::cout << "Created global variable" << std::endl;
+                context.log() << "\tCreated global variable" << std::endl;
                 return gv;
             }
             else
             {
-                std::cout << "Const declare" << std::endl;
+                context.log() << "\tConst declare" << std::endl;
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
                 bool success = context.setConst(name->name, constant);
                 success &= context.setConstVal(name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of main program: " + name->name);
-                std::cout << "Added to symbol table" << std::endl;
+                context.log() << "\tAdded to symbol table" << std::endl;
                 // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, name->name);
-                // std::cout << "Created global variable" << std::endl;
+                // context.log() << "\tCreated global variable" << std::endl;
                 // return gv;
                 return nullptr;
             } 
@@ -298,13 +298,14 @@ namespace spc
             {
                 bool success = context.setArrayAlias(context.getTrace() + "_" + name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
-                std::cout << "Array alias in function " << context.getTrace() << ": " << name->name << std::endl;
+                context.log() << "\tArray alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
             else if (type->type == Type::Record)
             {
                 bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
                 success &= context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
+                context.log() << "\tRecord alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
             else
             {
@@ -318,13 +319,14 @@ namespace spc
             {
                 bool success = context.setArrayAlias(name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
-                std::cout << "Global array alias: " << name->name << std::endl;
+                context.log() << "\tGlobal array alias: " << name->name << std::endl;
             }
             else if (type->type == Type::Record)
             {
                 bool success = context.setAlias(name->name, type->getLLVMType(context));
                 success &= context.setRecordAlias(name->name, cast_node<RecordTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
+                context.log() << "\tGlobal record alias: " << name->name << std::endl;
             }
             else
             {

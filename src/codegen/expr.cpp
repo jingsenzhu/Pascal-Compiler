@@ -125,7 +125,7 @@ namespace spc
     llvm::Value *SysProcNode::codegen(CodegenContext &context)
     {
         if (name == SysFunc::Write || name == SysFunc::Writeln) {
-            std::cout << "Sysfunc WRITE" << std::endl;
+            context.log() << "\tSysfunc WRITE" << std::endl;
             if (this->args != nullptr)
                 for (auto &arg : this->args->getChildren()) {
                     auto *value = arg->codegen(context);
@@ -209,7 +209,7 @@ namespace spc
         }
         else if (name == SysFunc::Read || name == SysFunc::Readln)
         {
-            std::cout << "Sysfunc READ" << std::endl;
+            context.log() << "\tSysfunc READ" << std::endl;
             if (this->args != nullptr)
                 for (auto &arg : args->getChildren())
                 {
@@ -289,7 +289,7 @@ namespace spc
         }
         else if (name == SysFunc::Concat)
         {
-            std::cout << "Sysfunc CONCAT" << std::endl;
+            context.log() << "\tSysfunc CONCAT" << std::endl;
             std::string format;
             std::list<llvm::Value*> func_args;
             for (auto &arg : this->args->getChildren()) {
@@ -371,17 +371,17 @@ namespace spc
         }
         else if (name == SysFunc::Length)
         {
-            std::cout << "Sysfunc LENGTH" << std::endl;
+            context.log() << "\tSysfunc LENGTH" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in length(): expected 1");
             auto arg = args->getChildren().front();
             auto *value = arg->codegen(context);
             auto *ty = value->getType();
             llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
-            std::cout << ty->getTypeID() << std::endl;
+            // context.log() << ty->getTypeID() << std::endl;
             if (ty->isArrayTy() && ty->getArrayElementType()->isIntegerTy(8))
             {
-                // std::cout << "qqqqqq" << std::endl;
+                // context.log() << "\tqqqqqq" << std::endl;
                 llvm::Value *valPtr;
                 if (is_ptr_of<IdentifierNode>(arg))
                     valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
@@ -397,7 +397,7 @@ namespace spc
             }
             else if (ty->isPointerTy())
             {
-                // std::cout << "pppppp" << std::endl;
+                // context.log() << "\tpppppp" << std::endl;
                 if(ty == context.getBuilder().getInt8PtrTy())
                     return context.getBuilder().CreateCall(context.strlenFunc, value);
                 else if (ty->getPointerElementType()->isIntegerTy(8))
@@ -407,14 +407,14 @@ namespace spc
                 }
                 else if (ty->getPointerElementType()->isArrayTy())
                 {
-                    // std::cout << "pppppp" << std::endl;
+                    // context.log() << "\tpppppp" << std::endl;
                     llvm::Value *valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
                     return context.getBuilder().CreateCall(context.strlenFunc, valPtr);
                 }
                 else
                 {
-                    std::cout << ty->getPointerElementType()->getTypeID() << std::endl;
-                    throw CodegenException("Incompatible type in length(): expected string1");
+                    // context.log() << ty->getPointerElementType()->getTypeID() << std::endl;
+                    throw CodegenException("Incompatible type in length(): expected string");
                 }
             }
             // else if (ty->isIntegerTy(8))
@@ -430,13 +430,13 @@ namespace spc
             // }
             else
             {
-                std::cout << ty->getTypeID() << std::endl;
-                throw CodegenException("Incompatible type in length(): expected string4");
+                // context.log() << ty->getTypeID() << std::endl;
+                throw CodegenException("Incompatible type in length(): expected string");
             }
         }
         else if (name == SysFunc::Abs)
         {
-            std::cout << "Sysfunc ABS" << std::endl;
+            context.log() << "\tSysfunc ABS" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in abs(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -449,7 +449,7 @@ namespace spc
         }
         else if (name == SysFunc::Val)
         {
-            std::cout << "Sysfunc VAL" << std::endl;
+            context.log() << "\tSysfunc VAL" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in val(): expected 1");
             auto arg = args->getChildren().front();
@@ -510,7 +510,7 @@ namespace spc
         }
         else if (name == SysFunc::Str)
         {
-            std::cout << "Sysfunc STR" << std::endl;
+            context.log() << "\tSysfunc STR" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in str(): expected 1");
             auto arg = args->getChildren().front();
@@ -537,7 +537,7 @@ namespace spc
         }
         else if (name == SysFunc::Abs)
         {
-            std::cout << "Sysfunc ABS" << std::endl;
+            context.log() << "\tSysfunc ABS" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in abs(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -550,7 +550,7 @@ namespace spc
         }
         else if (name == SysFunc::Sqrt)
         {
-            std::cout << "Sysfunc SQRT" << std::endl;
+            context.log() << "\tSysfunc SQRT" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in sqrt(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -563,7 +563,7 @@ namespace spc
         }
         else if (name == SysFunc::Sqr)
         {
-            std::cout << "Sysfunc SQR" << std::endl;
+            context.log() << "\tSysfunc SQR" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: sqr()");
             auto *value = args->getChildren().front()->codegen(context);
@@ -576,7 +576,7 @@ namespace spc
         }
         else if (name == SysFunc::Chr)
         {
-            std::cout << "Sysfunc CHR" << std::endl;
+            context.log() << "\tSysfunc CHR" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in chr(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -586,7 +586,7 @@ namespace spc
         }
         else if (name == SysFunc::Ord)
         {
-            std::cout << "Sysfunc ORD" << std::endl;
+            context.log() << "\tSysfunc ORD" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments in ord(): expected 1");
             auto *value = args->getChildren().front()->codegen(context);
@@ -596,7 +596,7 @@ namespace spc
         }
         else if (name == SysFunc::Pred)
         {
-            std::cout << "Sysfunc PRED" << std::endl;
+            context.log() << "\tSysfunc PRED" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: pred()");
             auto *value = args->getChildren().front()->codegen(context);
@@ -606,13 +606,13 @@ namespace spc
         }
         else if (name == SysFunc::Succ)
         {
-            std::cout << "Sysfunc SUCC" << std::endl;
+            context.log() << "\tSysfunc SUCC" << std::endl;
             if (args->getChildren().size() != 1)
                 throw CodegenException("Wrong number of arguments: succ()");
             auto *value = args->getChildren().front()->codegen(context);
             if (!value->getType()->isIntegerTy(8))
             {
-                std::cout << value->getType()->getTypeID() << std::endl;
+                // context.log() << value->getType()->getTypeID() << std::endl;
                 throw CodegenException("Incompatible type in succ(): expected char");
             }
             return context.getBuilder().CreateBinOp(llvm::Instruction::Add, value, context.getBuilder().getInt8(1));
@@ -625,7 +625,7 @@ namespace spc
         // if (ptr->getType()->getPointerElementType()->isArrayTy())
         // {
         //     // llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
-        //     std::cout << "STRING in RECORD" << std::endl;
+        //     context.log() << "\tSTRING in RECORD" << std::endl;
         //     // return context.getBuilder().CreateInBoundsGEP(ptr, {zero, zero});
         //     return ptr;
         // }
@@ -661,13 +661,13 @@ namespace spc
         return this->getPtr(context);
         // auto *idx_value = context.getBuilder().CreateIntCast(this->index->codegen(context), context.getBuilder().getInt32Ty(), true);
         // auto *ptr_type = value->getType()->getPointerElementType();
-        // std::cout << "Ptr elem type: " << ptr_type->getTypeID() << std::endl;
-        // std::cout << "Type: " << value->getType()->getTypeID() << std::endl;
+        // context.log() << "\tPtr elem type: " << ptr_type->getTypeID() << std::endl;
+        // context.log() << "\tType: " << value->getType()->getTypeID() << std::endl;
         // std::vector<llvm::Value*> idx;
         // if (ptr_type->isArrayTy()) 
         // // if (true)
         // {
-        //     std::cout << "Array ref 1" << std::endl;
+        //     context.log() << "\tArray ref 1" << std::endl;
         //     idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
@@ -696,7 +696,7 @@ namespace spc
         // }
         // else
         // {
-        //     std::cout << "Array ref 2" << std::endl;
+        //     context.log() << "\tArray ref 2" << std::endl;
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
@@ -735,8 +735,8 @@ namespace spc
         auto *idx_value = context.getBuilder().CreateIntCast(this->index->codegen(context), context.getBuilder().getInt32Ty(), true);
         auto *ptr_type = value->getType()->getPointerElementType();
         std::vector<llvm::Value*> idx;
-        std::cout << "Ptr elem type: " << ptr_type->getTypeID() << std::endl;
-        std::cout << "Type: " << value->getType()->getTypeID() << std::endl;
+        // context.log() << "\tPtr elem type: " << ptr_type->getTypeID() << std::endl;
+        // context.log() << "\tType: " << value->getType()->getTypeID() << std::endl;
 
         idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
         std::shared_ptr<std::pair<int,int>> range;
@@ -784,7 +784,7 @@ namespace spc
         // if (ptr_type->isArrayTy())
         // // if (true)
         // {
-        //     std::cout << "Array ref 1" << std::endl;
+        //     context.log() << "\tArray ref 1" << std::endl;
         //     idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
@@ -814,7 +814,7 @@ namespace spc
         // }
         // else
         // {
-        //     std::cout << "Array ref 2" << std::endl;
+        //     context.log() << "\tArray ref 2" << std::endl;
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {

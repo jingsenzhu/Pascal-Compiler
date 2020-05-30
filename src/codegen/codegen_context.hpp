@@ -20,11 +20,15 @@
 #include <llvm/IR/Value.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Scalar.h>
+#include <llvm/Transforms/Utils.h>
 
 #include <string>
+#include <fstream>
 #include <list>
 #include <map>
 
@@ -58,6 +62,7 @@ namespace spc
         std::map<std::string, llvm::Value*> locals;
         std::map<std::string, llvm::Value*> consts;
         std::map<std::string, llvm::Constant*> constVals;
+        std::ofstream of;
 
         void createTempStr()
         {
@@ -69,7 +74,7 @@ namespace spc
                 initVector.push_back(z);
             auto *variable = llvm::ConstantArray::get(arr, initVector);
 
-            std::cout << "Created array" << std::endl;
+            // std::cout << "Created array" << std::endl;
 
             new llvm::GlobalVariable(*_module, variable->getType(), false, llvm::GlobalVariable::ExternalLinkage, variable, "__tmp_str");
         }
@@ -82,9 +87,14 @@ namespace spc
         std::unique_ptr<llvm::legacy::FunctionPassManager> fpm;
         std::unique_ptr<llvm::legacy::PassManager> mpm;
 
+        std::ofstream &log() { return of; }
+
         CodegenContext(const std::string &module_id, bool opt = false)
-            : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false)
+            : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false), of("compile.log")
         {
+            if (of.fail())
+                throw CodegenException("Fails to open compile log");
+
             createTempStr();
 
             auto printfTy = llvm::FunctionType::get(llvm::Type::getInt32Ty(llvm_context), {llvm::Type::getInt8PtrTy(llvm_context)}, true);
@@ -135,18 +145,21 @@ namespace spc
             if (opt)
             {
                 fpm = std::make_unique<llvm::legacy::FunctionPassManager>(_module.get());
-                // fpm->add(llvm::createPromoteMemoryToRegisterPass());
-                // fpm->add(llvm::createInstructionCombiningPass());
+                fpm->add(llvm::createPromoteMemoryToRegisterPass());
+                fpm->add(llvm::createInstructionCombiningPass());
                 fpm->add(llvm::createReassociatePass());
                 fpm->add(llvm::createGVNPass());
                 fpm->add(llvm::createCFGSimplificationPass());
-                // fpm->doInitialization();
+                fpm->doInitialization();
                 mpm = std::make_unique<llvm::legacy::PassManager>();
                 mpm->add(llvm::createConstantMergePass());
                 mpm->add(llvm::createFunctionInliningPass());
             }
         }
-        ~CodegenContext() = default;
+        ~CodegenContext()
+        {
+            if (of.is_open()) of.close();
+        }
 
         llvm::Value *getTempStrPtr()
         {

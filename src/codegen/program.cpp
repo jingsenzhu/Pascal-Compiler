@@ -7,25 +7,25 @@ namespace spc
     llvm::Value *ProgramNode::codegen(CodegenContext &context)
     {
         context.is_subroutine = false;
-        std::cout << "Entering program" << std::endl;
+        context.log() << "Entering main program" << std::endl;
         auto *funcT = llvm::FunctionType::get(context.getBuilder().getInt32Ty(), false);
         auto *mainFunc = llvm::Function::Create(funcT, llvm::Function::ExternalLinkage, "main", *context.getModule());
         auto *block = llvm::BasicBlock::Create(context.getModule()->getContext(), "entry", mainFunc);
         context.getBuilder().SetInsertPoint(block);
 
-        std::cout << "Entering const part" << std::endl;
+        context.log() << "Entering global const part" << std::endl;
         header->constList->codegen(context);
-        std::cout << "Entering type part" << std::endl;
+        context.log() << "Entering global type part" << std::endl;
         header->typeList->codegen(context);
-        std::cout << "Entering var part" << std::endl;
+        context.log() << "Entering global var part" << std::endl;
         header->varList->codegen(context);
         context.is_subroutine = true;
-        std::cout << "Entering routine part" << std::endl;
+        context.log() << "Entering global routine part" << std::endl;
         header->subroutineList->codegen(context);
         context.is_subroutine = false;
 
         context.getBuilder().SetInsertPoint(block);
-        std::cout << "Entering body part" << std::endl;
+        context.log() << "Entering global body part" << std::endl;
         body->codegen(context);
         context.getBuilder().CreateRet(context.getBuilder().getInt32(0));
 
@@ -41,7 +41,7 @@ namespace spc
 
     llvm::Value *RoutineNode::codegen(CodegenContext &context)
     {
-        std::cout << "Entering function " + name->name << std::endl;
+        context.log() << "Entering function " + name->name << std::endl;
         context.traces.push_back(name->name);
 
         std::vector<llvm::Type *> types;
@@ -100,14 +100,14 @@ namespace spc
             context.getBuilder().CreateStore(&arg, local);
         }
 
-        std::cout << "Entering const part" << std::endl;
+        context.log() << "Entering const part of function " << name->name << std::endl;
         header->constList->codegen(context);
-        std::cout << "Entering type part" << std::endl;
+        context.log() << "Entering type part of function " << name->name << std::endl;
         header->typeList->codegen(context);
-        std::cout << "Entering var part" << std::endl;
+        context.log() << "Entering var part of function " << name->name << std::endl;
         header->varList->codegen(context);
 
-        std::cout << "Entering routine part" << std::endl;
+        context.log() << "Entering routine part of function " << name->name << std::endl;
         header->subroutineList->codegen(context);
 
         context.getBuilder().SetInsertPoint(block);
@@ -139,7 +139,7 @@ namespace spc
 
         // block = llvm::BasicBlock::Create(context.getModule()->getContext(), "back", func);
         // context.getBuilder().SetInsertPoint(block);
-        std::cout << "Entering body part" << std::endl;
+        context.log() << "Entering body part of function " << name->name << std::endl;
         body->codegen(context);
 
         if (retType->type != Type::Void) 
@@ -152,9 +152,9 @@ namespace spc
                 llvm::Value *tmpStr = context.getTempStrPtr();
                 llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
                 llvm::Value *retPtr = context.getBuilder().CreateInBoundsGEP(local, {zero, zero});
-                std::cout << "Sysfunc STRCPY" << std::endl;
+                context.log() << "\tSysfunc STRCPY" << std::endl;
                 context.getBuilder().CreateCall(context.strcpyFunc, {tmpStr, retPtr});
-                std::cout << "STRING return" << std::endl;
+                context.log() << "\tSTRING return" << std::endl;
                 context.getBuilder().CreateRet(tmpStr);
             }
             else
@@ -172,6 +172,8 @@ namespace spc
 
         // context.resetLocal();
         context.traces.pop_back();  
+
+        context.log() << "Leaving function " << name->name << std::endl;
 
         return nullptr;
     }
