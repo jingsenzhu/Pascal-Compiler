@@ -12,13 +12,7 @@ var
   i: integer;
   s: string;
   r: rec;
-  {r: record
-    ia: integer;
-    ic: string;
-    ie: real;
-  end;}
 procedure printRec(re: record a: integer; c: string; e: real; end);
-//procedure printRec(re: rec);
 const
   IA = 'ia: ';
   IC = 'ic: ';
@@ -33,23 +27,24 @@ begin
   st := concat(st, 'tql');
   writeln(st);
 end;
-function sss(_s: chars):chars;
-begin sss := _s; sss[0] := succ(sss[0]);  end;
+function sss(_s: string):string;
+var
+  i: integer;
+begin 
+  sss := _s; 
+  for i := length(sss) - 1 downto 0 do
+    sss[i] := succ(sss[i]);
+end;
+procedure test(re: rec);
 begin
-  readln(r.ia, r.ie);
-  readln(r.ic);
-  r.ia := r.ia + NEGONE;
-  //r.ic := concat(r.ic, 'tql');
-  r.ie := sqrt(r.ie);
-  (*writeln(s);
-  readln(s);
-  t(s);
-  writeln(s);*)
-  t(r.ic);
-  writeln(r.ic);
-  printRec(r);
-  s := r.ic;
-  //s := sss(s);
-  //s := sss(r.ic);
-  writeln(sss(r.ic));
-end.
+  readln(re.ia, re.ie);
+  readln(re.ic);
+  re.ia := re.ia + NEGONE;
+  re.ic := concat(re.ic, 'tql');
+  re.ie := sqrt(re.ie);
+  t(re.ic);
+  writeln(re.ic);
+  printRec(re);
+  writeln(sss(re.ic));
+end;
+begin test(r); end.
