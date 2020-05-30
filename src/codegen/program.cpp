@@ -123,8 +123,9 @@ namespace spc
             {
                 if (type->getArrayElementType()->isIntegerTy(8) && type->getArrayNumElements() == 256) // String
                 {
-                    llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 256);
-                    local = context.getBuilder().CreateAlloca(context.getBuilder().getInt8Ty(), space);
+                    // llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 256);
+                    // local = context.getBuilder().CreateAlloca(context.getBuilder().getInt8Ty(), space);
+                    local = context.getBuilder().CreateAlloca(type);
                 }
                 else
                     throw CodegenException("Unknown function return type");
