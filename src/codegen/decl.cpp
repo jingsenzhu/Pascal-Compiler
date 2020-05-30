@@ -86,7 +86,7 @@ namespace spc
         //     throw CodegenException("Start index must be greater than zero!");
         int start = startIdx->getSExtValue();
         
-        int len = 0;
+        unsigned len = 0;
         llvm::ConstantInt *endIdx = llvm::dyn_cast<llvm::ConstantInt>(arrTy->range_end->codegen(context));
         int end = endIdx->getSExtValue();
         if (!endIdx)
@@ -99,8 +99,10 @@ namespace spc
             throw CodegenException("End index overflow");
         
         std::cout << "Array info: start: " << start << " end: " << end << " len: " << len << std::endl;
-        llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), len);
-        auto *local = context.getBuilder().CreateAlloca(ty, space);
+        // llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), len);
+        llvm::ArrayType *arrayTy = llvm::ArrayType::get(ty, len);
+        // auto *local = context.getBuilder().CreateAlloca(ty, space);
+        auto *local = context.getBuilder().CreateAlloca(arrayTy);
         auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
         std::cout << "Created array " << this->name->name << std::endl;

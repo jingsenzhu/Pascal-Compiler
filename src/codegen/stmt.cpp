@@ -155,70 +155,70 @@ namespace spc
                 context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});
                 return nullptr;
             }
-            else if (rhs_type->isIntegerTy(8))
-            {
-                std::cout << "Sysfunc STRCPY" << std::endl;
-                if (!is_ptr_of<IdentifierNode>(this->rhs))
-                    throw CodegenException("Incompatible type in assignment");
-                auto rhsId = cast_node<IdentifierNode>(this->rhs);
-                auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
-                if (arrEntry == nullptr)
-                    throw CodegenException("Incompatible type in assignment");
-                rhsPtr = rhsId->getPtr(context);
-                context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
-                return nullptr;
-            }
+            // else if (rhs_type->isIntegerTy(8))
+            // {
+            //     std::cout << "Sysfunc STRCPY" << std::endl;
+            //     if (!is_ptr_of<IdentifierNode>(this->rhs))
+            //         throw CodegenException("Incompatible type in assignment");
+            //     auto rhsId = cast_node<IdentifierNode>(this->rhs);
+            //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
+            //     if (arrEntry == nullptr)
+            //         throw CodegenException("Incompatible type in assignment");
+            //     rhsPtr = rhsId->getPtr(context);
+            //     context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
+            //     return nullptr;
+            // }
         }
-        else if (lhs_type->isIntegerTy(8))
-        {
-            if (!is_ptr_of<IdentifierNode>(this->lhs))
-                throw CodegenException("Incompatible type in assignment");
-            auto lhsId = cast_node<IdentifierNode>(this->lhs);
-            auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + lhsId->name);
-            if (arrEntry != nullptr)
-            {
-                llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
-                llvm::Value *lhsPtr = lhsId->getAssignPtr(context);
-                llvm::Value *rhsPtr;
-                if (rhs_type->isPointerTy())
-                {
-                    std::cout << "Sysfunc STRCPY" << std::endl;
-                    if (rhs_type->getPointerElementType()->isArrayTy())
-                        rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
-                    else
-                        rhsPtr = rhs;
-                    context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
-                    return nullptr;
-                }
-                else if (rhs_type->isArrayTy())
-                {
-                    std::cout << "Sysfunc SPRINTF" << std::endl;
-                    if (is_ptr_of<IdentifierNode>(this->rhs))
-                        rhsPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(this->rhs)->getPtr(context), {zero, zero});
-                    else if (is_ptr_of<RecordRefNode>(this->rhs))
-                        rhsPtr = cast_node<RecordRefNode>(this->rhs)->getPtr(context);
-                    else if (is_ptr_of<CustomProcNode>(this->rhs))
-                        rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
-                    if (!rhs_type->getArrayElementType()->isIntegerTy(8))
-                        throw CodegenException("Cannot assign to a non-char array");
-                    context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});
-                    return nullptr;
-                }
-                else if (rhs_type->isIntegerTy(8))
-                {
-                    std::cout << "Sysfunc STRCPY" << std::endl;
-                    if (!is_ptr_of<IdentifierNode>(this->rhs))
-                        throw CodegenException("Incompatible type in assignment");
-                    auto rhsId = cast_node<IdentifierNode>(this->rhs);
-                    auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
-                    if (arrEntry == nullptr)
-                        throw CodegenException("Incompatible type in assignment");
-                    rhsPtr = rhsId->getPtr(context);
-                    context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
-                    return nullptr;
-                }
-            }
-        }
+        // else if (lhs_type->isIntegerTy(8))
+        // {
+        //     if (!is_ptr_of<IdentifierNode>(this->lhs))
+        //         throw CodegenException("Incompatible type in assignment");
+        //     auto lhsId = cast_node<IdentifierNode>(this->lhs);
+        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + lhsId->name);
+        //     if (arrEntry != nullptr)
+        //     {
+        //         llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
+        //         llvm::Value *lhsPtr = lhsId->getAssignPtr(context);
+        //         llvm::Value *rhsPtr;
+        //         if (rhs_type->isPointerTy())
+        //         {
+        //             std::cout << "Sysfunc STRCPY" << std::endl;
+        //             if (rhs_type->getPointerElementType()->isArrayTy())
+        //                 rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+        //             else
+        //                 rhsPtr = rhs;
+        //             context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
+        //             return nullptr;
+        //         }
+        //         else if (rhs_type->isArrayTy())
+        //         {
+        //             std::cout << "Sysfunc SPRINTF" << std::endl;
+        //             if (is_ptr_of<IdentifierNode>(this->rhs))
+        //                 rhsPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(this->rhs)->getPtr(context), {zero, zero});
+        //             else if (is_ptr_of<RecordRefNode>(this->rhs))
+        //                 rhsPtr = cast_node<RecordRefNode>(this->rhs)->getPtr(context);
+        //             else if (is_ptr_of<CustomProcNode>(this->rhs))
+        //                 rhsPtr = context.getBuilder().CreateInBoundsGEP(rhs, {zero, zero});
+        //             if (!rhs_type->getArrayElementType()->isIntegerTy(8))
+        //                 throw CodegenException("Cannot assign to a non-char array");
+        //             context.getBuilder().CreateCall(context.sprintfFunc, {lhsPtr, context.getBuilder().CreateGlobalStringPtr("%s"), rhsPtr});
+        //             return nullptr;
+        //         }
+        //         else if (rhs_type->isIntegerTy(8))
+        //         {
+        //             std::cout << "Sysfunc STRCPY" << std::endl;
+        //             if (!is_ptr_of<IdentifierNode>(this->rhs))
+        //                 throw CodegenException("Incompatible type in assignment");
+        //             auto rhsId = cast_node<IdentifierNode>(this->rhs);
+        //             auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
+        //             if (arrEntry == nullptr)
+        //                 throw CodegenException("Incompatible type in assignment");
+        //             rhsPtr = rhsId->getPtr(context);
+        //             context.getBuilder().CreateCall(context.strcpyFunc, {lhsPtr, rhsPtr});
+        //             return nullptr;
+        //         }
+        //     }
+        // }
         // else if (lhs_type->isArrayTy() && rhs_type->isPointerTy()) // const string
         // {
         //     if (!lhs_type->getArrayElementType()->isIntegerTy(8))

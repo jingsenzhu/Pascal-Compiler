@@ -141,18 +141,18 @@ namespace spc
                     {
                         if (is_ptr_of<IdentifierNode>(arg))
                         {
-                            auto argId = cast_node<IdentifierNode>(arg);
-                            auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                            if (arrEntry == nullptr)
+                            // auto argId = cast_node<IdentifierNode>(arg);
+                            // auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                            // if (arrEntry == nullptr)
                             {
                                 func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
                                 func_args.push_back(value); 
                             }
-                            else
-                            {
-                                func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                                func_args.push_back(argId->getPtr(context)); 
-                            }
+                            // else
+                            // {
+                            //     func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                            //     func_args.push_back(argId->getPtr(context)); 
+                            // }
                         }
                         else
                         {
@@ -227,25 +227,25 @@ namespace spc
                     std::vector<llvm::Value*> func_args;
                     if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
                     { 
-                        if (is_ptr_of<IdentifierNode>(arg))
-                        {
-                            auto argId = cast_node<IdentifierNode>(arg);
-                            auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                            if (arrEntry == nullptr)
-                            {
-                                func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                                func_args.push_back(ptr); 
-                            }
-                            else
-                            {
-                                if (name == SysFunc::Read)
-                                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                                else
-                                    func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
-                                func_args.push_back(ptr); 
-                            }
-                        }
-                        else
+                        // if (is_ptr_of<IdentifierNode>(arg))
+                        // {
+                        //     auto argId = cast_node<IdentifierNode>(arg);
+                        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                        //     if (arrEntry == nullptr)
+                        //     {
+                        //         func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
+                        //         func_args.push_back(ptr); 
+                        //     }
+                        //     else
+                        //     {
+                        //         if (name == SysFunc::Read)
+                        //             func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
+                        //         else
+                        //             func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
+                        //         func_args.push_back(ptr); 
+                        //     }
+                        // }
+                        // else
                         {
                             func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
                             func_args.push_back(ptr); 
@@ -302,22 +302,22 @@ namespace spc
                 }
                 else if (value->getType()->isIntegerTy(8)) 
                 {
-                    if (is_ptr_of<IdentifierNode>(arg))
-                    {
-                        auto argId = cast_node<IdentifierNode>(arg);
-                        auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                        if (arrEntry == nullptr)
-                        {
-                            format += "%c";
-                            func_args.push_back(value);
-                        }
-                        else
-                        {
-                            format += "%s";
-                            func_args.push_back(argId->getPtr(context));
-                        }
-                    }
-                    else
+                    // if (is_ptr_of<IdentifierNode>(arg))
+                    // {
+                    //     auto argId = cast_node<IdentifierNode>(arg);
+                    //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                    //     if (arrEntry == nullptr)
+                    //     {
+                    //         format += "%c";
+                    //         func_args.push_back(value);
+                    //     }
+                    //     else
+                    //     {
+                    //         format += "%s";
+                    //         func_args.push_back(argId->getPtr(context));
+                    //     }
+                    // }
+                    // else
                     {
                         format += "%c";
                         func_args.push_back(value);
@@ -393,18 +393,6 @@ namespace spc
                     valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
                 else
                     assert(0);
-                // assert(valPtr->getType() == context.getBuilder().getInt8PtrTy());
-                // assert(context.getBuilder().getInt8PtrTy() == llvm::Type::getInt8PtrTy(context.getBuilder().getContext()));
-                // if (valPtr->getType()->isPointerTy()) std::cout << "pppppp" << std::endl;
-                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getPointerElementType()->isArrayTy()) std::cout << "aaaaaa" << std::endl;
-                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getPointerElementType()->isIntegerTy(8)) std::cout << "xxxxxx" << std::endl;
-                // if (llvm::cast<llvm::PointerType>(valPtr->getType())->getElementType()->isIntegerTy(8)) std::cout << "yyyyyy" << std::endl;
-                // if (valPtr->getType() == context.getBuilder().getInt8PtrTy()) std::cout << "zzzzzz" << std::endl;
-                // std::cout << valPtr->getType() << std::endl;
-                // std::cout << context.getBuilder().getInt8PtrTy() << std::endl;
-                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable(cast_node<IdentifierNode>(arg)->name), {zero, zero}) << std::endl;
-                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable("__tmp_str"), {zero, zero}) << std::endl;
-                // std::cout << context.getBuilder().CreateInBoundsGEP(context.getModule()->getGlobalVariable(cast_node<IdentifierNode>(arg)->name), {zero, zero}) << std::endl;
                 return context.getBuilder().CreateCall(context.strlenFunc, valPtr);
             }
             else if (ty->isPointerTy())
@@ -429,23 +417,17 @@ namespace spc
                     throw CodegenException("Incompatible type in length(): expected string1");
                 }
             }
-            else if (ty->isIntegerTy(8))
-            {
-                if (!is_ptr_of<IdentifierNode>(arg))
-                    throw CodegenException("Incompatible type in length(): expected string2");
-                std::shared_ptr<std::pair<int,int>> arrEntry;
-                auto argId = cast_node<IdentifierNode>(arg);
-                arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-                // {
-                //     if ((arrEntry = context.getArrayEntry(*rit + "_" + argId->name)) != nullptr)
-                //         break;
-                // }
-                // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
-                if (arrEntry == nullptr)
-                    throw CodegenException("Incompatible type in length(): expected string3");
-                return context.getBuilder().CreateCall(context.strlenFunc, argId->getPtr(context));
-            }
+            // else if (ty->isIntegerTy(8))
+            // {
+            //     if (!is_ptr_of<IdentifierNode>(arg))
+            //         throw CodegenException("Incompatible type in length(): expected string2");
+            //     std::shared_ptr<std::pair<int,int>> arrEntry;
+            //     auto argId = cast_node<IdentifierNode>(arg);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     if (arrEntry == nullptr)
+            //         throw CodegenException("Incompatible type in length(): expected string3");
+            //     return context.getBuilder().CreateCall(context.strlenFunc, argId->getPtr(context));
+            // }
             else
             {
                 std::cout << ty->getTypeID() << std::endl;
@@ -506,23 +488,23 @@ namespace spc
                 else
                     throw CodegenException("Incompatible type in val(): expected string");
             }
-            else if (ty->isIntegerTy(8))
-            {
-                if (!is_ptr_of<IdentifierNode>(arg))
-                    throw CodegenException("Incompatible type in val(): expected string");
-                std::shared_ptr<std::pair<int,int>> arrEntry;
-                auto argId = cast_node<IdentifierNode>(arg);
-                // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-                // {
-                //     if ((arrEntry = context.getArrayEntry(*rit + "_" + argId->name)) != nullptr)
-                //         break;
-                // }
-                // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
-                arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                if (arrEntry == nullptr)
-                    throw CodegenException("Incompatible type in val(): expected string");
-                return context.getBuilder().CreateCall(context.atoiFunc, argId->getPtr(context));
-            }
+            // else if (ty->isIntegerTy(8))
+            // {
+            //     if (!is_ptr_of<IdentifierNode>(arg))
+            //         throw CodegenException("Incompatible type in val(): expected string");
+            //     std::shared_ptr<std::pair<int,int>> arrEntry;
+            //     auto argId = cast_node<IdentifierNode>(arg);
+            //     // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+            //     // {
+            //     //     if ((arrEntry = context.getArrayEntry(*rit + "_" + argId->name)) != nullptr)
+            //     //         break;
+            //     // }
+            //     // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     if (arrEntry == nullptr)
+            //         throw CodegenException("Incompatible type in val(): expected string");
+            //     return context.getBuilder().CreateCall(context.atoiFunc, argId->getPtr(context));
+            // }
             else
                 throw CodegenException("Incompatible type in val(): expected string");
         }
@@ -758,12 +740,12 @@ namespace spc
 
         idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
         std::shared_ptr<std::pair<int,int>> range;
-        bool is_local = false;
+        // bool is_local = false;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
             if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
             {
-                is_local = true;
+                // is_local = true;
                 break;
             }
         }
@@ -785,14 +767,14 @@ namespace spc
         {
             llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
             llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-            if (ptr_type->isArrayTy() && !is_local)
+            if (ptr_type->isArrayTy() /*&& !is_local*/)
                 idx.push_back(trueIdx);
             else
                 return context.getBuilder().CreateGEP(value, trueIdx);
         }
         else
         {
-            if (ptr_type->isArrayTy() && !is_local)
+            if (ptr_type->isArrayTy() /*&& !is_local*/)
                 idx.push_back(idx_value);
             else
                 return context.getBuilder().CreateGEP(value, idx_value);
