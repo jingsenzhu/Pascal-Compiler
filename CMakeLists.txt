@@ -6,25 +6,17 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)
 
-if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp" AND
-        EXISTS "${CMAKE_CURRENT_BINARY_DIR}/parser.cpp" AND
-        EXISTS "${CMAKE_CURRENT_BINARY_DIR}/parser.hpp")
-        message(STATUS "Found scanner and parser exists")
-        set(FLEX_spc_lexer_OUTPUTS "${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp")
-        set(BISON_spc_parser_OUTPUTS "${CMAKE_CURRENT_BINARY_DIR}/parser.cpp;${CMAKE_CURRENT_BINARY_DIR}/parser.hpp")
-else()
-	find_package(BISON REQUIRED)
-	find_package(FLEX REQUIRED)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 
-	BISON_TARGET(spc_parser
-			${CMAKE_SOURCE_DIR}/src/parser.y
-			${CMAKE_CURRENT_BINARY_DIR}/parser.cpp
-			COMPILE_FLAGS "--defines=${CMAKE_CURRENT_BINARY_DIR}/parser.hpp --verbose")
-	FLEX_TARGET(spc_lexer
-			${CMAKE_SOURCE_DIR}/src/scanner.l
-			${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
-	ADD_FLEX_BISON_DEPENDENCY(spc_lexer spc_parser)
-endif()
+BISON_TARGET(spc_parser
+                ${CMAKE_SOURCE_DIR}/src/parser.y
+                ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp
+                COMPILE_FLAGS "--defines=${CMAKE_CURRENT_BINARY_DIR}/parser.hpp --verbose")
+FLEX_TARGET(spc_lexer
+                ${CMAKE_SOURCE_DIR}/src/scanner.l
+                ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+ADD_FLEX_BISON_DEPENDENCY(spc_lexer spc_parser)
 
 find_package(LLVM REQUIRED CONFIG)
 
