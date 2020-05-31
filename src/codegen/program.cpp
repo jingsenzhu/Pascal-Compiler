@@ -42,6 +42,10 @@ namespace spc
     llvm::Value *RoutineNode::codegen(CodegenContext &context)
     {
         context.log() << "Entering function " + name->name << std::endl;
+
+        if (context.getModule()->getFunction(name->name) != nullptr)
+            throw CodegenException("Duplicate function definition: " + name->name);
+
         context.traces.push_back(name->name);
 
         std::vector<llvm::Type *> types;

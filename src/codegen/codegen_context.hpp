@@ -32,6 +32,7 @@
 #include <list>
 #include <map>
 
+
 static llvm::LLVMContext llvm_context;
 
 namespace spc
@@ -88,6 +89,49 @@ namespace spc
         std::unique_ptr<llvm::legacy::PassManager> mpm;
 
         std::ofstream &log() { return of; }
+
+        static std::string getLLVMTypeName(llvm::Type *ty)
+        {
+            // static std::map<int, std::string> typeIDMap = {
+            //     {11, "INTEGER/CHAR/BOOL"}, {15, "STRING"}, {3, "DOUBLE"}, {14, "ARRAY/STRING"}, {13, "RECORD"}, {11, "FUNCTION"}
+            // };
+            int id = ty->getTypeID();
+            llvm::Type *arrTy;
+            switch (id)
+            {
+            case 11:
+                if (ty->isIntegerTy(1)) return "Boolean";
+                if (ty->isIntegerTy(8)) return "Char";
+                if (ty->isIntegerTy(32)) return "Integer/Long";
+                return "Unknown";
+            case 15: 
+                if (ty->getPointerElementType()->isIntegerTy(8)) return "String";
+                return "Unknown";
+            case 3:
+                return "Real";
+            case 14:
+                arrTy = ty->getArrayElementType();
+                if (arrTy->isIntegerTy(8)) return "String";
+                return "Array of " + getLLVMTypeName(arrTy);
+            case 13:
+                return "Record";
+            case 12:
+                return "Function";
+            default:
+                return "Unknown";
+            }
+        }
+
+        void printLocals()
+        {
+            for (auto it = locals.cbegin(); it != locals.cend(); it++)
+            {
+                std::cout << it->first << ": "; // std::string
+                llvm::Value *val = it->second;
+                // std::cout << typeIDMap.at(val->getType()->getPointerElementType()->getTypeID()) << std::endl;
+                std::cout << getLLVMTypeName(val->getType()->getPointerElementType()) << std::endl;
+            }
+        }
 
         CodegenContext(const std::string &module_id, bool opt = false)
             : builder(llvm::IRBuilder<>(llvm_context)), _module(std::make_unique<llvm::Module>(module_id, llvm_context)), is_subroutine(false), of("compile.log")
@@ -155,10 +199,20 @@ namespace spc
                 mpm->add(llvm::createConstantMergePass());
                 mpm->add(llvm::createFunctionInliningPass());
             }
+
+            // std::cout << builder.getInt32Ty()->getTypeID() << std::endl;
+            // std::cout << builder.getInt8Ty()->getTypeID() << std::endl;
+            // std::cout << builder.getInt8PtrTy()->getTypeID() << std::endl;
+            // std::cout << builder.getDoubleTy()->getTypeID() << std::endl;
+            // std::cout << llvm::ArrayType::get(builder.getInt8Ty(), 256)->getTypeID() << std::endl;
+            // std::cout << llvm::StructType::get(llvm_context, {builder.getInt8Ty(), builder.getInt8Ty()})->getTypeID() << std::endl;
+            // std::cout << getcharTy->getTypeID() << std::endl;
+
         }
         ~CodegenContext()
         {
             if (of.is_open()) of.close();
+            printLocals();
         }
 
         llvm::Value *getTempStrPtr()

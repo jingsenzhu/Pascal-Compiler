@@ -161,12 +161,15 @@ namespace spc
                     context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
                 auto *local = context.getBuilder().CreateAlloca(type->getLLVMType(context));
                 auto success = context.setLocal(context.getTrace() + "_" + name->name, local);
-                if (!success) throw CodegenException("Duplicate identifier in function " + context.getTrace() + ": " + name->name);
+                if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + name->name);
                 return local;
             }
         }
         else
         {
+
+            if (context.getModule()->getGlobalVariable(name->name) != nullptr)
+                throw CodegenException("Duplicate global variable: " + name->name);
             if (type->type == Type::Alias)
             {
                 std::string aliasName = cast_node<AliasTypeNode>(type)->name->name;
