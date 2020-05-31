@@ -38,8 +38,8 @@ static llvm::LLVMContext llvm_context;
 
 namespace spc
 {
-    //class ArrayTypeNode;
-    //class RecordTypeNode;  
+    class ArrayTypeNode;
+    class RecordTypeNode;  
 
     class CodegenException : public std::exception {
     public:
@@ -614,3 +614,4 @@ namespace spc
 
 
 #endif
+

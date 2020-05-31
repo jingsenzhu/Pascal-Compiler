@@ -103,11 +103,11 @@ namespace spc
         llvm::ArrayType *arrayTy = llvm::ArrayType::get(ty, len);
         // auto *local = context.getBuilder().CreateAlloca(ty, space);
         auto *local = context.getBuilder().CreateAlloca(arrayTy);
-        auto success = context.setLocal(context.getTrace() + "_" + this->name->name, local);
+        auto success = context.setLocal(context.getTrace() + "." + this->name->name, local);
         if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + this->name->name);
         context.log() << "\tCreated array " << this->name->name << std::endl;
 
-        context.setArrayEntry(context.getTrace() + "_" + this->name->name, start, end);
+        context.setArrayEntry(context.getTrace() + "." + this->name->name, start, end);
         context.log() << "\tInserted to array table" << std::endl;
 
         return local;
@@ -124,7 +124,7 @@ namespace spc
                 std::shared_ptr<ArrayTypeNode> arrTy = nullptr;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
-                    if ((arrTy = context.getArrayAlias(*rit + "_" + aliasName)) != nullptr)
+                    if ((arrTy = context.getArrayAlias(*rit + "." + aliasName)) != nullptr)
                         break;
                 }
                 if (arrTy == nullptr)
@@ -137,7 +137,7 @@ namespace spc
                 std::shared_ptr<RecordTypeNode> recTy = nullptr;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
-                    if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
+                    if ((recTy = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
                         break;
                 }
                 if (recTy == nullptr)
@@ -145,7 +145,7 @@ namespace spc
                 if (recTy != nullptr)
                 {
                     context.log() << "\tAlias is record" << std::endl;
-                    context.setRecordAlias(context.getTrace() + "_" + name->name, recTy);
+                    context.setRecordAlias(context.getTrace() + "." + name->name, recTy);
                 }
             }
             if (type->type == Type::Array)
@@ -158,9 +158,9 @@ namespace spc
             else
             {
                 if (type->type == Type::Record)
-                    context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
+                    context.setRecordAlias(context.getTrace() + "." + name->name, cast_node<RecordTypeNode>(type));
                 auto *local = context.getBuilder().CreateAlloca(type->getLLVMType(context));
-                auto success = context.setLocal(context.getTrace() + "_" + name->name, local);
+                auto success = context.setLocal(context.getTrace() + "." + name->name, local);
                 if (!success) throw CodegenException("Duplicate identifier in var section of function " + context.getTrace() + ": " + name->name);
                 return local;
             }
@@ -183,7 +183,7 @@ namespace spc
                 std::shared_ptr<RecordTypeNode> recTy = nullptr;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 {
-                    if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
+                    if ((recTy = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
                         break;
                 }
                 if (recTy == nullptr)
@@ -240,10 +240,10 @@ namespace spc
                 context.log() << "\tConst string declare" << std::endl;
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
-                bool success = context.setConst(context.getTrace() + "_" + name->name, constant);
+                bool success = context.setConst(context.getTrace() + "." + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tAdded to symbol table" << std::endl;
-                auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
+                auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "." + name->name);
                 context.log() << "\tCreated global variable" << std::endl;
                 return gv;
             }
@@ -252,11 +252,11 @@ namespace spc
                 context.log() << "\tConst declare" << std::endl;
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
                 assert(constant != nullptr);
-                bool success = context.setConst(context.getTrace() + "_" + name->name, constant);
-                success &= context.setConstVal(context.getTrace() + "_" + name->name, constant);
+                bool success = context.setConst(context.getTrace() + "." + name->name, constant);
+                success &= context.setConstVal(context.getTrace() + "." + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tAdded to symbol table" << std::endl;
-                // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
+                // auto *gv = new llvm::GlobalVariable(*context.getModule(), val->getLLVMType(context), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "." + name->name);
                 // context.log() << "\tCreated global variable" << std::endl;
                 // return gv;
                 return nullptr;
@@ -297,20 +297,20 @@ namespace spc
         {
             if (type->type == Type::Array)
             {
-                bool success = context.setArrayAlias(context.getTrace() + "_" + name->name, cast_node<ArrayTypeNode>(type));
+                bool success = context.setArrayAlias(context.getTrace() + "." + name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tArray alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
             else if (type->type == Type::Record)
             {
-                bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
-                success &= context.setRecordAlias(context.getTrace() + "_" + name->name, cast_node<RecordTypeNode>(type));
+                bool success = context.setAlias(context.getTrace() + "." + name->name, type->getLLVMType(context));
+                success &= context.setRecordAlias(context.getTrace() + "." + name->name, cast_node<RecordTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tRecord alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
             else
             {
-                bool success = context.setAlias(context.getTrace() + "_" + name->name, type->getLLVMType(context));
+                bool success = context.setAlias(context.getTrace() + "." + name->name, type->getLLVMType(context));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
             }
         }

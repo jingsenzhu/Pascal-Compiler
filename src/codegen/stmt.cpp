@@ -162,7 +162,7 @@ namespace spc
             //     if (!is_ptr_of<IdentifierNode>(this->rhs))
             //         throw CodegenException("Incompatible type in assignment");
             //     auto rhsId = cast_node<IdentifierNode>(this->rhs);
-            //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
+            //     auto arrEntry = context.getArrayEntry(context.getTrace() + "." + rhsId->name);
             //     if (arrEntry == nullptr)
             //         throw CodegenException("Incompatible type in assignment");
             //     rhsPtr = rhsId->getPtr(context);
@@ -175,7 +175,7 @@ namespace spc
         //     if (!is_ptr_of<IdentifierNode>(this->lhs))
         //         throw CodegenException("Incompatible type in assignment");
         //     auto lhsId = cast_node<IdentifierNode>(this->lhs);
-        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + lhsId->name);
+        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "." + lhsId->name);
         //     if (arrEntry != nullptr)
         //     {
         //         llvm::Value *zero = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0);
@@ -211,7 +211,7 @@ namespace spc
         //             if (!is_ptr_of<IdentifierNode>(this->rhs))
         //                 throw CodegenException("Incompatible type in assignment");
         //             auto rhsId = cast_node<IdentifierNode>(this->rhs);
-        //             auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + rhsId->name);
+        //             auto arrEntry = context.getArrayEntry(context.getTrace() + "." + rhsId->name);
         //             if (arrEntry == nullptr)
         //                 throw CodegenException("Incompatible type in assignment");
         //             rhsPtr = rhsId->getPtr(context);

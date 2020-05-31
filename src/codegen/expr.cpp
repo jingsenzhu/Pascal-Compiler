@@ -142,7 +142,7 @@ namespace spc
                         if (is_ptr_of<IdentifierNode>(arg))
                         {
                             // auto argId = cast_node<IdentifierNode>(arg);
-                            // auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                            // auto arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
                             // if (arrEntry == nullptr)
                             {
                                 func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
@@ -230,7 +230,7 @@ namespace spc
                         // if (is_ptr_of<IdentifierNode>(arg))
                         // {
                         //     auto argId = cast_node<IdentifierNode>(arg);
-                        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
                         //     if (arrEntry == nullptr)
                         //     {
                         //         func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
@@ -305,7 +305,7 @@ namespace spc
                     // if (is_ptr_of<IdentifierNode>(arg))
                     // {
                     //     auto argId = cast_node<IdentifierNode>(arg);
-                    //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+                    //     auto arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
                     //     if (arrEntry == nullptr)
                     //     {
                     //         format += "%c";
@@ -423,7 +423,7 @@ namespace spc
             //         throw CodegenException("Incompatible type in length(): expected string2");
             //     std::shared_ptr<std::pair<int,int>> arrEntry;
             //     auto argId = cast_node<IdentifierNode>(arg);
-            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
             //     if (arrEntry == nullptr)
             //         throw CodegenException("Incompatible type in length(): expected string3");
             //     return context.getBuilder().CreateCall(context.strlenFunc, argId->getPtr(context));
@@ -496,11 +496,11 @@ namespace spc
             //     auto argId = cast_node<IdentifierNode>(arg);
             //     // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
             //     // {
-            //     //     if ((arrEntry = context.getArrayEntry(*rit + "_" + argId->name)) != nullptr)
+            //     //     if ((arrEntry = context.getArrayEntry(*rit + "." + argId->name)) != nullptr)
             //     //         break;
             //     // }
             //     // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
-            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
             //     if (arrEntry == nullptr)
             //         throw CodegenException("Incompatible type in val(): expected string");
             //     return context.getBuilder().CreateCall(context.atoiFunc, argId->getPtr(context));
@@ -638,7 +638,7 @@ namespace spc
         std::shared_ptr<RecordTypeNode> recTy = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((recTy = context.getRecordAlias(*rit + "_" + name->name)) != nullptr)
+            if ((recTy = context.getRecordAlias(*rit + "." + name->name)) != nullptr)
                 break;
         }
         if (recTy == nullptr) recTy = context.getRecordAlias(name->name);
@@ -672,7 +672,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)
@@ -700,7 +700,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)
@@ -743,7 +743,7 @@ namespace spc
         // bool is_local = false;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+            if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
             {
                 // is_local = true;
                 break;
@@ -789,7 +789,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)
@@ -818,7 +818,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)

@@ -24,7 +24,7 @@ namespace spc
             for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
             {
                 llvm::Type *ret = nullptr;
-                if ((ret = context.getAlias(*rit + "_" + name->name)) != nullptr)
+                if ((ret = context.getAlias(*rit + "." + name->name)) != nullptr)
                     return ret;
             }
         }
