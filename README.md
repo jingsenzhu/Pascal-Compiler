@@ -1,7 +1,59 @@
 # Pascal-Compiler
 A simple pascal compiler using flex and bison as frontend and LLVM as backend. Project for Compiler Principle course in ZJU.
 
+## Functionalities
 
+- Support types
+  - Integer, Longint, Char, Boolean, String: Complete support
+  - Array: Partial
+    - Support: Array of Basic Types/String
+    - NOT support:
+      - Array of array (i.e. multi-dim array)
+      - Array as param/return of function
+  - Record: Partial
+    - Support:
+      - Record field of Basic Types/String
+      - Record as param/return of function
+    - NOT support:
+      - Nested record/Array in record field
+- Support system functions
+  - `writeln`/`write`: Integer, Longint, Real, Char, String
+    - *Variable argument number*
+    - Implemented by `printf`
+  - `readln`/`read`: Integer, Longint, Real, Char, String
+    - *Variable argument number*
+    - Implemented by `scanf`
+    - Warning: `readln` of String will behave the same as `gets` in C, i.e. reads all the inputs until end of line. So if a String variable is not the last argument of readln, the rest of argument will not be read in this line. The compiler will emit a warning when recognizing this
+  - `concat`: Integer, Longint, Real, Char, String -> String
+    - *Variable argument number*
+    - Description: concatenates all the arguments into a String
+    - Implemented by `sprintf`
+  - `abs`: Integer, Real -> Integer, Real
+    - Implemented by `abs` for Integer and `fabs` for Real
+  - `val`: String -> Integer
+    - Description: Converts the String content into its INTEGER value
+    - Implemented by `atoi`
+  - `str`: Integer, Real, Char -> String
+    - Description: Converts value into String
+    - Implemented by `sprintf`
+  - `length`: String -> Integer
+    - Description: computes the length of the String
+    - Implemented by `strlen`
+  - `sqr`: Integer, Real -> Integer, Real
+    - Description: computes the square of the input
+    - Implemented by a single instruction that multiplies the argument with itself
+  - `sqrt`: Integer, Real -> Real
+    - Description: computes the square root of the input
+    - Implemented by `sqrt`
+  - `chr`: Integer -> Char
+    - Description: returns the Char with ASCII of the input
+    - Implemented by a type conversion
+  - `ord`: Char -> Integer
+    - Description: returns the ASCII of the input Char
+    - Implemented by a type conversion
+  - `pred`/`succ`: Char -> Char
+    - Description: returns the previous/next of the input Char according to ASCII
+    - Implemented by a single instruction that adds/substracts the argument with 1
 
 ## Build and use
 
