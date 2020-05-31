@@ -154,4 +154,9 @@ namespace spc
         return strVal;
     }
 
+    llvm::Type *VoidTypeNode::getLLVMType(CodegenContext &context)
+    {
+        return context.getBuilder().getVoidTy();
+    }
+
 } // namespace spc

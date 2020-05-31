@@ -1,31 +1,5 @@
 #ifndef CODEGEN_CONTEXT_H
 #define CODEGEN_CONTEXT_H
-
-#include "llvm/ADT/APFloat.h"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Verifier.h"
-
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Value.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/Transforms/InstCombine/InstCombine.h>
-#include <llvm/Transforms/IPO.h>
-#include <llvm/Transforms/Scalar.h>
-#include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/Transforms/Scalar.h>
-#include <llvm/Transforms/Utils.h>
 #include "utils/ast.hpp"
 
 #include <string>
@@ -91,7 +65,7 @@ namespace spc
 
         std::ofstream &log() { return of; }
 
-        static std::string getLLVMTypeName(llvm::Type *ty)
+        static std::string getLLVMTypeName(const llvm::Type *ty)
         {
             // static std::map<int, std::string> typeIDMap = {
             //     {11, "INTEGER/CHAR/BOOL"}, {15, "STRING"}, {3, "DOUBLE"}, {14, "ARRAY/STRING"}, {13, "RECORD"}, {11, "FUNCTION"}
@@ -118,6 +92,8 @@ namespace spc
                 return "Record";
             case 12:
                 return "Function";
+            case 0:
+                return "Void";
             default:
                 return "Unknown";
             }
@@ -126,43 +102,41 @@ namespace spc
         void printGlobals()
         {
             std::cout << "Globals Table:" << std::endl;
-            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
-            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
-            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
-            for (auto it = aliases.cbegin(); it != aliases.cend(); it++)
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setfill(' ') << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(39) << '+' << '+' << std::endl;
+            auto &gbList = _module->getGlobalList();
+            for (auto itr = gbList.begin(); itr != gbList.end(); itr++)
             {
-                std::string c = it->first;
-                int pos = c.find('.');
-                std::string c1;
-                if (pos == -1) c1 = "main";
-                else c1 = c.substr(0, pos);     
-                std::string c2 = c.substr(pos + 1, c.length());
-                llvm::Type *val = it->second;
-                std::string c3 = "a";
+                // llvm::Global *gv = itr;
+                std::string name = itr->getName();
+                std::string type = getLLVMTypeName(itr->getType()->getPointerElementType());
 
-                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
-                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+                std::cout << '|' << std::setfill(' ') << std::setw(19) << name << '|' << std::setw(38) << type << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(39) << '+' << '+' << std::endl;
             }
         }
 
-        void printFuns()
+        void printFuncs()
         {
-            std::cout << "Functions Table:" << std::endl;
+            std::cout << "Funcion Table:" << std::endl;
             std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
-            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Propers" << '|' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Name" << '|' << std::setw(19) << "Returns" << '|' << std::setw(38) << "Paremeters" << '|' << std::endl;
             std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
-            for (auto it = aliases.cbegin(); it != aliases.cend(); it++)
+            auto &funcList = _module->getFunctionList();
+            for (auto itr = funcList.begin(); itr != funcList.end(); itr++)
             {
-                std::string c = it->first;
-                int pos = c.find('.');
-                std::string c1;
-                if (pos == -1) c1 = "main";
-                else c1 = c.substr(0, pos);     
-                std::string c2 = c.substr(pos + 1, c.length());
-                llvm::Type *val = it->second;
-                std::string c3 = "a";
-
-                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                // llvm::Global *gv = itr;
+                std::string name = itr->getName();
+                auto *funcTy = itr->getFunctionType();
+                std::string type = getLLVMTypeName(funcTy->getReturnType());
+                std::string paras = "";
+                for (auto param = funcTy->param_begin(); param != funcTy->param_end(); param++)
+                {
+                    if (param == funcTy->param_begin()) paras = paras + getLLVMTypeName(*param);
+                    else paras = paras + ", " + getLLVMTypeName(*param);
+                }
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << name << '|' << std::setw(19) << type << '|' << std::setw(38) << paras << '|' << std::endl;
                 std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
             }
         }
@@ -183,7 +157,6 @@ namespace spc
                 std::string c2 = c.substr(pos + 1, c.length());
                 llvm::Type *val = it->second;
                 std::string c3 = getLLVMTypeName(val);
-
                 std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
                 std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
             }
@@ -215,8 +188,10 @@ namespace spc
                 assert(endI != nullptr);
                 int endInt = endI->getSExtValue();
 
-                //std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << "[" << val->range_start << ", "
-                  //      << val->range_end << "]" << " of " << val->itemType->type << '|' << std::endl;
+                std::string type = getLLVMTypeName(val->itemType->getLLVMType(*this));
+                std::string info = "[" + std::to_string(startInt) + ", " + std::to_string(endInt) + "] of " + type;
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << info << '|' << std::endl;
                 std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
             }
         }
@@ -235,9 +210,8 @@ namespace spc
                 if (pos == -1) c1 = "main";
                 else c1 = c.substr(0, pos);     
                 std::string c2 = c.substr(pos + 1, c.length());
-                std::shared_ptr<std::pair<int, int>> val = it->second;
-                std::string c3 = "a";
-
+                auto val = it->second;
+                std::string c3 = "[" + std::to_string((*val).first) + ", " + std::to_string((*val).second) + "]";
                 std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
                 std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
             }
@@ -246,9 +220,9 @@ namespace spc
         void printRecAliases()
         {
             std::cout << "Record Aliases Table:" << std::endl;
-            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
-            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
-            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(69) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(68) << "Members" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(69) << '+' << '+' << std::endl;
             for (auto it = recAliases.cbegin(); it != recAliases.cend(); it++)
             {
                 std::string c = it->first;
@@ -257,11 +231,21 @@ namespace spc
                 if (pos == -1) c1 = "main";
                 else c1 = c.substr(0, pos);      
                 std::string c2 = c.substr(pos + 1, c.length());
-                std::shared_ptr<RecordTypeNode> val = it->second;
-                std::string c3 = "a";
+                auto val = it->second;
+                std::string type = getLLVMTypeName(val->getLLVMType(*this));
+                std::string info = type + "{";
+                for(auto iy = val->field.begin(); iy != val->field.end(); iy++ )
+                {   
+                    std::string n = (*iy)->name->name;
+                    std::string t = getLLVMTypeName((*iy)->type->getLLVMType(*this));
+                    if(iy == val->field.begin()) info = info + n + ": " + t;
+                    else info = info + ", " + n + ": " + t;
+                }
+                info = info + "}";
+                
 
-                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
-                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(68) << info << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(69) << '+' << '+' << std::endl;
             }
         }
 
@@ -442,7 +426,7 @@ namespace spc
             if (of.is_open()) of.close();
             printGlobals();
             std::cout << std::endl;
-            printFuns();
+            printFuncs();
             std::cout << std::endl;
             printAliases();
             std::cout << std::endl;
@@ -614,4 +598,3 @@ namespace spc
 
 
 #endif
-

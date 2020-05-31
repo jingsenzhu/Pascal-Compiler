@@ -28,6 +28,7 @@ namespace spc
         friend class RecordTypeNode;
         llvm::Value *createGlobalArray( CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &);
         llvm::Value *createArray(CodegenContext &context, const std::shared_ptr<ArrayTypeNode> &);
+        friend class CodegenContext;
     };
 
     class ConstDeclNode: public DeclNode

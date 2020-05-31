@@ -16,7 +16,7 @@ namespace spc
         llvm::Constant *value = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((value = context.getConstVal(*rit + "." + name)) != nullptr)
+            if ((value = context.getConstVal(*rit + "_" + name)) != nullptr)
                 break;
         }
         if (value == nullptr) value = context.getConstVal(name);
@@ -27,10 +27,10 @@ namespace spc
         llvm::Value *value = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((value = context.getLocal(*rit + "." + name)) != nullptr)
+            if ((value = context.getLocal(*rit + "_" + name)) != nullptr)
             {
-                if (context.getConst(*rit + "." + name) != nullptr)
-                    value = context.getModule()->getGlobalVariable(*rit + "." + name);
+                if (context.getConst(*rit + "_" + name) != nullptr)
+                    value = context.getModule()->getGlobalVariable(*rit + "_" + name);
                 break;
             }
         }
@@ -45,9 +45,9 @@ namespace spc
         llvm::Value *value = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((value = context.getLocal(*rit + "." + name)) != nullptr)
+            if ((value = context.getLocal(*rit + "_" + name)) != nullptr)
             {
-                if (context.getConst(*rit + "." + name) != nullptr)
+                if (context.getConst(*rit + "_" + name) != nullptr)
                     throw CodegenException("Cannot assign to a const value!");
                 break;
             }

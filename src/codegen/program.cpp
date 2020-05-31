@@ -59,25 +59,25 @@ namespace spc
             names.push_back(p->name->name);
             if (ty->isArrayTy()) // String
             {
-                context.setArrayEntry(name->name + "." + p->name->name, 0, 255);
+                context.setArrayEntry(name->name + "_" + p->name->name, 0, 255);
             }
             else if (ty->isStructTy())
             {
                 assert(is_ptr_of<RecordTypeNode>(p->type) || is_ptr_of<AliasTypeNode>(p->type));
                 if (is_ptr_of<RecordTypeNode>(p->type))
-                    context.setRecordAlias(name->name + "." + p->name->name, cast_node<RecordTypeNode>(p->type));
+                    context.setRecordAlias(name->name + "_" + p->name->name, cast_node<RecordTypeNode>(p->type));
                 else
                 {
                     std::string aliasName = cast_node<AliasTypeNode>(p->type)->name->name;
                     std::shared_ptr<RecordTypeNode> recTy = nullptr;
                     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                     {
-                        if ((recTy = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
+                        if ((recTy = context.getRecordAlias(*rit + "_" + aliasName)) != nullptr)
                             break;
                     }
                     if (recTy == nullptr) recTy = context.getRecordAlias(aliasName);
                     if (recTy == nullptr) assert(0);
-                    context.setRecordAlias(name->name + "." + p->name->name, recTy);
+                    context.setRecordAlias(name->name + "_" + p->name->name, recTy);
                 }
             }
         }
@@ -86,7 +86,7 @@ namespace spc
         if (retTy->isArrayTy())
         {
             retTy = context.getBuilder().getInt8PtrTy();
-            context.setArrayEntry(name->name + "." + name->name, 0, 255);
+            context.setArrayEntry(name->name + "_" + name->name, 0, 255);
         }
         auto *funcTy = llvm::FunctionType::get(retTy, types, false);
         auto *func = llvm::Function::Create(funcTy, llvm::Function::ExternalLinkage, name->name, *context.getModule());
@@ -100,7 +100,7 @@ namespace spc
             // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
             //     throw CodegenException("Unknown function param type");
             auto *local = context.getBuilder().CreateAlloca(type);
-            context.setLocal(name->name + "." + names[index++], local);
+            context.setLocal(name->name + "_" + names[index++], local);
             context.getBuilder().CreateStore(&arg, local);
         }
 
@@ -137,7 +137,7 @@ namespace spc
             else
                 local = context.getBuilder().CreateAlloca(type);
             assert(local != nullptr && "Fatal error: Local variable alloc failed!");
-            context.setLocal(name->name + "." + name->name, local);
+            context.setLocal(name->name + "_" + name->name, local);
         }
 
 
@@ -148,7 +148,7 @@ namespace spc
 
         if (retType->type != Type::Void) 
         {
-            auto *local = context.getLocal(name->name + "." + name->name);
+            auto *local = context.getLocal(name->name + "_" + name->name);
             llvm::Value *ret = context.getBuilder().CreateLoad(local);
             if (ret->getType()->isArrayTy())
             {

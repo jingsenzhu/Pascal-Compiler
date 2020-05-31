@@ -28,7 +28,7 @@ namespace spc
     public:
         VoidTypeNode() : TypeNode(Type::Void) {}
         ~VoidTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &context) override { return context.getBuilder().getVoidTy(); }
+        llvm::Type *getLLVMType(CodegenContext &context) override ;
         // void print() override;
     };
     
@@ -66,6 +66,7 @@ namespace spc
     // TODO: RecordTypeNode
     class RecordTypeNode: public TypeNode
     {
+        
     private:
         std::list<std::shared_ptr<VarDeclNode>> field;
     public:
@@ -85,6 +86,7 @@ namespace spc
         llvm::Type *getLLVMType(CodegenContext &context) override;
         llvm::Value *getFieldIdx(const std::string &name, CodegenContext &context);
         // void print() override;
+        friend class CodegenContext;
     };
     
 
