@@ -80,6 +80,8 @@ int main(int argc, char* argv[])
     Target target = Target::UNDEFINED;
     char *input = nullptr, *outputP = nullptr;
     bool opt = false;
+    bool printTable = false;
+    bool printLLVM = false;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -87,6 +89,8 @@ int main(int argc, char* argv[])
         else if (strcmp(argv[i], "-S") == 0) target = Target::ASM;
         else if (strcmp(argv[i], "-c") == 0) target = Target::OBJ;
         else if (strcmp(argv[i], "-O") == 0) opt = true;
+        else if (strcmp(argv[i], "-print-table") == 0) printTable = true;
+        else if (strcmp(argv[i], "-print-llvm") == 0) printLLVM = true;
         else if (strcmp(argv[i], "-o") == 0)
         {
             if (i == argc - 1) 
@@ -111,6 +115,9 @@ int main(int argc, char* argv[])
         puts("  -S                   Emit assembly code (.s)");
         puts("  -c                   Emit object code (.o)");
         puts(" [-o <output file>]    Specify output file");
+        puts(" [-O]                  Enable LLVM optimizations");
+        puts(" [-print-table]        Print the symbol table");
+        puts(" [-print-llvm]         Print the LLVM IR");
         exit(1);
     }
 
@@ -163,8 +170,29 @@ int main(int argc, char* argv[])
         abort();
     }
 
-    // genContext.dump();
-    // std::cout << "\n\n>>>>>>>>>>>>>>>==========  IR over!==========<<<<<<<<<<<<<<<" << std::endl;
+    if (printTable)
+    {
+        genContext.printGlobals();
+        std::cout << std::endl;
+        genContext.printFuncs();
+        std::cout << std::endl;
+        genContext.printAliases();
+        std::cout << std::endl;
+        genContext.printArrAliases();
+        std::cout << std::endl;
+        genContext.printArrTable();
+        std::cout << std::endl;
+        genContext.printRecAliases();
+        std::cout << std::endl;
+        genContext.printConsts();
+        std::cout << std::endl;
+        genContext.printLocals();
+        std::cout << std::endl;
+        genContext.printConstVals();
+        std::cout << std::endl;
+    }
+    if (printLLVM)
+        genContext.dump();
     std::cout << "Code generation completed!" << std::endl;
 
     std::string output;

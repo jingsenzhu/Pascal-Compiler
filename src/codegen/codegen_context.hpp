@@ -424,24 +424,6 @@ namespace spc
         ~CodegenContext()
         {
             if (of.is_open()) of.close();
-            printGlobals();
-            std::cout << std::endl;
-            printFuncs();
-            std::cout << std::endl;
-            printAliases();
-            std::cout << std::endl;
-            printArrAliases();
-            std::cout << std::endl;
-            printArrTable();
-            std::cout << std::endl;
-            printRecAliases();
-            std::cout << std::endl;
-            printConsts();
-            std::cout << std::endl;
-            printLocals();
-            std::cout << std::endl;
-            printConstVals();
-            std::cout << std::endl;
         }
 
         llvm::Value *getTempStrPtr()

@@ -80,7 +80,6 @@
 %type <std::shared_ptr<IfStmtNode>> if_stmt
 %type <std::shared_ptr<RepeatStmtNode>> repeat_stmt
 %type <std::shared_ptr<WhileStmtNode>> while_stmt
-%type <std::shared_ptr<StmtNode>> goto_stmt
 %type <std::shared_ptr<ForStmtNode>> for_stmt
 %type <spc::ForDirection> direction
 %type <std::shared_ptr<CaseStmtNode>> case_stmt
@@ -143,8 +142,6 @@ type_decl: simple_type_decl {
         $$ = $1;
     }
     | array_type_decl {$$ = $1;}
-    // | string_type_decl {$$ = $1;}
-    // | record_type_decl {$$ = $1;}
     ;
 
 simple_type_decl: SYS_TYPE {$$ = $1;}
@@ -164,12 +161,10 @@ string_type_decl: STR_TYPE {
     ;
 
 array_range: const_value DOTDOT const_value { 
-            // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); // 这咋写啊
         if (!is_ptr_of<IntegerNode>($1) || !is_ptr_of<IntegerNode>($3)) throw std::logic_error("\nArray index must be integer!");
         $$ = std::make_pair($1, $3);
     }
     | ID DOTDOT ID { 
-        // $$ = (make_node<IntegerNode>($1), make_node<IntegerNode>($3)); //这咋写啊
         $$ = std::make_pair($1, $3);
     }
     ;
@@ -265,7 +260,7 @@ compound_stmt: PBEGIN stmt_list END {
 stmt_list: stmt_list stmt SEMI {
         $$ = $1; $$->merge(std::move($2));
     }
-    | { $$ = make_node<CompoundStmtNode>(); } // y这里没定义
+    | { $$ = make_node<CompoundStmtNode>(); }
     ;
 
 stmt: assign_stmt {$$ = make_node<CompoundStmtNode>($1);}
@@ -276,7 +271,6 @@ stmt: assign_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | while_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | for_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | case_stmt {$$ = make_node<CompoundStmtNode>($1);}
-    | goto_stmt {$$ = make_node<CompoundStmtNode>($1);}
     ;
 // array ref
 assign_stmt: ID ASSIGN expression {
@@ -349,11 +343,6 @@ case_expr: const_value COLON stmt SEMI {
         $$ = make_node<CaseBranchNode>($1, $3); 
     }
     | ID COLON stmt SEMI { $$ = make_node<CaseBranchNode>($1, $3); }
-    ;
-// 不会真有人写goto吧
-goto_stmt: GOTO INTEGER {
-        throw std::logic_error("\nGoto not supported yet");
-    }
     ;
 
 expression: expression GE expr { $$ = make_node<BinaryExprNode>(BinaryOp::Geq, $1, $3); }
