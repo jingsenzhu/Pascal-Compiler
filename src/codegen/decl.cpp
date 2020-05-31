@@ -240,8 +240,7 @@ namespace spc
                 context.log() << "\tConst string declare" << std::endl;
                 auto strVal = cast_node<StringNode>(val);
                 auto *constant = llvm::ConstantDataArray::getString(llvm_context, strVal->val, true);
-                bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
-                success &= context.setConst(context.getTrace() + "_" + name->name, constant);
+                bool success = context.setConst(context.getTrace() + "_" + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tAdded to symbol table" << std::endl;
                 auto *gv = new llvm::GlobalVariable(*context.getModule(), constant->getType(), true, llvm::GlobalVariable::ExternalLinkage, constant, context.getTrace() + "_" + name->name);
@@ -253,8 +252,7 @@ namespace spc
                 context.log() << "\tConst declare" << std::endl;
                 auto *constant = llvm::cast<llvm::Constant>(val->codegen(context));
                 assert(constant != nullptr);
-                bool success = context.setLocal(context.getTrace() + "_" + name->name, constant);
-                success &= context.setConst(context.getTrace() + "_" + name->name, constant);
+                bool success = context.setConst(context.getTrace() + "_" + name->name, constant);
                 success &= context.setConstVal(context.getTrace() + "_" + name->name, constant);
                 if (!success) throw CodegenException("Duplicate identifier in const section of function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tAdded to symbol table" << std::endl;

@@ -26,19 +26,20 @@
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Utils.h>
+#include "utils/ast.hpp"
 
 #include <string>
 #include <fstream>
 #include <list>
 #include <map>
-
+#include <iomanip>
 
 static llvm::LLVMContext llvm_context;
 
 namespace spc
 {
-    class ArrayTypeNode;
-    class RecordTypeNode;  
+    //class ArrayTypeNode;
+    //class RecordTypeNode;  
 
     class CodegenException : public std::exception {
     public:
@@ -122,14 +123,241 @@ namespace spc
             }
         }
 
+        void printGlobals()
+        {
+            std::cout << "Globals Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = aliases.cbegin(); it != aliases.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);     
+                std::string c2 = c.substr(pos + 1, c.length());
+                llvm::Type *val = it->second;
+                std::string c3 = "a";
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printFuns()
+        {
+            std::cout << "Functions Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Propers" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = aliases.cbegin(); it != aliases.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);     
+                std::string c2 = c.substr(pos + 1, c.length());
+                llvm::Type *val = it->second;
+                std::string c3 = "a";
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printAliases()
+        {
+            std::cout << "Aliases Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = aliases.cbegin(); it != aliases.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);     
+                std::string c2 = c.substr(pos + 1, c.length());
+                llvm::Type *val = it->second;
+                std::string c3 = getLLVMTypeName(val);
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printArrAliases()
+        {
+            std::cout << "Array Aliases Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = arrAliases.cbegin(); it != arrAliases.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);    
+                std::string c2 = c.substr(pos + 1, c.length());
+                auto val = it->second;
+
+                auto start = val->range_start->codegen(*this);
+                llvm::ConstantInt *startI = llvm::dyn_cast<llvm::ConstantInt>(start);
+                assert(startI != nullptr);
+                int startInt = startI->getSExtValue();
+
+                auto end = val->range_end->codegen(*this);
+                llvm::ConstantInt *endI = llvm::dyn_cast<llvm::ConstantInt>(end);
+                assert(endI != nullptr);
+                int endInt = endI->getSExtValue();
+
+                //std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << "[" << val->range_start << ", "
+                  //      << val->range_end << "]" << " of " << val->itemType->type << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printArrTable()
+        {
+            std::cout << "Array Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = arrTable.cbegin(); it != arrTable.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);     
+                std::string c2 = c.substr(pos + 1, c.length());
+                std::shared_ptr<std::pair<int, int>> val = it->second;
+                std::string c3 = "a";
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printRecAliases()
+        {
+            std::cout << "Record Aliases Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = recAliases.cbegin(); it != recAliases.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);      
+                std::string c2 = c.substr(pos + 1, c.length());
+                std::shared_ptr<RecordTypeNode> val = it->second;
+                std::string c3 = "a";
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
         void printLocals()
         {
+            std::cout << "Locals Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
             for (auto it = locals.cbegin(); it != locals.cend(); it++)
             {
-                std::cout << it->first << ": "; // std::string
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1 = c.substr(0, pos);      
+                std::string c2 = c.substr(pos + 1, c.length());
                 llvm::Value *val = it->second;
-                // std::cout << typeIDMap.at(val->getType()->getPointerElementType()->getTypeID()) << std::endl;
-                std::cout << getLLVMTypeName(val->getType()->getPointerElementType()) << std::endl;
+                std::string c3 = getLLVMTypeName(val->getType()->getPointerElementType());
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+
+        void printConsts()
+        {
+            std::cout << "Consts Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(38) << "Type" << '|' << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            for (auto it = consts.cbegin(); it != consts.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);
+                std::string c2 = c.substr(pos + 1, c.length());
+                llvm::Value *val = it->second;
+                std::string c3 = getLLVMTypeName(val->getType());
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << c3 << '|' << std::endl;
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(39) << '+' << '+' << std::endl;
+            }
+        }
+        void printConstant(llvm::Constant *c)
+        {
+            auto ty = c->getType();
+            if (ty->isIntegerTy()) // int
+            {
+                llvm::ConstantInt *ci = llvm::dyn_cast<llvm::ConstantInt>(c);
+                assert(ci != nullptr);
+                if (ty->isIntegerTy(32))
+                {
+                    int intVal = ci->getSExtValue();
+                    std::cout << std::setw(19) << "Integer/Long" << '|' << std::setw(19) << intVal << '|' << std::endl;
+                }
+                else if (ty->isIntegerTy(8))
+                {
+                    char charVal = ci->getSExtValue();
+                    std::cout << std::setw(19) << "Char" << '|' << std::setw(19) << charVal << '|' << std::endl;
+                }
+                else if (ty->isIntegerTy(1))
+                {
+                    bool boolVal = ci->getZExtValue();
+                    std::cout << std::setw(19) << "Boolean" << '|' << std::setw(19) << std::boolalpha << boolVal << '|' << std::endl;
+                }
+            }
+            else if (ty->isDoubleTy())
+            {
+                llvm::ConstantFP *cf = llvm::dyn_cast<llvm::ConstantFP>(c);
+                assert(cf != nullptr);
+                double dVal = cf->getValueAPF().convertToDouble();
+                std::cout << std::setw(19) << "Real" << '|' << std::setw(19) <<  dVal << '|' << std::endl;
+            }
+        }
+
+        void printConstVals()
+        {
+            std::cout << "ConstVals Table:" << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(20) << '+' << std::setw(20) << '+' << '+' << std::endl;
+            std::cout << '|' << std::setw(19) << std::setfill(' ')  << "Function" << '|' << std::setw(19) << "Name" << '|' << std::setw(19) << "Type" 
+                        << '|' << std::setw(19) << "Value" << '|'  << std::endl;
+            std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(20) << '+' << std::setw(20) << '+' << '+' << std::endl;
+            for (auto it = constVals.cbegin(); it != constVals.cend(); it++)
+            {
+                std::string c = it->first;
+                int pos = c.find('.');
+                std::string c1;
+                if (pos == -1) c1 = "main";
+                else c1 = c.substr(0, pos);
+                std::string c2 = c.substr(pos + 1, c.length());
+                llvm::Constant *val = it->second;
+
+                std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|';
+                printConstant(val);
+                std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(20) << '+' << std::setw(20) << '+' << '+' << std::endl;
             }
         }
 
@@ -212,7 +440,24 @@ namespace spc
         ~CodegenContext()
         {
             if (of.is_open()) of.close();
+            printGlobals();
+            std::cout << std::endl;
+            printFuns();
+            std::cout << std::endl;
+            printAliases();
+            std::cout << std::endl;
+            printArrAliases();
+            std::cout << std::endl;
+            printArrTable();
+            std::cout << std::endl;
+            printRecAliases();
+            std::cout << std::endl;
+            printConsts();
+            std::cout << std::endl;
             printLocals();
+            std::cout << std::endl;
+            printConstVals();
+            std::cout << std::endl;
         }
 
         llvm::Value *getTempStrPtr()
