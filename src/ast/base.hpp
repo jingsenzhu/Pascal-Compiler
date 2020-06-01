@@ -107,6 +107,18 @@ namespace spc
         virtual llvm::Value *codegen(CodegenContext &context) = 0;
         // virtual void print() = 0;
     };
+
+    class LeftExprNode: public ExprNode
+    {
+    public:
+        LeftExprNode() {}
+        ~LeftExprNode() = default;
+        virtual llvm::Value *codegen(CodegenContext &context) = 0;
+        virtual llvm::Value *getPtr(CodegenContext &context) = 0;
+        virtual llvm::Value *getAssignPtr(CodegenContext &context) = 0;
+        virtual const std::string getSymbolName() = 0;
+        // virtual void print() = 0;
+    };
     
     class StmtNode: public BaseNode
     {

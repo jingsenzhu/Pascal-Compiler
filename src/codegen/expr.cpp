@@ -139,26 +139,8 @@ namespace spc
                     }
                     else if (value->getType()->isIntegerTy(8)) 
                     {
-                        if (is_ptr_of<IdentifierNode>(arg))
-                        {
-                            // auto argId = cast_node<IdentifierNode>(arg);
-                            // auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                            // if (arrEntry == nullptr)
-                            {
-                                func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                                func_args.push_back(value); 
-                            }
-                            // else
-                            // {
-                            //     func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                            //     func_args.push_back(argId->getPtr(context)); 
-                            // }
-                        }
-                        else
-                        {
-                            func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                            func_args.push_back(value); 
-                        }
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
+                        func_args.push_back(value); 
                     }
                     else if (value->getType()->isDoubleTy()) 
                     {
@@ -172,21 +154,21 @@ namespace spc
                             throw CodegenException("Cannot print a non-char array");
                         func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
                         llvm::Value *valuePtr;
-                        if (is_ptr_of<IdentifierNode>(arg))
+                        if (is_ptr_of<LeftExprNode>(arg))
                         {
-                            auto argId = cast_node<IdentifierNode>(arg);
+                            auto argId = cast_node<LeftExprNode>(arg);
                             valuePtr = argId->getPtr(context);
                         }
-                        else if (is_ptr_of<RecordRefNode>(arg))
-                        {
-                            auto argId = cast_node<RecordRefNode>(arg);
-                            valuePtr = argId->getPtr(context);
-                        }
-                        else if (is_ptr_of<ArrayRefNode>(arg))
-                        {
-                            auto argId = cast_node<ArrayRefNode>(arg);
-                            valuePtr = argId->getPtr(context);
-                        }
+                        // else if (is_ptr_of<RecordRefNode>(arg))
+                        // {
+                        //     auto argId = cast_node<RecordRefNode>(arg);
+                        //     valuePtr = argId->getPtr(context);
+                        // }
+                        // else if (is_ptr_of<ArrayRefNode>(arg))
+                        // {
+                        //     auto argId = cast_node<ArrayRefNode>(arg);
+                        //     valuePtr = argId->getPtr(context);
+                        // }
                         else if (is_ptr_of<CustomProcNode>(arg))
                             valuePtr = value;
                         else
@@ -214,42 +196,21 @@ namespace spc
                 for (auto &arg : args->getChildren())
                 {
                     llvm::Value *ptr;
-                    if (is_ptr_of<IdentifierNode>(arg))
-                        ptr = cast_node<IdentifierNode>(arg)->getPtr(context);
-                    else if (is_ptr_of<ArrayRefNode>(arg))
-                        ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
-                    else if (is_ptr_of<RecordRefNode>(arg))
-                        ptr = cast_node<RecordRefNode>(arg)->getPtr(context);
-                    else if (is_ptr_of<ArrayRefNode>(arg))
-                        ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
+                    if (is_ptr_of<LeftExprNode>(arg))
+                        ptr = cast_node<LeftExprNode>(arg)->getPtr(context);
+                    // else if (is_ptr_of<ArrayRefNode>(arg))
+                    //     ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
+                    // else if (is_ptr_of<RecordRefNode>(arg))
+                    //     ptr = cast_node<RecordRefNode>(arg)->getPtr(context);
+                    // else if (is_ptr_of<ArrayRefNode>(arg))
+                    //     ptr = cast_node<ArrayRefNode>(arg)->getPtr(context);
                     else
                         throw CodegenException("Argument in read() must be identifier or array/record reference");
                     std::vector<llvm::Value*> func_args;
                     if (ptr->getType()->getPointerElementType()->isIntegerTy(8))
                     { 
-                        // if (is_ptr_of<IdentifierNode>(arg))
-                        // {
-                        //     auto argId = cast_node<IdentifierNode>(arg);
-                        //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                        //     if (arrEntry == nullptr)
-                        //     {
-                        //         func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                        //         func_args.push_back(ptr); 
-                        //     }
-                        //     else
-                        //     {
-                        //         if (name == SysFunc::Read)
-                        //             func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%s"));
-                        //         else
-                        //             func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%[^\n]"));
-                        //         func_args.push_back(ptr); 
-                        //     }
-                        // }
-                        // else
-                        {
-                            func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
-                            func_args.push_back(ptr); 
-                        } 
+                        func_args.push_back(context.getBuilder().CreateGlobalStringPtr("%c")); 
+                        func_args.push_back(ptr); 
                     }
                     else if (ptr->getType()->getPointerElementType()->isIntegerTy(32))
                     { 
@@ -302,26 +263,8 @@ namespace spc
                 }
                 else if (value->getType()->isIntegerTy(8)) 
                 {
-                    // if (is_ptr_of<IdentifierNode>(arg))
-                    // {
-                    //     auto argId = cast_node<IdentifierNode>(arg);
-                    //     auto arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
-                    //     if (arrEntry == nullptr)
-                    //     {
-                    //         format += "%c";
-                    //         func_args.push_back(value);
-                    //     }
-                    //     else
-                    //     {
-                    //         format += "%s";
-                    //         func_args.push_back(argId->getPtr(context));
-                    //     }
-                    // }
-                    // else
-                    {
-                        format += "%c";
-                        func_args.push_back(value);
-                    }
+                    format += "%c";
+                    func_args.push_back(value);
                 }
                 else if (value->getType()->isDoubleTy()) 
                 {
@@ -335,21 +278,21 @@ namespace spc
                         throw CodegenException("Cannot concat a non-char array");
                     format += "%s";
                     llvm::Value *valuePtr;
-                    if (is_ptr_of<IdentifierNode>(arg))
+                    if (is_ptr_of<LeftExprNode>(arg))
                     {
-                        auto argId = cast_node<IdentifierNode>(arg);
+                        auto argId = cast_node<LeftExprNode>(arg);
                         valuePtr = argId->getPtr(context);
                     }
-                    else if (is_ptr_of<RecordRefNode>(arg))
-                    {
-                        auto argId = cast_node<RecordRefNode>(arg);
-                        valuePtr = argId->getPtr(context);
-                    }
-                    else if (is_ptr_of<ArrayRefNode>(arg))
-                    {
-                        auto argId = cast_node<ArrayRefNode>(arg);
-                        valuePtr = argId->getPtr(context);
-                    }
+                    // else if (is_ptr_of<RecordRefNode>(arg))
+                    // {
+                    //     auto argId = cast_node<RecordRefNode>(arg);
+                    //     valuePtr = argId->getPtr(context);
+                    // }
+                    // else if (is_ptr_of<ArrayRefNode>(arg))
+                    // {
+                    //     auto argId = cast_node<ArrayRefNode>(arg);
+                    //     valuePtr = argId->getPtr(context);
+                    // }
                     else
                         assert(0);
                     func_args.push_back(valuePtr);
@@ -383,12 +326,12 @@ namespace spc
             {
                 // context.log() << "\tqqqqqq" << std::endl;
                 llvm::Value *valPtr;
-                if (is_ptr_of<IdentifierNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
-                else if (is_ptr_of<RecordRefNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<RecordRefNode>(arg)->getPtr(context), {zero, zero});
-                else if (is_ptr_of<ArrayRefNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<ArrayRefNode>(arg)->getPtr(context), {zero, zero});
+                if (is_ptr_of<LeftExprNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<LeftExprNode>(arg)->getPtr(context), {zero, zero});
+                // else if (is_ptr_of<RecordRefNode>(arg))
+                //     valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<RecordRefNode>(arg)->getPtr(context), {zero, zero});
+                // else if (is_ptr_of<ArrayRefNode>(arg))
+                //     valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<ArrayRefNode>(arg)->getPtr(context), {zero, zero});
                 else if (is_ptr_of<CustomProcNode>(arg))
                     valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
                 else
@@ -423,7 +366,7 @@ namespace spc
             //         throw CodegenException("Incompatible type in length(): expected string2");
             //     std::shared_ptr<std::pair<int,int>> arrEntry;
             //     auto argId = cast_node<IdentifierNode>(arg);
-            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
             //     if (arrEntry == nullptr)
             //         throw CodegenException("Incompatible type in length(): expected string3");
             //     return context.getBuilder().CreateCall(context.strlenFunc, argId->getPtr(context));
@@ -459,12 +402,12 @@ namespace spc
             if (ty->isArrayTy() && ty->getArrayElementType()->isIntegerTy(8))
             {
                 llvm::Value *valPtr;
-                if (is_ptr_of<IdentifierNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<IdentifierNode>(arg)->getPtr(context), {zero, zero});
-                else if (is_ptr_of<RecordRefNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<RecordRefNode>(arg)->getPtr(context), {zero, zero});
-                else if (is_ptr_of<ArrayRefNode>(arg))
-                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<ArrayRefNode>(arg)->getPtr(context), {zero, zero});
+                if (is_ptr_of<LeftExprNode>(arg))
+                    valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<LeftExprNode>(arg)->getPtr(context), {zero, zero});
+                // else if (is_ptr_of<RecordRefNode>(arg))
+                //     valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<RecordRefNode>(arg)->getPtr(context), {zero, zero});
+                // else if (is_ptr_of<ArrayRefNode>(arg))
+                //     valPtr = context.getBuilder().CreateInBoundsGEP(cast_node<ArrayRefNode>(arg)->getPtr(context), {zero, zero});
                 else if (is_ptr_of<CustomProcNode>(arg))
                     valPtr = context.getBuilder().CreateInBoundsGEP(value, {zero, zero});
                 else
@@ -496,11 +439,11 @@ namespace spc
             //     auto argId = cast_node<IdentifierNode>(arg);
             //     // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
             //     // {
-            //     //     if ((arrEntry = context.getArrayEntry(*rit + "_" + argId->name)) != nullptr)
+            //     //     if ((arrEntry = context.getArrayEntry(*rit + "." + argId->name)) != nullptr)
             //     //         break;
             //     // }
             //     // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
-            //     arrEntry = context.getArrayEntry(context.getTrace() + "_" + argId->name);
+            //     arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
             //     if (arrEntry == nullptr)
             //         throw CodegenException("Incompatible type in val(): expected string");
             //     return context.getBuilder().CreateCall(context.atoiFunc, argId->getPtr(context));
@@ -638,15 +581,23 @@ namespace spc
         std::shared_ptr<RecordTypeNode> recTy = nullptr;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((recTy = context.getRecordAlias(*rit + "_" + name->name)) != nullptr)
+            if ((recTy = context.getRecordAlias(*rit + "." + name->getSymbolName())) != nullptr)
                 break;
         }
-        if (recTy == nullptr) recTy = context.getRecordAlias(name->name);
-        if (recTy == nullptr) throw CodegenException(name->name + " is not a record");
+        if (recTy == nullptr) recTy = context.getRecordAlias(name->getSymbolName());
+        if (recTy == nullptr) throw CodegenException(name->getSymbolName() + " is not a record");
         assert(value->getType()->getPointerElementType()->isStructTy());
 	    llvm::Value *idx = recTy->getFieldIdx(field->name, context);
         llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
         return context.getBuilder().CreateInBoundsGEP(value, {zero, idx});
+    }
+    llvm::Value *RecordRefNode::getAssignPtr(CodegenContext &context)
+    {
+        return this->getPtr(context);
+    }
+    const std::string RecordRefNode::getSymbolName()
+    {
+        return this->name->getSymbolName() + "." + this->field->name;
     }
 
     llvm::Value *ArrayRefNode::codegen(CodegenContext &context) 
@@ -659,73 +610,10 @@ namespace spc
         llvm::Value *value = arr->getAssignPtr(context);
         assert(value != nullptr);
         return this->getPtr(context);
-        // auto *idx_value = context.getBuilder().CreateIntCast(this->index->codegen(context), context.getBuilder().getInt32Ty(), true);
-        // auto *ptr_type = value->getType()->getPointerElementType();
-        // context.log() << "\tPtr elem type: " << ptr_type->getTypeID() << std::endl;
-        // context.log() << "\tType: " << value->getType()->getTypeID() << std::endl;
-        // std::vector<llvm::Value*> idx;
-        // if (ptr_type->isArrayTy()) 
-        // // if (true)
-        // {
-        //     context.log() << "\tArray ref 1" << std::endl;
-        //     idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
-        //     std::shared_ptr<std::pair<int,int>> range;
-        //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-        //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
-        //             break;
-        //     }
-        //     if (range == nullptr)
-        //         range = context.getArrayEntry(arr->name);
-        //     assert(range != nullptr && "Fatal error: Array not found in array table!");
-        //     llvm::ConstantInt *const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx_value);
-        //     if (const_idx != nullptr)
-        //     {
-        //         int int_idx = const_idx->getSExtValue();
-        //         if (int_idx < range->first || int_idx > range->second)
-        //             std::cerr << "Warning: index out of bound when visiting array '" + arr->name + "'" << std::endl;
-        //     }
-        //     if (range->first != 0)
-        //     {
-        //         llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
-        //         llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-        //         idx.push_back(trueIdx);
-        //     }
-        //     else
-        //         idx.push_back(idx_value);
-        // }
-        // else
-        // {
-        //     context.log() << "\tArray ref 2" << std::endl;
-        //     std::shared_ptr<std::pair<int,int>> range;
-        //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-        //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
-        //             break;
-        //     }
-        //     if (range == nullptr)
-        //         range = context.getArrayEntry(arr->name);
-        //     if (range == nullptr)
-        //         throw CodegenException(arr->name + " is not an array");
-        //     llvm::ConstantInt *const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx_value);
-        //     if (const_idx != nullptr)
-        //     {
-        //         int int_idx = const_idx->getSExtValue();
-        //         if (int_idx < range->first || int_idx > range->second)
-        //             std::cerr << "Warning: index out of bound when visiting array '" + arr->name + "'" << std::endl;
-        //     }
-        //     if (range->first != 0)
-        //     {
-        //         llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
-        //         llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-        //         return context.getBuilder().CreateGEP(value, trueIdx);
-        //     }
-        //     else
-        //     {
-        //         return context.getBuilder().CreateGEP(value, idx_value);
-        //     }
-        // }
-        // return context.getBuilder().CreateInBoundsGEP(value, idx);
+    }
+    const std::string ArrayRefNode::getSymbolName()
+    {
+        return this->arr->getSymbolName() + "[]";
     }
 
     llvm::Value *ArrayRefNode::getPtr(CodegenContext &context) 
@@ -743,25 +631,25 @@ namespace spc
         // bool is_local = false;
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
-            if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+            if ((range = context.getArrayEntry(*rit + "." + arr->getSymbolName())) != nullptr)
             {
                 // is_local = true;
                 break;
             }
         }
         if (range == nullptr)
-            range = context.getArrayEntry(arr->name);
+            range = context.getArrayEntry(arr->getSymbolName());
         if (ptr_type->isArrayTy())
             assert(range != nullptr && "Fatal error: Array not found in array table!");
         else if (range == nullptr)
-            throw CodegenException(arr->name + " is not an array");
+            throw CodegenException(arr->getSymbolName() + " is not an array");
         
         llvm::ConstantInt *const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx_value);
         if (const_idx != nullptr)
         {
             int int_idx = const_idx->getSExtValue();
             if (int_idx < range->first || int_idx > range->second)
-                std::cerr << "Warning: index out of bound when visiting array '" + arr->name + "'" << std::endl;
+                std::cerr << "Warning: index out of bound when visiting array '" + arr->getSymbolName() + "'" << std::endl;
         }
         if (range->first != 0)
         {
@@ -789,7 +677,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)
@@ -818,7 +706,7 @@ namespace spc
         //     std::shared_ptr<std::pair<int,int>> range;
         //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         //     {
-        //         if ((range = context.getArrayEntry(*rit + "_" + arr->name)) != nullptr)
+        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
         //             break;
         //     }
         //     if (range == nullptr)

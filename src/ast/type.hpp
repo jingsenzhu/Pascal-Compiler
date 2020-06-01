@@ -85,6 +85,7 @@ namespace spc
         void merge(std::shared_ptr<RecordTypeNode> &&rhs);
         llvm::Type *getLLVMType(CodegenContext &context) override;
         llvm::Value *getFieldIdx(const std::string &name, CodegenContext &context);
+        void insertNestedRecord(const std::string &outer, CodegenContext &context);
         // void print() override;
         friend class CodegenContext;
     };

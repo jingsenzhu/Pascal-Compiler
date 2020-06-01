@@ -88,6 +88,59 @@ namespace spc
         // return llvm::StructType::create(fieldTy);
         return llvm::StructType::get(context.getBuilder().getContext(), fieldTy);
     }
+    void RecordTypeNode::insertNestedRecord(const std::string &outer, CodegenContext &context)
+    {
+        for (auto &f : this->field)
+        {
+            auto fTy = f->type;
+            std::string fName = f->name->name;
+            if (fTy->type == Type::Alias)
+            {
+                std::shared_ptr<RecordTypeNode> rec;
+                std::string aliasName = cast_node<AliasTypeNode>(fTy->type)->name->name;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                    if ((rec = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
+                        break;
+                if (rec == nullptr) rec = context.getRecordAlias(aliasName);
+                if (rec == nullptr) continue;
+                if (!context.setRecordAlias(outer + "." + fName, rec)) throw CodegenException("Duplicate nested record field!");
+                rec->insertNestedRecord(outer + "." + fName, context);
+            }
+            else if (fTy->type == Type::Record)
+            {
+                std::shared_ptr<RecordTypeNode> rec = cast_node<RecordTypeNode>(fTy);
+                if (!context.setRecordAlias(outer + "." + fName, rec)) throw CodegenException("Duplicate nested record field!");
+                rec->insertNestedRecord(outer + "." + fName, context);
+            }
+            else if (fTy->type == Type::Array)
+            {
+                std::shared_ptr<ArrayTypeNode> arr = cast_node<ArrayTypeNode>(fTy);
+                auto st = arr->range_start->codegen(context), ed = arr->range_end->codegen(context);
+                int s = llvm::dyn_cast<llvm::ConstantInt>(st)->getSExtValue(), 
+                    e = llvm::dyn_cast<llvm::ConstantInt>(ed)->getSExtValue();
+                if (!context.setArrayEntry(outer + "." + fName, s, e)) throw CodegenException("Duplicate nested record field!");
+                std::shared_ptr<RecordTypeNode> rec;
+                if (arr->itemType->type == Type::Alias)
+                {
+                    std::string aliasName = cast_node<AliasTypeNode>(arr->itemType)->name->name;
+                    for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                        if ((rec = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
+                            break;
+                    if (rec == nullptr) rec = context.getRecordAlias(aliasName);
+                    if (rec == nullptr) continue;
+                    if (!context.setRecordAlias(outer + "." + fName + "[]", rec)) throw CodegenException("Duplicate nested record field!");
+                    rec->insertNestedRecord(outer + "." + fName + "[]", context);
+                }
+                if (arr->itemType->type == Type::Record)
+                {
+                    rec = cast_node<RecordTypeNode>(arr->itemType);
+                    if (!context.setRecordAlias(outer + "." + fName + "[]", rec)) throw CodegenException("Duplicate nested record field!");
+                    rec->insertNestedRecord(outer + "." + fName + "[]", context);
+                }
+            }
+        }
+        
+    }
 
     llvm::Value *RecordTypeNode::getFieldIdx(const std::string &name, CodegenContext &context)
     {

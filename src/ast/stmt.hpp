@@ -157,17 +157,12 @@ namespace spc
     class AssignStmtNode: public StmtNode
     {
     private:
-        std::shared_ptr<ExprNode> lhs;
+        std::shared_ptr<LeftExprNode> lhs;
         std::shared_ptr<ExprNode> rhs;
     public:
-        AssignStmtNode(const std::shared_ptr<ExprNode> &lhs, const std::shared_ptr<ExprNode> &rhs)
+        AssignStmtNode(const std::shared_ptr<LeftExprNode> &lhs, const std::shared_ptr<ExprNode> &rhs)
             : lhs(lhs), rhs(rhs)
-        {
-            if (!(is_ptr_of<IdentifierNode>(lhs) || is_ptr_of<ArrayRefNode>(lhs) || is_ptr_of<RecordRefNode>(lhs)))
-            {
-                throw std::logic_error("\nLeft side of assignment must be identifier or array/record reference!");
-            }
-        }
+        {}
         ~AssignStmtNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;

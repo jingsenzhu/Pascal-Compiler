@@ -7,7 +7,7 @@
 
 namespace spc
 {
-    class IdentifierNode: public ExprNode
+    class IdentifierNode: public LeftExprNode
     {      
     public:
         std::string name;
@@ -25,8 +25,9 @@ namespace spc
 
         llvm::Value *codegen(CodegenContext &context) override;
         llvm::Constant *getConstVal(CodegenContext &context);
-        llvm::Value *getPtr(CodegenContext &context);
-        llvm::Value *getAssignPtr(CodegenContext &context);
+        llvm::Value *getPtr(CodegenContext &context) override;
+        llvm::Value *getAssignPtr(CodegenContext &context) override;
+        const std::string getSymbolName() override { return this->name; }
         // void print() override;
     };
 

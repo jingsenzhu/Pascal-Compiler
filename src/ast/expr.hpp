@@ -50,36 +50,39 @@ namespace spc
     //     friend class ASTvis;
     // };
     
-    class ArrayRefNode: public ExprNode
+    class ArrayRefNode: public LeftExprNode
     {
     private:
-        std::shared_ptr<IdentifierNode> arr;
+        std::shared_ptr<LeftExprNode> arr;
         std::shared_ptr<ExprNode> index;
     public:
-        ArrayRefNode(const std::shared_ptr<IdentifierNode> &arr, const std::shared_ptr<ExprNode> &index)
+        ArrayRefNode(const std::shared_ptr<LeftExprNode> &arr, const std::shared_ptr<ExprNode> &index)
             : arr(arr), index(index) {}
         ~ArrayRefNode() = default;
 
         llvm::Value *codegen(CodegenContext &) override;
-        llvm::Value *getPtr(CodegenContext &);
-        llvm::Value *getAssignPtr(CodegenContext &);
+        llvm::Value *getPtr(CodegenContext &) override;
+        llvm::Value *getAssignPtr(CodegenContext &) override;
+        const std::string getSymbolName() override;
         // void print() override;
         friend class ASTvis;
         friend class AssignStmtNode;
     };
 
-    class RecordRefNode: public ExprNode
+    class RecordRefNode: public LeftExprNode
     {
     private:
-        std::shared_ptr<IdentifierNode> name;
+        std::shared_ptr<LeftExprNode> name;
         std::shared_ptr<IdentifierNode> field;
     public:
-        RecordRefNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<IdentifierNode> &field)
+        RecordRefNode(const std::shared_ptr<LeftExprNode> &name, const std::shared_ptr<IdentifierNode> &field)
             : name(name), field(field) {}
         ~RecordRefNode() = default;
 
         llvm::Value *codegen(CodegenContext &) override;
-        llvm::Value *getPtr(CodegenContext &);
+        llvm::Value *getPtr(CodegenContext &) override;
+        llvm::Value *getAssignPtr(CodegenContext &) override;
+        const std::string getSymbolName() override;
         // void print() override;
         friend class ASTvis;
     };

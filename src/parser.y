@@ -85,6 +85,7 @@
 %type <std::shared_ptr<CaseStmtNode>> case_stmt
 %type <std::shared_ptr<CaseBranchList>> case_expr_list
 %type <std::shared_ptr<CaseBranchNode>> case_expr
+%type <std::shared_ptr<LeftExprNode>> left_expr
 %type <std::shared_ptr<ExprNode>> expression expr term factor
 %type <std::shared_ptr<ArgList>> args_list
 
@@ -272,16 +273,16 @@ stmt: assign_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | for_stmt {$$ = make_node<CompoundStmtNode>($1);}
     | case_stmt {$$ = make_node<CompoundStmtNode>($1);}
     ;
-// array ref
-assign_stmt: ID ASSIGN expression {
+
+assign_stmt: left_expr ASSIGN expression {
         $$ = make_node<AssignStmtNode>($1, $3);
     }
-    | ID LB expression RB ASSIGN expression {
-        $$ = make_node<AssignStmtNode>(make_node<ArrayRefNode>($1, $3), $6);
-    }
-    | ID DOT ID ASSIGN expression {
-        $$ = make_node<AssignStmtNode>(make_node<RecordRefNode>($1, $3), $5);
-    }
+    // | ID LB expression RB ASSIGN expression {
+    //     $$ = make_node<AssignStmtNode>(make_node<ArrayRefNode>($1, $3), $6);
+    // }
+    // | ID DOT ID ASSIGN expression {
+    //     $$ = make_node<AssignStmtNode>(make_node<RecordRefNode>($1, $3), $5);
+    // }
     ;
 // routine call
 proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
@@ -369,7 +370,7 @@ term: term MUL factor { $$ = make_node<BinaryExprNode>(BinaryOp::Mul, $1, $3); }
     | factor { $$ = $1; }
     ;
 // call node & ref node
-factor: ID { $$ = $1; }
+factor: left_expr { $$ = $1; }
     | ID LP args_list RP
         { $$ = make_node<CustomProcNode>($1, $3); }
     | ID LP RP
@@ -383,10 +384,15 @@ factor: ID { $$ = $1; }
     | MINUS factor
         { $$ = make_node<BinaryExprNode>(BinaryOp::Minus, make_node<IntegerNode>(0), $2); }
     | PLUS factor { $$ = $2; }
-    | ID LB expression RB
-        { $$ = make_node<ArrayRefNode>($1, $3); }
-    | ID DOT ID
-        { $$ = make_node<RecordRefNode>($1, $3); }
+    // | ID LB expression RB
+    //     { $$ = make_node<ArrayRefNode>($1, $3); }
+    // | ID DOT ID
+    //     { $$ = make_node<RecordRefNode>($1, $3); }
+    ;
+
+left_expr: ID { $$ = $1; }
+    | left_expr LB expression RB { $$ = make_node<ArrayRefNode>($1, $3); }
+    | left_expr DOT ID { $$ = make_node<RecordRefNode>($1, $3); }
     ;
 
 args_list: args_list COMMA expression {
