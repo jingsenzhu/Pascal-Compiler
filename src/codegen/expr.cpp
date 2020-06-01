@@ -107,14 +107,30 @@ namespace spc
         if (!func)
             throw CodegenException("Function not found: " + name->name + "()");
         size_t argCnt = 0;
+        int index = 0;
         if (args != nullptr)
             argCnt = args->getChildren().size();
         if (func->arg_size() != argCnt)
             throw CodegenException("Wrong number of arguments: " + name->name + "()");
+        auto *funcTy = func->getFunctionType();
         std::vector<llvm::Value*> values;
         if (args != nullptr)
             for (auto &arg : args->getChildren())
-                values.push_back(arg->codegen(context));
+            {
+                llvm::Value *argVal = arg->codegen(context);
+                auto *paramTy = funcTy->getParamType(index), *argTy = argVal->getType();
+                if (paramTy->isDoubleTy() && argTy->isIntegerTy(32))
+                    argVal = context.getBuilder().CreateSIToFP(argVal, paramTy);
+                else if (argTy->isDoubleTy() && paramTy->isIntegerTy(32))
+                {
+                    std::cerr << "Warning: casting REAL type to INTEGER type when calling function " << name->name << "()" << std::endl;
+                    argVal = context.getBuilder().CreateFPToSI(argVal, paramTy);
+                }
+                else if (funcTy->getParamType(index) != argVal->getType())
+                    throw CodegenException("Incompatible type in the " + std::to_string(index) + "th arg when calling " + name->name + "()");
+                values.push_back(argVal);
+                index++;
+            }
         // if (func->getReturnType()->isArrayTy())
         // {
 
