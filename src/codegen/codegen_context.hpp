@@ -508,6 +508,18 @@ namespace spc
             arrTable[key] = value;
             return true;
         }
+        bool setArrayEntry(const std::string &key, const std::shared_ptr<ArrayTypeNode> &arr) 
+        {
+            if (getArrayEntry(key))
+                return false;
+            assert(arr != nullptr);
+            auto st = arr->range_start->codegen(*this), ed = arr->range_end->codegen(*this);
+            int s = llvm::cast<llvm::ConstantInt>(st)->getSExtValue(), 
+                e = llvm::cast<llvm::ConstantInt>(ed)->getSExtValue();
+            auto value = std::make_shared<std::pair<int, int>>(s, e);
+            arrTable[key] = value;
+            return true;
+        }
         bool setArrayEntry(const std::string &key, const int start, const int end) 
         {
             if (getArrayEntry(key))

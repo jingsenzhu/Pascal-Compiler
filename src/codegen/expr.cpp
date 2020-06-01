@@ -588,6 +588,8 @@ namespace spc
         if (recTy == nullptr) throw CodegenException(name->getSymbolName() + " is not a record");
         assert(value->getType()->getPointerElementType()->isStructTy());
 	    llvm::Value *idx = recTy->getFieldIdx(field->name, context);
+        if (idx == nullptr)
+            throw CodegenException("'" + field->name + "' is not in record field of " + name->getSymbolName());
         llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
         return context.getBuilder().CreateInBoundsGEP(value, {zero, idx});
     }
@@ -668,72 +670,6 @@ namespace spc
                 return context.getBuilder().CreateGEP(value, idx_value);
         }
         return context.getBuilder().CreateInBoundsGEP(value, idx);
-
-        // if (ptr_type->isArrayTy())
-        // // if (true)
-        // {
-        //     context.log() << "\tArray ref 1" << std::endl;
-        //     idx.push_back(llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), 0));
-        //     std::shared_ptr<std::pair<int,int>> range;
-        //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-        //     {
-        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
-        //             break;
-        //     }
-        //     if (range == nullptr)
-        //         range = context.getArrayEntry(arr->name);
-        //     assert(range != nullptr && "Fatal error: Array not found in array table!");
-        //     llvm::ConstantInt *const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx_value);
-        //     if (const_idx != nullptr)
-        //     {
-        //         int int_idx = const_idx->getSExtValue();
-        //         if (int_idx < range->first || int_idx > range->second)
-        //             std::cerr << "Warning: index out of bound when visiting array '" + arr->name + "'" << std::endl;
-        //     }
-        //     if (range->first != 0)
-        //     {
-        //         llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
-        //         llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-        //         idx.push_back(trueIdx);
-        //     }
-        //     else
-        //         idx.push_back(idx_value);
-        //     return context.getBuilder().CreateInBoundsGEP(value, idx);
-        // }
-        // else
-        // {
-        //     context.log() << "\tArray ref 2" << std::endl;
-        //     std::shared_ptr<std::pair<int,int>> range;
-        //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-        //     {
-        //         if ((range = context.getArrayEntry(*rit + "." + arr->name)) != nullptr)
-        //             break;
-        //     }
-        //     if (range == nullptr)
-        //         range = context.getArrayEntry(arr->name);
-        //     if (range == nullptr)
-        //         throw CodegenException(arr->name + " is not an array");
-        //     llvm::ConstantInt *const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx_value);
-        //     if (const_idx != nullptr)
-        //     {
-        //         int int_idx = const_idx->getSExtValue();
-        //         if (int_idx < range->first || int_idx > range->second)
-        //             std::cerr << "Warning: index out of bound when visiting array '" + arr->name + "'" << std::endl;
-        //     }
-        //     if (range->first != 0)
-        //     {
-        //         llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
-        //         llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-        //         return context.getBuilder().CreateGEP(value, trueIdx);
-        //     }
-        //     else
-        //     {
-        //         return context.getBuilder().CreateGEP(value, idx_value);
-        //     }
-        // }
-        // // else
-        // //     throw CodegenException(arr->name + " is not an array");
-        // return context.getBuilder().CreateInBoundsGEP(value, idx);
     }
 
 } // namespace spc

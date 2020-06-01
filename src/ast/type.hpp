@@ -195,6 +195,7 @@ namespace spc
         }
         ~ArrayTypeNode() = default;
         llvm::Type *getLLVMType(CodegenContext &) override;
+        void insertNestedArray(const std::string &outer, CodegenContext &context);
         // void print() override;
     };
     

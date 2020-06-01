@@ -85,6 +85,8 @@ namespace spc
         if (retTy == nullptr) throw CodegenException("Unsupported function return type");
         if (retTy->isArrayTy())
         {
+            if (!retTy->getArrayElementType()->isIntegerTy(8) || retTy->getArrayNumElements() != 256)
+                throw CodegenException("Not support array as function return type");
             retTy = context.getBuilder().getInt8PtrTy();
             context.setArrayEntry(name->name + "." + name->name, 0, 255);
         }

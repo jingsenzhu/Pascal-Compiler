@@ -38,7 +38,31 @@ namespace spc
             rec->insertNestedRecord(this->name->name + "[]", context);
         }
         else if (ty->isArrayTy()) // String
+        {
             z = llvm::Constant::getNullValue(ty);
+            std::shared_ptr<ArrayTypeNode> arr;
+            if (is_ptr_of<ArrayTypeNode>(arrTy->itemType))
+                arr = cast_node<ArrayTypeNode>(arrTy->itemType);
+            else if (is_ptr_of<StringTypeNode>(arrTy->itemType))
+                arr = nullptr;
+            else if (is_ptr_of<AliasTypeNode>(arrTy->itemType))
+            {
+                std::string aliasName = cast_node<AliasTypeNode>(arrTy->itemType)->name->name;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                    if ((arr = context.getArrayAlias(*rit + "." + aliasName)) != nullptr)
+                        break;
+                if (arr == nullptr) arr = context.getArrayAlias(aliasName);
+                if (arr == nullptr) assert(0 && "Fatal Error: Unexpected behavior!");
+            }
+            else assert(0 && "Fatal Error: Unexpected behavior!");
+            if (arr == nullptr) // String
+                context.setArrayEntry(this->name->name + "[]", 0, 255);
+            else
+            {
+                context.setArrayEntry(this->name->name + "[]", arr);
+                arr->insertNestedArray(this->name->name + "[]", context);
+            }
+        }
         else 
             throw CodegenException("Unsupported type of array");
 
@@ -106,8 +130,32 @@ namespace spc
             context.setRecordAlias(context.getTrace() + "." + this->name->name + "[]", rec);
             rec->insertNestedRecord(context.getTrace() + "." + this->name->name + "[]", context);
         }
-        else if (ty->isArrayTy()) // String
+        else if (ty->isArrayTy())
+        {
             constant = nullptr;
+            std::shared_ptr<ArrayTypeNode> arr;
+            if (is_ptr_of<ArrayTypeNode>(arrTy->itemType))
+                arr = cast_node<ArrayTypeNode>(arrTy->itemType);
+            else if (is_ptr_of<StringTypeNode>(arrTy->itemType))
+                arr = nullptr;
+            else if (is_ptr_of<AliasTypeNode>(arrTy->itemType))
+            {
+                std::string aliasName = cast_node<AliasTypeNode>(arrTy->itemType)->name->name;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                    if ((arr = context.getArrayAlias(*rit + "." + aliasName)) != nullptr)
+                        break;
+                if (arr == nullptr) arr = context.getArrayAlias(aliasName);
+                if (arr == nullptr) assert(0 && "Fatal Error: Unexpected behavior!");
+            }
+            else assert(0 && "Fatal Error: Unexpected behavior!");
+            if (arr == nullptr) // String
+                context.setArrayEntry(this->name->name + "[]", 0, 255);
+            else
+            {
+                context.setArrayEntry(this->name->name + "[]", arr);
+                arr->insertNestedArray(this->name->name + "[]", context);
+            }
+        }
         else
             throw CodegenException("Unsupported type of array");
 
