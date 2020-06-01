@@ -55,10 +55,11 @@ namespace spc
     {
         std::shared_ptr<ArrayTypeNode> a;
         std::shared_ptr<RecordTypeNode> rec;
+        std::string aliasName;
         switch (itemType->type)
         {
         case Type::Alias:
-            std::string aliasName = cast_node<AliasTypeNode>(itemType)->name->name;
+            aliasName = cast_node<AliasTypeNode>(itemType)->name->name;
             for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                 if ((a = context.getArrayAlias(*rit + "." + aliasName)) != nullptr)
                     break;
@@ -76,6 +77,9 @@ namespace spc
             if (rec == nullptr) break;
             if (!context.setRecordAlias(outer + "[]", rec)) throw CodegenException("Duplicate nested record field!");
             rec->insertNestedRecord(outer + "[]", context);
+            break;
+        case Type::String:
+            if (!context.setArrayEntry(outer + "[]", 0, 255)) throw CodegenException("Duplicate nested array field!");
             break;
         case Type::Array:
             a = cast_node<ArrayTypeNode>(itemType);
@@ -168,6 +172,10 @@ namespace spc
                 if (a == nullptr) continue;
                 if (!context.setArrayEntry(outer + "." + fName, a)) throw CodegenException("Duplicate nested array field!");
                 a->insertNestedArray(outer + "." + fName, context);
+            }
+            else if (fTy->type == Type::String)
+            {
+                if (!context.setArrayEntry(outer + "." + fName, 0, 255)) throw CodegenException("Duplicate nested record field!");
             }
             else if (fTy->type == Type::Record)
             {

@@ -642,7 +642,10 @@ namespace spc
         if (range == nullptr)
             range = context.getArrayEntry(arr->getSymbolName());
         if (ptr_type->isArrayTy())
+        {
+            if (range == nullptr) std::cout << arr->getSymbolName() << std::endl;
             assert(range != nullptr && "Fatal error: Array not found in array table!");
+        }
         else if (range == nullptr)
             throw CodegenException(arr->getSymbolName() + " is not an array");
         

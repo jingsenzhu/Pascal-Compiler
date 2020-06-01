@@ -37,7 +37,7 @@ namespace spc
             context.setRecordAlias(this->name->name + "[]", rec);
             rec->insertNestedRecord(this->name->name + "[]", context);
         }
-        else if (ty->isArrayTy()) // String
+        else if (ty->isArrayTy())
         {
             z = llvm::Constant::getNullValue(ty);
             std::shared_ptr<ArrayTypeNode> arr;
@@ -378,7 +378,8 @@ namespace spc
         {
             if (type->type == Type::Array)
             {
-                bool success = context.setArrayAlias(context.getTrace() + "." + name->name, cast_node<ArrayTypeNode>(type));
+                bool success = context.setAlias(context.getTrace() + "." + name->name, type->getLLVMType(context));
+                success &= context.setArrayAlias(context.getTrace() + "." + name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in function " + context.getTrace() + ": " + name->name);
                 context.log() << "\tArray alias in function " << context.getTrace() << ": " << name->name << std::endl;
             }
@@ -399,7 +400,8 @@ namespace spc
         {
             if (type->type == Type::Array)
             {
-                bool success = context.setArrayAlias(name->name, cast_node<ArrayTypeNode>(type));
+                bool success = context.setAlias(name->name, type->getLLVMType(context));
+                success &= context.setArrayAlias(name->name, cast_node<ArrayTypeNode>(type));
                 if (!success) throw CodegenException("Duplicate type alias in main program: " + name->name);
                 context.log() << "\tGlobal array alias: " << name->name << std::endl;
             }

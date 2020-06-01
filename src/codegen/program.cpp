@@ -57,15 +57,26 @@ namespace spc
                 throw CodegenException("Unsupported function param type");
             types.push_back(ty);
             names.push_back(p->name->name);
-            if (ty->isArrayTy()) // String
+            if (ty->isArrayTy())
             {
-                context.setArrayEntry(name->name + "." + p->name->name, 0, 255);
+                if (p->type->type == Type::String)
+                    context.setArrayEntry(name->name + "." + p->name->name, 0, 255);
+                else
+                {
+                    auto arrTy = cast_node<ArrayTypeNode>(p->type);
+                    context.setArrayEntry(name->name + "." + p->name->name, arrTy);
+                    arrTy->insertNestedArray(name->name + "." + p->name->name, context);
+                }
             }
             else if (ty->isStructTy())
             {
                 assert(is_ptr_of<RecordTypeNode>(p->type) || is_ptr_of<AliasTypeNode>(p->type));
                 if (is_ptr_of<RecordTypeNode>(p->type))
-                    context.setRecordAlias(name->name + "." + p->name->name, cast_node<RecordTypeNode>(p->type));
+                {
+                    auto recTy = cast_node<RecordTypeNode>(p->type);
+                    context.setRecordAlias(name->name + "." + p->name->name, recTy);
+                    recTy->insertNestedRecord(name->name + "." + p->name->name, context);
+                }
                 else
                 {
                     std::string aliasName = cast_node<AliasTypeNode>(p->type)->name->name;
@@ -78,6 +89,7 @@ namespace spc
                     if (recTy == nullptr) recTy = context.getRecordAlias(aliasName);
                     if (recTy == nullptr) assert(0);
                     context.setRecordAlias(name->name + "." + p->name->name, recTy);
+                    recTy->insertNestedRecord(name->name + "." + p->name->name, context);
                 }
             }
         }
@@ -89,6 +101,30 @@ namespace spc
                 throw CodegenException("Not support array as function return type");
             retTy = context.getBuilder().getInt8PtrTy();
             context.setArrayEntry(name->name + "." + name->name, 0, 255);
+        }
+        else if (retTy->isStructTy())
+        {
+            assert(is_ptr_of<RecordTypeNode>(this->retType) || is_ptr_of<AliasTypeNode>(this->retType));
+            if (is_ptr_of<RecordTypeNode>(this->retType))
+            {
+                auto recTy = cast_node<RecordTypeNode>(this->retType);
+                context.setRecordAlias(name->name + "." + name->name, recTy);
+                recTy->insertNestedRecord(name->name + "." + name->name, context);
+            }
+            else
+            {
+                std::string aliasName = cast_node<AliasTypeNode>(this->retType)->name->name;
+                std::shared_ptr<RecordTypeNode> recTy = nullptr;
+                for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                {
+                    if ((recTy = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
+                        break;
+                }
+                if (recTy == nullptr) recTy = context.getRecordAlias(aliasName);
+                if (recTy == nullptr) assert(0);
+                context.setRecordAlias(name->name + "." + name->name, recTy);
+                recTy->insertNestedRecord(name->name + "." + name->name, context);
+            }
         }
         auto *funcTy = llvm::FunctionType::get(retTy, types, false);
         auto *func = llvm::Function::Create(funcTy, llvm::Function::ExternalLinkage, name->name, *context.getModule());

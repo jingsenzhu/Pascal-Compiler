@@ -214,7 +214,7 @@ routine_part: routine_part function_decl {
     | routine_part procedure_decl {$$ = $1; $$->append($2);}
     | {$$ = make_node<RoutineList>();}
     ;
-// TBD
+
 function_decl: FUNCTION ID parameters COLON simple_type_decl SEMI routine_head routine_body SEMI {
     $$ = make_node<RoutineNode>($2, $7, $8, $3, $5); 
     }
@@ -236,7 +236,7 @@ para_decl_list: para_decl_list SEMI para_type_list {
     | para_type_list {$$ = $1;}
     ;
 
-para_type_list: var_para_list COLON simple_type_decl {
+para_type_list: var_para_list COLON type_decl /*simple_type_decl*/ {
         $$ = make_node<ParamList>();
         for (auto &name : $1->getChildren()) $$->append(make_node<ParamNode>(name, $3));
     }
