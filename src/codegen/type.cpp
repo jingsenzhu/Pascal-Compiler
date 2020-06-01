@@ -40,6 +40,17 @@ namespace spc
         // return nullptr;
     }
 
+    llvm::Type *ArrayTypeNode::getLLVMType(CodegenContext &context)
+    {
+        auto st = this->range_start->codegen(context),
+             ed = this->range_end->codegen(context);
+        int s = llvm::cast<llvm::ConstantInt>(st)->getSExtValue(), 
+            e = llvm::cast<llvm::ConstantInt>(ed)->getSExtValue();
+        if (e < s)
+            throw CodegenException("End index must be greater than start index!");
+        return llvm::ArrayType::get(this->itemType->getLLVMType(context), e - s + 1);
+    }
+
     void RecordTypeNode::append(const std::shared_ptr<VarDeclNode> &var)
     {
         for (auto &f : field)
@@ -81,7 +92,7 @@ namespace spc
         for (auto &decl: field)
         {
             auto *ty = decl->type->getLLVMType(context);
-            if (ty == nullptr || ty->isStructTy())
+            if (ty == nullptr/* || ty->isStructTy()*/)
                 throw CodegenException("Unsupported type in record declaration");
             fieldTy.push_back(ty);
         }
@@ -97,7 +108,7 @@ namespace spc
             if (fTy->type == Type::Alias)
             {
                 std::shared_ptr<RecordTypeNode> rec;
-                std::string aliasName = cast_node<AliasTypeNode>(fTy->type)->name->name;
+                std::string aliasName = cast_node<AliasTypeNode>(fTy)->name->name;
                 for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
                     if ((rec = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
                         break;

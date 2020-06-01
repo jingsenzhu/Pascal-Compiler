@@ -194,7 +194,7 @@ namespace spc
             // std::shared_ptr<ConstValueNode> rs = make_node<IntegerNode>(start), re = make_node<IntegerNode>(end);
         }
         ~ArrayTypeNode() = default;
-        llvm::Type *getLLVMType(CodegenContext &) override { return nullptr; }
+        llvm::Type *getLLVMType(CodegenContext &) override;
         // void print() override;
     };
     
