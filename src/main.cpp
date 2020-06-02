@@ -31,6 +31,7 @@
 #include <llvm/Target/TargetMachine.h>
 #include "utils/ast.hpp"
 #include "utils/ASTvis.hpp"
+#include "utils/ASTopt.hpp"
 #include "codegen/codegen_context.hpp"
 #include "parser.hpp"
 
@@ -79,7 +80,7 @@ int main(int argc, char* argv[])
 
     Target target = Target::UNDEFINED;
     char *input = nullptr, *outputP = nullptr;
-    bool opt = false;
+    bool opt = false, optAst = false;
     bool printTable = false;
     bool printLLVM = false;
 
@@ -89,6 +90,7 @@ int main(int argc, char* argv[])
         else if (strcmp(argv[i], "-S") == 0) target = Target::ASM;
         else if (strcmp(argv[i], "-c") == 0) target = Target::OBJ;
         else if (strcmp(argv[i], "-O") == 0) opt = true;
+        else if (strcmp(argv[i], "-opt-ast") == 0) optAst = true;
         else if (strcmp(argv[i], "-print-table") == 0) printTable = true;
         else if (strcmp(argv[i], "-print-llvm") == 0) printLLVM = true;
         else if (strcmp(argv[i], "-o") == 0)
@@ -116,6 +118,7 @@ int main(int argc, char* argv[])
         puts("  -c                   Emit object code (.o)");
         puts(" [-o <output file>]    Specify output file");
         puts(" [-O]                  Enable LLVM optimizations");
+        puts(" [-opt-ast]            Enable AST optimizations");
         puts(" [-print-table]        Print the symbol table");
         puts(" [-print-llvm]         Print the LLVM IR");
         exit(1);
@@ -147,6 +150,13 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Scanning & Parsing completed!" << std::endl;
+
+    if (optAst)
+    {
+        spc::ASTopt astOpt;
+        astOpt.operator()(program);
+    }
+    
 
     std::string astVisName = input;
     astVisName.erase(astVisName.rfind('.'));

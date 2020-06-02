@@ -31,6 +31,7 @@ namespace spc
         friend class ASTvis;
         friend class ProgramNode;
         friend class RoutineNode;
+        friend class ASTopt;
     };
 
     class BaseRoutineNode: public BaseNode
@@ -48,6 +49,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) = 0;
         // void print() = 0;
         friend class ASTvis;
+        friend class ASTopt;
     };
 
     class RoutineNode: public BaseRoutineNode

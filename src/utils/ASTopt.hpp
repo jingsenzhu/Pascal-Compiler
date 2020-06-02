@@ -9,14 +9,16 @@ namespace spc
     
     class ASTopt
     {
-    private:
-        using ExprVal = std::variant<int, char, double>;
-        int computeBoolExpr(const std::shared_ptr<ExprNode>& expr);
-        ExprVal computeExpr(const std::shared_ptr<ExprNode>& expr);
     public:
+        using ExprVal = std::variant<bool, char, int, double>;
         ASTopt() = default;
         ~ASTopt() = default;
-        void operator()(std::shared_ptr<ProgramNode> &prog);
+        void operator()(std::shared_ptr<BaseRoutineNode> &prog);
+    private:
+        int computeBoolExpr(const std::shared_ptr<ExprNode>& expr);
+        std::pair<bool, ExprVal> computeExpr(const std::shared_ptr<ExprNode>& expr);
+        template<typename T> bool cmp(const T lhs, const T rhs, Type op);
+        void opt(std::shared_ptr<CompoundStmtNode> &stmt);
     };
 
 

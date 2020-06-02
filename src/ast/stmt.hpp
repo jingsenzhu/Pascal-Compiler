@@ -31,6 +31,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
     
     class WhileStmtNode: public StmtNode
@@ -49,6 +50,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
 
     
@@ -94,6 +96,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
 
     class ProcStmtNode: public StmtNode
@@ -168,6 +171,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
     
 

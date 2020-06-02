@@ -30,6 +30,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
 
     // class UnaryExprNode: public ExprNode
@@ -134,6 +135,7 @@ namespace spc
         llvm::Value *codegen(CodegenContext &context) override;
         // void print() override;
         friend class ASTvis;
+        friend class ASTopt;
     };
     
 
