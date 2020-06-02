@@ -13,11 +13,11 @@ namespace spc
         using ExprVal = std::variant<bool, char, int, double>;
         ASTopt() = default;
         ~ASTopt() = default;
-        void operator()(std::shared_ptr<BaseRoutineNode> &prog);
+        void operator()(std::shared_ptr<BaseRoutineNode> prog);
     private:
         int computeBoolExpr(const std::shared_ptr<ExprNode>& expr);
         std::pair<bool, ExprVal> computeExpr(const std::shared_ptr<ExprNode>& expr);
-        template<typename T> bool cmp(const T lhs, const T rhs, Type op);
+        template<typename T> bool cmp(T lhs, T rhs, BinaryOp op);
         void opt(std::shared_ptr<CompoundStmtNode> &stmt);
     };
 

@@ -6,7 +6,7 @@ using namespace spc;
 static std::set<BinaryOp> cmpOp = { BinaryOp::Eq, BinaryOp::Neq, BinaryOp::Leq, BinaryOp::Geq, BinaryOp::Lt, BinaryOp::Gt };
 
 template<typename T>
-bool ASTopt::cmp(const T lhs, const T rhs, Type op)
+bool ASTopt::cmp(T lhs, T rhs, BinaryOp op)
 {
     switch (op)
     {
@@ -35,41 +35,52 @@ Return val:
     2: unknown
 */
 {
-    if (is_ptr_of<ConstValueNode>(expr))
+    auto res = computeExpr(expr);
+    if (!res.first) return 2;
+    try
     {
-        auto c = cast_node<ConstValueNode>(expr);
-        if (c->type == Type::Bool)
-            return (int)cast_node<BooleanNode>(c)->val;
+        bool b = std::get<bool>(res.second);
+        return (int)b;
+    }
+    catch(const std::bad_variant_access& e)
+    {
         return 2;
     }
-    else if (is_ptr_of<BinaryExprNode>(expr))
-    {
-        auto b = cast_node<BinaryExprNode>(expr);
-        bool lb, rb;
-        auto lhs = computeExpr(b->lhs), rhs = computeExpr(b->rhs);
-        try
-        {
-            lb = std::get<bool>(lhs), rb = std::get<bool>(rhs);
-        }
-        catch(const std::bad_variant_access&)
-        {
-            return 2;
-        }
-        switch (b->op)
-        {
-        case BinaryOp::And:
-            return lb and rb;
-            break;
-        case BinaryOp::Or:
-            return lb or rb;
-        case BinaryOp::Xor:
-            return lb xor rb;
-        default:
-            if (cmpOp.find(b->op) != cmpOp.end()) return cmp(lb, rb, b->op);
-            return 2;
-        }
-    }
-    return 2;
+    // if (is_ptr_of<ConstValueNode>(expr))
+    // {
+    //     auto c = cast_node<ConstValueNode>(expr);
+    //     if (c->type == Type::Bool)
+    //         return (int)cast_node<BooleanNode>(c)->val;
+    //     return 2;
+    // }
+    // else if (is_ptr_of<BinaryExprNode>(expr))
+    // {
+    //     auto b = cast_node<BinaryExprNode>(expr);
+    //     bool lb, rb;
+    //     auto lhs = computeExpr(b->lhs), rhs = computeExpr(b->rhs);
+    //     try
+    //     {
+    //         lb = std::get<bool>(lhs), rb = std::get<bool>(rhs);
+    //     }
+    //     catch(const std::bad_variant_access&)
+    //     {
+    //         return 2;
+    //     }
+    //     switch (b->op)
+    //     {
+    //     case BinaryOp::And:
+    //         return lb and rb;
+    //         break;
+    //     case BinaryOp::Or:
+    //         return lb or rb;
+    //     case BinaryOp::Xor:
+    //         return lb xor rb;
+    //     default:
+    //         if (cmpOp.find(b->op) != cmpOp.end()) return (int)cmp(lb, rb, b->op);
+    //         return 2;
+    //     }
+    // }
+    // return 2;
 }
 
 
@@ -375,7 +386,7 @@ void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
         if (is_ptr_of<AssignStmtNode>(stmt))
         {
             auto ass = cast_node<AssignStmtNode>(stmt);
-            auto lhs = ass->rhs;
+            auto rhs = ass->rhs;
             auto res = computeExpr(rhs);
             if (res.first)
             {
@@ -408,9 +419,27 @@ void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
             auto ifs = cast_node<IfStmtNode>(stmt);
             int cond = computeBoolExpr(ifs->expr);
             if (cond == 0) // If condition always false
-                *itr = ifs->else_stmt; // always else
+            {
+                auto &elseList = ifs->else_stmt->getChildren();
+                for (auto &s : elseList)
+                    stmt_list.insert(itr, s);
+                // *itr = ifs->else_stmt; // always else
+                // erase original if stmt
+                auto last = --itr;
+                stmt_list.erase(++itr);
+                itr = last;
+            }
             else if (cond == 1) // If condition always true
-                *itr = ifs->if_stmt; // always then
+            {
+                auto &thenList = ifs->if_stmt->getChildren();
+                for (auto &t : thenList)
+                    stmt_list.insert(itr, t);
+                // *itr = ifs->if_stmt; // always then
+                // erase original if stmt
+                auto last = --itr;
+                stmt_list.erase(++itr);
+                itr = last;
+            }
         }
         else if (is_ptr_of<WhileStmtNode>(stmt))
         {
@@ -419,6 +448,7 @@ void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
             if (cond == 0) // While condition always false
             {
                 auto last = --itr;
+                // std::cout << 666666 << std::endl;
                 stmt_list.erase(++itr); // Remove useless loop
                 itr = last;
             }
@@ -430,16 +460,24 @@ void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
             auto rps = cast_node<RepeatStmtNode>(stmt);
             int cond = computeBoolExpr(rps->expr);
             if (cond == 1) // Repeat condition always true
-                *itr = rps->stmt; // Remove useless repeat statement
+            {
+                auto &rl = rps->stmt->getChildren();
+                for (auto &s : rl)
+                    stmt_list.insert(itr, s);
+                // erase original if stmt
+                auto last = --itr;
+                stmt_list.erase(++itr);
+                itr = last;
+            }
             else if (cond == 0) // Repeat condition always false
                 std::cerr << "Warning: Dead loop detected" << std::endl; // Warn
         }
     }
 }
 
-void ASTopt::operator()(std::shared_ptr<BaseRoutineNode> &prog)
+void ASTopt::operator()(std::shared_ptr<BaseRoutineNode> prog)
 {
     for (auto &routine : prog->header->subroutineList->getChildren())
-        this->operator()(routine);
+        this->operator()(cast_node<BaseRoutineNode>(routine));
     opt(prog->body);
 }

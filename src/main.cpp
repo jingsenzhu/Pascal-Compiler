@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
     if (optAst)
     {
         spc::ASTopt astOpt;
-        astOpt.operator()(program);
+        astOpt(spc::cast_node<spc::BaseRoutineNode>(program));
     }
     
 
