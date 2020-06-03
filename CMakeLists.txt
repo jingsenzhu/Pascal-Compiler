@@ -3,7 +3,7 @@
 project(spc)
 
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)
 
 find_package(BISON REQUIRED)
@@ -51,7 +51,7 @@ target_include_directories(${CMAKE_PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/src/
         ${LLVM_INCLUDE_DIRS})
 set_property(TARGET ${CMAKE_PROJECT_NAME}
-        PROPERTY CXX_STANDARD 17)
+        PROPERTY CXX_STANDARD 14)
 
 llvm_map_components_to_libnames(llvm_libs all)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${llvm_libs})

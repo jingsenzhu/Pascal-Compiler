@@ -36,55 +36,13 @@ Return val:
 */
 {
     auto res = computeExpr(expr);
-    if (!res.first) return 2;
-    try
-    {
-        bool b = std::get<bool>(res.second);
-        return (int)b;
-    }
-    catch(const std::bad_variant_access& e)
-    {
-        return 2;
-    }
-    // if (is_ptr_of<ConstValueNode>(expr))
-    // {
-    //     auto c = cast_node<ConstValueNode>(expr);
-    //     if (c->type == Type::Bool)
-    //         return (int)cast_node<BooleanNode>(c)->val;
-    //     return 2;
-    // }
-    // else if (is_ptr_of<BinaryExprNode>(expr))
-    // {
-    //     auto b = cast_node<BinaryExprNode>(expr);
-    //     bool lb, rb;
-    //     auto lhs = computeExpr(b->lhs), rhs = computeExpr(b->rhs);
-    //     try
-    //     {
-    //         lb = std::get<bool>(lhs), rb = std::get<bool>(rhs);
-    //     }
-    //     catch(const std::bad_variant_access&)
-    //     {
-    //         return 2;
-    //     }
-    //     switch (b->op)
-    //     {
-    //     case BinaryOp::And:
-    //         return lb and rb;
-    //         break;
-    //     case BinaryOp::Or:
-    //         return lb or rb;
-    //     case BinaryOp::Xor:
-    //         return lb xor rb;
-    //     default:
-    //         if (cmpOp.find(b->op) != cmpOp.end()) return (int)cmp(lb, rb, b->op);
-    //         return 2;
-    //     }
-    // }
-    // return 2;
+    if (res.first != Type::Bool) return 2;
+    bool b = res.second.bval;
+    return (int)b;
 }
 
 
-std::pair<bool, ASTopt::ExprVal> ASTopt::computeExpr(const std::shared_ptr<ExprNode>& expr)
+std::pair<Type, ASTopt::ExprVal> ASTopt::computeExpr(const std::shared_ptr<ExprNode>& expr)
 {
     ASTopt::ExprVal ret;
     if (is_ptr_of<ConstValueNode>(expr))
@@ -92,289 +50,267 @@ std::pair<bool, ASTopt::ExprVal> ASTopt::computeExpr(const std::shared_ptr<ExprN
         auto c = cast_node<ConstValueNode>(expr);
         switch (c->type)
         {
+        case Type::Bool:
+            ret.bval = cast_node<BooleanNode>(c)->val;
+            return std::make_pair(Type::Bool, ret);
         case Type::Int:
-            ret = cast_node<IntegerNode>(c)->val;
-            return std::make_pair(true, ret);
+            ret.ival = cast_node<IntegerNode>(c)->val;
+            return std::make_pair(Type::Int, ret);
         case Type::Char:
-            ret = cast_node<CharNode>(c)->val;
-            return std::make_pair(true, ret);
+            ret.cval = cast_node<CharNode>(c)->val;
+            return std::make_pair(Type::Char, ret);
         case Type::Real:
-            ret = cast_node<RealNode>(c)->val;
-            return std::make_pair(true, ret);
+            ret.dval = cast_node<RealNode>(c)->val;
+            return std::make_pair(Type::Real, ret);
         default:
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         }
     }
     else if (is_ptr_of<BinaryExprNode>(expr))
     {
         auto b = cast_node<BinaryExprNode>(expr);
         auto lret = computeExpr(b->lhs), rret = computeExpr(b->rhs);
-        if (lret.first && rret.first)
+        if (lret.first != Type::Unknown && rret.first != Type::Unknown)
         {
             auto lhs = lret.second, rhs = rret.second;
             bool lb, rb;
             char lc, rc;
             int li, ri;
             double ld, rd;
-            switch ((lhs.index() << 2) | rhs.index())
+            if (lret.first == Type::Bool && rret.first == Type::Bool)
             {
-            case 0b0000: // bool op bool
-                try
-                {
-                    lb = std::get<bool>(lhs), rb = std::get<bool>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
+                lb = lhs.bval, rb = rhs.bval; 
                 switch (b->op)
                 {
                 case BinaryOp::And:
-                    ret = lb and rb;
-                    return std::make_pair(true, ret);
+                    ret.bval = lb and rb;
+                    return std::make_pair(Type::Bool, ret);
                 case BinaryOp::Or:
-                    ret = lb or rb;
-                    return std::make_pair(true, ret);
+                    ret.bval = lb or rb;
+                    return std::make_pair(Type::Bool, ret);
                 case BinaryOp::Xor:
-                    ret = lb xor rb;
-                    return std::make_pair(true, ret);
+                    ret.bval = lb xor rb;
+                    return std::make_pair(Type::Bool, ret);
                 default:
-                    if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(lb, rb, b->op));
-                    return std::make_pair(false, ret);
+                    if (cmpOp.find(b->op) != cmpOp.end())
+                    {
+                        ret.bval = cmp(lb, rb, b->op);
+                        return std::make_pair(Type::Bool, ret);
+                    }
+                    return std::make_pair(Type::Unknown, ret);
                 }
-            case 0b0101: // char op char
-                try
-                {
-                    lc = std::get<char>(lhs), rc = std::get<char>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
-                if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(lc, rc, b->op));
-                return std::make_pair(false, ret);
-            case 0b1010: // int op int
-                try
-                {
-                    li = std::get<int>(lhs), ri = std::get<int>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
-                switch (b->op)
-                {
-                case BinaryOp::And:
-                    ret = li & ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Or:
-                    ret = li | ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Xor:
-                    ret = li ^ ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Plus:
-                    ret = li + ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Minus:
-                    ret = li - ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Mul:
-                    ret = li * ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Div:
-                    ret = li / ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Mod:
-                    ret = li % ri;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Truediv:
-                    ret = (double)li / (double)ri;
-                    return std::make_pair(true, ret);
-                default:
-                    if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(li, ri, b->op));
-                    return std::make_pair(false, ret);
-                }
-            case 0b1111: // real op real
-                try
-                {
-                    ld = std::get<double>(lhs), rd = std::get<double>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
-                switch (b->op)
-                {
-                case BinaryOp::Plus:
-                    ret = ld + rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Minus:
-                    ret = ld - rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Mul:
-                    ret = ld * rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Truediv:
-                    ret = ld / rd;
-                    return std::make_pair(true, ret);
-                default:
-                    if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(ld, rd, b->op));
-                    return std::make_pair(false, ret);
-                }
-            case 0b1011: // int op real
-                try
-                {
-                    ld = (double)std::get<int>(lhs), rd = std::get<double>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
-                switch (b->op)
-                {
-                case BinaryOp::Plus:
-                    ret = ld + rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Minus:
-                    ret = ld - rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Mul:
-                    ret = ld * rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Truediv:
-                    ret = ld / rd;
-                    return std::make_pair(true, ret);
-                default:
-                    if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(ld, rd, b->op));
-                    return std::make_pair(false, ret);
-                }
-            case 0b1110: // real op int
-                try
-                {
-                    ld = std::get<double>(lhs), rd = (double)std::get<int>(rhs);
-                }
-                catch(const std::bad_variant_access&)
-                {
-                    return std::make_pair(false, ret);
-                }
-                switch (b->op)
-                {
-                case BinaryOp::Plus:
-                    ret = ld + rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Minus:
-                    ret = ld - rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Mul:
-                    ret = ld * rd;
-                    return std::make_pair(true, ret);
-                case BinaryOp::Truediv:
-                    ret = ld / rd;
-                    return std::make_pair(true, ret);
-                default:
-                    if (cmpOp.find(b->op) != cmpOp.end()) return std::make_pair(true, cmp(ld, rd, b->op));
-                    return std::make_pair(false, ret);
-                }
-            default:
-                return std::make_pair(false, ret);
             }
+            else if (lret.first == Type::Char && rret.first == Type::Char)
+            {
+                lc = lhs.cval, rc = rhs.cval;
+                if (cmpOp.find(b->op) != cmpOp.end())
+                {
+                    ret.bval = cmp(lc, rc, b->op);
+                    return std::make_pair(Type::Bool, ret);
+                }
+                return std::make_pair(Type::Unknown, ret);
+            }
+            else if (lret.first == Type::Int && rret.first == Type::Int)
+            {
+                li = lhs.ival, ri = rhs.ival;
+                switch (b->op)
+                {
+                case BinaryOp::And:
+                    ret.ival = li & ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Or:
+                    ret.ival = li | ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Xor:
+                    ret.ival = li ^ ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Plus:
+                    ret.ival = li + ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Minus:
+                    ret.ival = li - ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Mul:
+                    ret.ival = li * ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Div:
+                    ret.ival = li / ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Mod:
+                    ret.ival = li % ri;
+                    return std::make_pair(Type::Int, ret);
+                case BinaryOp::Truediv:
+                    ret.dval = (double)li / (double)ri;
+                    return std::make_pair(Type::Real, ret);
+                default:
+                    if (cmpOp.find(b->op) != cmpOp.end())
+                    {
+                        ret.bval = cmp(li, ri, b->op);
+                        return std::make_pair(Type::Bool, ret);
+                    }
+                    return std::make_pair(Type::Unknown, ret);
+                }
+            }
+            else if (lret.first == Type::Real && rret.first == Type::Real)
+            {
+                ld = lhs.dval, rd = rhs.dval;
+                switch (b->op)
+                {
+                case BinaryOp::Plus:
+                    ret.dval = ld + rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Minus:
+                    ret.dval = ld - rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Mul:
+                    ret.dval = ld * rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Truediv:
+                    ret.dval = ld / rd;
+                    return std::make_pair(Type::Real, ret);
+                default:
+                    if (cmpOp.find(b->op) != cmpOp.end())
+                    {
+                        ret.bval = cmp(ld, rd, b->op);
+                        return std::make_pair(Type::Bool, ret);
+                    } 
+                    return std::make_pair(Type::Unknown, ret);
+                }
+            }
+            else if (lret.first == Type::Int && rret.first == Type::Real)
+            {
+                ld = (double)lhs.ival, rd = rhs.dval;
+                switch (b->op)
+                {
+                case BinaryOp::Plus:
+                    ret.dval = ld + rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Minus:
+                    ret.dval = ld - rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Mul:
+                    ret.dval = ld * rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Truediv:
+                    ret.dval = ld / rd;
+                    return std::make_pair(Type::Real, ret);
+                default:
+                    if (cmpOp.find(b->op) != cmpOp.end())
+                    {
+                        ret.bval = cmp(ld, rd, b->op);
+                        return std::make_pair(Type::Bool, ret);
+                    } 
+                    return std::make_pair(Type::Unknown, ret);
+                }
+            }
+            else if (lret.first == Type::Real && rret.first == Type::Int)
+            {
+                ld = lhs.dval, rd = (double)rhs.ival;
+                switch (b->op)
+                {
+                case BinaryOp::Plus:
+                    ret.dval = ld + rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Minus:
+                    ret.dval = ld - rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Mul:
+                    ret.dval = ld * rd;
+                    return std::make_pair(Type::Real, ret);
+                case BinaryOp::Truediv:
+                    ret.dval = ld / rd;
+                    return std::make_pair(Type::Real, ret);
+                default:
+                    if (cmpOp.find(b->op) != cmpOp.end())
+                    {
+                        ret.bval = cmp(ld, rd, b->op);
+                        return std::make_pair(Type::Bool, ret);
+                    } 
+                    return std::make_pair(Type::Unknown, ret);
+                }
+            }
+            return std::make_pair(Type::Unknown, ret);
         }
         else
-            return std::make_pair(false, ret);   
+            return std::make_pair(Type::Unknown, ret);   
     }
     else if (is_ptr_of<SysProcNode>(expr))
     {
         auto p = cast_node<SysProcNode>(expr);
+        if (p->args->getChildren().size() > 1) return std::make_pair(Type::Unknown, ret);
         auto arg = p->args->getChildren().front();
         auto argVal = computeExpr(arg);
-        if (!argVal.first) return std::make_pair(false, ret);
+        if (argVal.first == Type::Unknown) return std::make_pair(Type::Unknown, ret);
         int iVal;
         double dVal;
         char cVal;
         switch (p->name)
         {
         case SysFunc::Sqr:
-            if (argVal.second.index() == 2)
+            if (argVal.first == Type::Int)
             {
-                iVal = std::get<int>(argVal.second);
-                ret = iVal * iVal;
-                return std::make_pair(true, ret);
+                iVal = argVal.second.ival;
+                ret.ival = iVal * iVal;
+                return std::make_pair(Type::Int, ret);
             }
-            else if (argVal.second.index() == 3)
+            else if (argVal.first == Type::Real)
             {
-                dVal = std::get<double>(argVal.second);
-                ret = dVal * dVal;
-                return std::make_pair(true, ret);
+                dVal = argVal.second.dval;
+                ret.dval = dVal * dVal;
+                return std::make_pair(Type::Real, ret);
             }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         case SysFunc::Sqrt:
-            if (argVal.second.index() == 2)
+            if (argVal.first == Type::Int)
             {
-                iVal = std::get<int>(argVal.second);
-                ret = sqrt(iVal);
-                return std::make_pair(true, ret);
+                iVal = argVal.second.ival;
+                ret.dval = sqrt(iVal);
+                return std::make_pair(Type::Real, ret);
             }
-            else if (argVal.second.index() == 3)
+            else if (argVal.first == Type::Real)
             {
-                dVal = std::get<double>(argVal.second);
-                ret = sqrt(dVal);
-                return std::make_pair(true, ret);
+                dVal = argVal.second.dval;
+                ret.dval = sqrt(dVal);
+                return std::make_pair(Type::Real, ret);
             }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         case SysFunc::Ord:
-            try
+            if (argVal.first == Type::Char)
             {
-                cVal = std::get<char>(argVal.second);
-                ret = (int)cVal;
-                return std::make_pair(true, ret);
+                cVal = argVal.second.cval;
+                ret.cval = (int)cVal;
+                return std::make_pair(Type::Int, ret);
             }
-            catch(const std::bad_variant_access&)
-            {
-                return std::make_pair(false, ret);
-            }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         case SysFunc::Chr:
-            try
+            if (argVal.first == Type::Int)
             {
-                iVal = std::get<int>(argVal.second);
-                ret = (char)iVal;
-                return std::make_pair(true, ret);
+                iVal = argVal.second.ival;
+                ret.cval = (char)iVal;
+                return std::make_pair(Type::Char, ret);
             }
-            catch(const std::bad_variant_access&)
-            {
-                return std::make_pair(false, ret);
-            }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         case SysFunc::Pred:
-            try
+            if (argVal.first == Type::Char)
             {
-                cVal = std::get<char>(argVal.second);
-                ret = (char)(cVal - 1);
-                return std::make_pair(true, ret);
+                cVal = argVal.second.cval;
+                ret.cval = (char)(cVal - 1);
+                return std::make_pair(Type::Char, ret);
             }
-            catch(const std::bad_variant_access&)
-            {
-                return std::make_pair(false, ret);
-            }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         case SysFunc::Succ:
-            try
+            if (argVal.first == Type::Char)
             {
-                cVal = std::get<char>(argVal.second);
-                ret = (char)(cVal + 1);
-                return std::make_pair(true, ret);
+                cVal = argVal.second.cval;
+                ret.cval = (char)(cVal + 1);
+                return std::make_pair(Type::Char, ret);
             }
-            catch(const std::bad_variant_access&)
-            {
-                return std::make_pair(false, ret);
-            }
-            return std::make_pair(false, ret);
+            return std::make_pair(Type::Unknown, ret);
         default:
             break;
         }
     }
-    return std::make_pair(false, ret);
+    return std::make_pair(Type::Unknown, ret);
 }
 
 void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
@@ -388,25 +324,25 @@ void ASTopt::opt(std::shared_ptr<CompoundStmtNode> &stmt)
             auto ass = cast_node<AssignStmtNode>(stmt);
             auto rhs = ass->rhs;
             auto res = computeExpr(rhs);
-            if (res.first)
+            if (res.first != Type::Unknown)
             {
                 std::shared_ptr<ConstValueNode> val;
-                switch (res.second.index())
+                switch (res.first)
                 {
-                case 0:
-                    val = make_node<BooleanNode>(std::get<bool>(res.second));
+                case Type::Bool:
+                    val = make_node<BooleanNode>(res.second.bval);
                     ass->rhs = val;
                     break;
-                case 1:
-                    val = make_node<CharNode>(std::get<char>(res.second));
+                case Type::Char:
+                    val = make_node<CharNode>(res.second.cval);
                     ass->rhs = val;
                     break;
-                case 2:
-                    val = make_node<IntegerNode>(std::get<int>(res.second));
+                case Type::Int:
+                    val = make_node<IntegerNode>(res.second.ival);
                     ass->rhs = val;
                     break;
-                case 3:
-                    val = make_node<RealNode>(std::get<double>(res.second));
+                case Type::Real:
+                    val = make_node<RealNode>(res.second.dval);
                     ass->rhs = val;
                     break;
                 default:
