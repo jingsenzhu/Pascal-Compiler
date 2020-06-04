@@ -376,12 +376,12 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::ProcStmtNode>&p_stmp)
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::AssignStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
-    int tmp = 0, lines = 0;
+    int tmp = 0, lines = 1;
     of << "child { node {ASSIGN Statment}";
-    tmp = travExpr(p_stmp->lhs);
+    tmp += travExpr(p_stmp->lhs);
     tmp += travExpr(p_stmp->rhs);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp;
     // of << "}\n}\n";
     return lines;
@@ -397,8 +397,6 @@ int spc::ASTvis::travExpr(const std::shared_ptr<ExprNode>& expr)
         tmp += travExpr(spc::cast_node<spc::ArrayRefNode>(expr));
     else if (spc::is_ptr_of<spc::RecordRefNode>(expr))
         tmp += travExpr(spc::cast_node<spc::RecordRefNode>(expr));
-    else if (spc::is_ptr_of<spc::ProcNode>(expr))
-        tmp += travExpr(spc::cast_node<spc::ProcNode>(expr));
     else if (spc::is_ptr_of<spc::CustomProcNode>(expr))
         tmp += travExpr(spc::cast_node<spc::CustomProcNode>(expr));
     else if (spc::is_ptr_of<spc::SysProcNode>(expr))
@@ -435,8 +433,8 @@ int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
     }
     of << "}\n";
     tmp += travExpr(expr->lhs);
-    for (int i=0; i<tmp; ++i) of << texNone;
-    lines += tmp; tmp = 0;
+    // for (int i=0; i<tmp; ++i) of << texNone;
+    // lines += tmp; tmp = 0;
     tmp += travExpr(expr->rhs);
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
@@ -492,7 +490,7 @@ int spc::ASTvis::travExpr(const std::shared_ptr<spc::ProcNode>& expr)
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::CustomProcNode>& expr)
 {
     if (expr == nullptr) return 0;
-    int tmp = 0, lines = 1;
+    int tmp = 0, lines = 0;
 
     of << "child { node {CustomFunc: ";
     of << expr->name->name;
@@ -503,7 +501,7 @@ int spc::ASTvis::travExpr(const std::shared_ptr<spc::CustomProcNode>& expr)
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::SysProcNode>& expr)
 {
     if (expr == nullptr) return 0;
-    int tmp = 0, lines = 1;
+    int tmp = 0, lines = 0;
 
     of << "child { node {SysFunc: ";
     switch (expr->name)

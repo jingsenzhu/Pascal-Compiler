@@ -28,9 +28,10 @@ namespace spc
         for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
         {
             if ((value = context.getLocal(*rit + "." + name)) != nullptr)
+                break;
+            else if (context.getConst(*rit + "." + name) != nullptr)
             {
-                if (context.getConst(*rit + "." + name) != nullptr)
-                    value = context.getModule()->getGlobalVariable(*rit + "." + name);
+                value = context.getModule()->getGlobalVariable(*rit + "." + name);
                 break;
             }
         }
