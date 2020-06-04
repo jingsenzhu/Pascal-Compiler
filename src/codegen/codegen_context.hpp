@@ -188,7 +188,17 @@ namespace spc
                 assert(endI != nullptr);
                 int endInt = endI->getSExtValue();
 
+                if (c1 != "main") 
+                {
+                    this->is_subroutine = true;
+                    this->traces.push_back(c1);
+                }
                 std::string type = getLLVMTypeName(val->itemType->getLLVMType(*this));
+                if (c1 != "main")
+                {
+                    this->traces.pop_back();
+                    this->is_subroutine = false;
+                }
                 std::string info = "[" + std::to_string(startInt) + ", " + std::to_string(endInt) + "] of " + type;
 
                 std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(38) << info << '|' << std::endl;
@@ -208,7 +218,7 @@ namespace spc
                 int pos = c.find('.');
                 std::string c1;
                 if (pos == -1) c1 = "main";
-                else c1 = c.substr(0, pos);     
+                else c1 = c.substr(0, pos);
                 std::string c2 = c.substr(pos + 1, c.length());
                 auto val = it->second;
                 std::string c3 = "[" + std::to_string((*val).first) + ", " + std::to_string((*val).second) + "]";
@@ -232,6 +242,11 @@ namespace spc
                 else c1 = c.substr(0, pos);      
                 std::string c2 = c.substr(pos + 1, c.length());
                 auto val = it->second;
+                if (c1 != "main") 
+                {
+                    this->is_subroutine = true;
+                    this->traces.push_back(c1);
+                }
                 std::string type = getLLVMTypeName(val->getLLVMType(*this));
                 std::string info = type + "{";
                 for(auto iy = val->field.begin(); iy != val->field.end(); iy++ )
@@ -242,7 +257,11 @@ namespace spc
                     else info = info + ", " + n + ": " + t;
                 }
                 info = info + "}";
-                
+                if (c1 != "main")
+                {
+                    this->traces.pop_back();
+                    this->is_subroutine = false;
+                }
 
                 std::cout << '|' << std::setw(19) << std::setfill(' ')  << c1 << '|' << std::setw(19) << c2 << '|' << std::setw(68) << info << '|' << std::endl;
                 std::cout << std::left << std::setw(20) << std::setfill('-') << '+' << std::setw(20) << '+' << std::setw(69) << '+' << '+' << std::endl;

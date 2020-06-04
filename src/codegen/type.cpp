@@ -83,6 +83,7 @@ namespace spc
             break;
         case Type::Array:
             a = cast_node<ArrayTypeNode>(itemType);
+            assert(a != nullptr);
             if (!context.setArrayEntry(outer + "[]", a)) throw CodegenException("Duplicate nested array field!");
             a->insertNestedArray(outer + "[]", context);
             break;
@@ -170,6 +171,7 @@ namespace spc
                     break;
                 if (a == nullptr) a = context.getArrayAlias(aliasName);
                 if (a == nullptr) continue;
+                assert(a != nullptr);
                 if (!context.setArrayEntry(outer + "." + fName, a)) throw CodegenException("Duplicate nested array field!");
                 a->insertNestedArray(outer + "." + fName, context);
             }
@@ -186,6 +188,7 @@ namespace spc
             else if (fTy->type == Type::Array)
             {
                 std::shared_ptr<ArrayTypeNode> arr = cast_node<ArrayTypeNode>(fTy);
+                assert(arr != nullptr);
                 if (!context.setArrayEntry(outer + "." + fName, arr)) throw CodegenException("Duplicate nested record field!");
                 arr->insertNestedArray(outer + "." + fName, context);
                 // std::shared_ptr<RecordTypeNode> rec;

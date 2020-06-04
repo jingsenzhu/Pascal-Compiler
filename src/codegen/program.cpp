@@ -61,11 +61,24 @@ namespace spc
             {
                 if (p->type->type == Type::String)
                     context.setArrayEntry(name->name + "." + p->name->name, 0, 255);
-                else
+                else if (p->type->type == Type::Array)
                 {
                     auto arrTy = cast_node<ArrayTypeNode>(p->type);
+                    assert(arrTy != nullptr);
                     context.setArrayEntry(name->name + "." + p->name->name, arrTy);
                     arrTy->insertNestedArray(name->name + "." + p->name->name, context);
+                }
+                else if (p->type->type == Type::Alias)
+                {
+                    std::string aliasName = cast_node<AliasTypeNode>(p->type)->name->name;
+                    std::shared_ptr<ArrayTypeNode> a;
+                    for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
+                        if ((a = context.getArrayAlias(*rit + "." + aliasName)) != nullptr)
+                            break;
+                    if (a == nullptr) a = context.getArrayAlias(aliasName);
+                    assert(a != nullptr && "Fatal error: array type not found!");
+                    context.setArrayEntry(name->name + "." + p->name->name, a);
+                    a->insertNestedArray(name->name + "." + p->name->name, context);
                 }
             }
             else if (ty->isStructTy())
