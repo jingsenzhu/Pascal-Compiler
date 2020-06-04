@@ -381,7 +381,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::AssignStmtNode>&p_stmp)
     tmp += travExpr(p_stmp->lhs);
     tmp += travExpr(p_stmp->rhs);
     of << "}\n";
-    for (int i=0; i<tmp+1; ++i) of << texNone;
+    for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
     // of << "}\n}\n";
     return lines;
@@ -459,6 +459,17 @@ int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
 //     of << "}\n";
 //     return lines;
 // }
+int spc::ASTvis::travExpr(const std::shared_ptr<spc::IdentifierNode>& expr)
+{
+    if (expr == nullptr) return 0;
+    int tmp = 0, lines = 0;
+    of << "child { node {ID " << expr->name;
+    // tmp = travExpr(p_stmp->expr);
+    for (int i=0; i<tmp; ++i) of << texNone;
+    lines += tmp;
+    of << "}\n}\n";
+    return lines;
+}
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::ArrayRefNode>& expr)
 {
     if (expr == nullptr) return 0;
