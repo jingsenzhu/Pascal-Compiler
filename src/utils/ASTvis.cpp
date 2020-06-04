@@ -130,6 +130,7 @@ int spc::ASTvis::travVAR(const std::shared_ptr<spc::VarDeclList>& var_declListAS
             case spc::Type::Long : of << "LONG"; break;
             case spc::Type::Real    : of << "REAL"   ; break;
             case spc::Type::String  : of << "STRING" ; break;
+            case spc::Type::Alias  : of << "ALIAS" ; break;
             default : of << "ERROR"; break;
         }
         of << "}}\n";
@@ -253,7 +254,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::CaseStmtNode>&p_stmp)
     of << "child { node {CASE Statment case expr}\n";
     tmp = travExpr(p_stmp->expr);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp; tmp = 0;
     of << "child { node {CASE Statement case branches}\n";
     int sublines = stmtList.size();
@@ -287,9 +288,9 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::IfStmtNode>&p_stmp)
     if (p_stmp == nullptr) return 0;
     int tmp = 0, lines = 3;
     of << "child { node {IF Statment if expr}\n";
-    tmp = travExpr(p_stmp->expr);
+    tmp += travExpr(p_stmp->expr);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp; tmp = 0;
     // std::cout << "debug info: IF expr over" << std::endl;
     of << "child { node {IF Statment if stmt}\n";
@@ -310,11 +311,11 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::IfStmtNode>&p_stmp)
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::WhileStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
-    int tmp = 0, lines = 0;
+    int tmp = 0, lines = 2;
     of << "child { node {WHILE Expr}";
     tmp = travExpr(p_stmp->expr);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp; tmp = 0;
     of << "child { node {WHILE Statment}\n";
     tmp = travCompound(p_stmp->stmt);
@@ -334,7 +335,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::ForStmtNode>&p_stmp)
     // of << texNone;
     tmp += travExpr(p_stmp->end_val);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp; tmp = 0;
 
     of << "child { node {FOR Statment}\n";
@@ -348,11 +349,11 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::ForStmtNode>&p_stmp)
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::RepeatStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
-    int tmp = 0, lines = 0;
+    int tmp = 0, lines = 2;
     of << "child { node {REPEAT Expr}";
-    tmp = travExpr(p_stmp->expr);
+    tmp += travExpr(p_stmp->expr);
     of << "}\n";
-    for (int i=0; i<tmp; ++i) of << texNone;
+    for (int i=0; i<tmp+1; ++i) of << texNone;
     lines += tmp; tmp = 0;
     of << "child { node {REPEAT Statment}\n";
     tmp = travCompound(p_stmp->stmt);
@@ -376,7 +377,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::ProcStmtNode>&p_stmp)
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::AssignStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
-    int tmp = 0, lines = 1;
+    int tmp = 2, lines = 0;
     of << "child { node {ASSIGN Statment}";
     tmp += travExpr(p_stmp->lhs);
     tmp += travExpr(p_stmp->rhs);
@@ -393,6 +394,10 @@ int spc::ASTvis::travExpr(const std::shared_ptr<ExprNode>& expr)
     if (spc::is_ptr_of<spc::BinaryExprNode>(expr))
         tmp += travExpr(spc::cast_node<spc::BinaryExprNode>(expr));
     // tmp += travExpr(spc::cast_node<spc::UnaryExprNode>(expr));
+    else if (spc::is_ptr_of<spc::IdentifierNode>(expr))
+        tmp += travExpr(spc::cast_node<IdentifierNode>(expr));
+    else if (spc::is_ptr_of<spc::ConstValueNode>(expr))
+        tmp += travExpr(spc::cast_node<ConstValueNode>(expr));
     else if (spc::is_ptr_of<spc::ArrayRefNode>(expr))
         tmp += travExpr(spc::cast_node<spc::ArrayRefNode>(expr));
     else if (spc::is_ptr_of<spc::RecordRefNode>(expr))
@@ -409,7 +414,7 @@ int spc::ASTvis::travExpr(const std::shared_ptr<ExprNode>& expr)
 int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
 {
     if (expr == nullptr) return 0;
-    int tmp = 0, lines = 1;
+    int tmp = 0, lines = 2;
 
     of << "child { node {BINARY: ";
     switch (expr->op)
@@ -459,11 +464,22 @@ int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
 //     of << "}\n";
 //     return lines;
 // }
+int spc::ASTvis::travExpr(const std::shared_ptr<spc::ConstValueNode>& expr)
+{
+    if (expr == nullptr) return 0;
+    int tmp = 0, lines = 0;
+    of << "child { node {Value";
+    // tmp = travExpr(p_stmp->expr);
+    for (int i=0; i<tmp; ++i) of << texNone;
+    lines += tmp;
+    of << "}\n}\n";
+    return lines;
+}
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::IdentifierNode>& expr)
 {
     if (expr == nullptr) return 0;
     int tmp = 0, lines = 0;
-    of << "child { node {ID " << expr->name;
+    of << "child { node {ID: " << expr->name;
     // tmp = travExpr(p_stmp->expr);
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
@@ -495,7 +511,7 @@ int spc::ASTvis::travExpr(const std::shared_ptr<spc::RecordRefNode>& expr)
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::ProcNode>& expr)
 {
     if (expr == nullptr) return 0;
-    int tmp = 0, lines = 1;
+    int tmp = 0, lines = 0;
     return lines;
 }
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::CustomProcNode>& expr)
