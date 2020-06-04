@@ -16,7 +16,6 @@ begin
   else if x > y then writeln('x > y')
   else writeln('x = y');
 
-  ONE := 2;
   { case statement }
   case x mod 3 of
     0: x := ZERO;
