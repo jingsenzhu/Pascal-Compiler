@@ -349,7 +349,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::RepeatStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
     int tmp = 0, lines = 0;
-    of << "child { node {REPEAT Expr";
+    of << "child { node {REPEAT Expr}";
     tmp = travExpr(p_stmp->expr);
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
@@ -359,7 +359,7 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::RepeatStmtNode>&p_stmp)
     of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    of << "}\n";
+    // of << "}\n";
     return lines;
 }
 int spc::ASTvis::travStmt(const std::shared_ptr<spc::ProcStmtNode>&p_stmp)
@@ -377,11 +377,13 @@ int spc::ASTvis::travStmt(const std::shared_ptr<spc::AssignStmtNode>&p_stmp)
 {
     if (p_stmp == nullptr) return 0;
     int tmp = 0, lines = 0;
-    of << "child { node {ASSIGN Statment";
-    // tmp = travExpr(p_stmp->expr);
+    of << "child { node {ASSIGN Statment}";
+    tmp = travExpr(p_stmp->lhs);
+    tmp += travExpr(p_stmp->rhs);
+    of << "}\n";
     for (int i=0; i<tmp; ++i) of << texNone;
     lines += tmp;
-    of << "}\n}\n";
+    // of << "}\n}\n";
     return lines;
 }
 
