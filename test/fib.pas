@@ -32,7 +32,7 @@ begin
         d := e;
         e := t;
         writeln(e);
-	writeln(fib(a+1));
+	writeln(fib(a + 1));
         a := a + 1;
     end;
 end.
