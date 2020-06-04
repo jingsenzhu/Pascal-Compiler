@@ -1,7 +1,7 @@
 program stmt;
 const
     a = 1;
-    str = 'fuck';
+    st = 'duck';
 var
     b, c, d : integer;
 
@@ -21,8 +21,8 @@ begin
         end;
     end
     else begin
-        writeln(str);
+        writeln(st);
     end;
     writeln(a, ' ', b, ' ', c, ' ', d);
-    writeln(str);
+    writeln(st);
 end.
