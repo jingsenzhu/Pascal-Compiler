@@ -44,7 +44,6 @@ begin
     e := a xor y;
     e := a div g;
     e := a mod g;
-    e := not g;
     j[-2] := -2;
     j[-1] := -1;
     j[0] := 0;
