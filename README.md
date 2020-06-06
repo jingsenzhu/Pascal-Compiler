@@ -7,14 +7,15 @@ A simple pascal compiler using flex and bison as frontend and LLVM as backend. P
   - Integer, Longint, Char, Boolean, String: Complete support
   - Array: Partial
     - Support: Array of Basic Types/String
+    - Array of array (i.e. multi-dim array)
+    - Array of record
+    - Array as param of function
     - NOT support:
-      - Array of array (i.e. multi-dim array)
-      - Array as param/return of function
-  - Record: Partial
+      - Array as return of function
+  - Record
     - Support:
       - Record field of Basic Types/String
       - Record as param/return of function
-    - NOT support:
       - Nested record/Array in record field
 - Support system functions
   - `writeln`/`write`: Integer, Longint, Real, Char, String
@@ -109,14 +110,17 @@ A simple pascal compiler using flex and bison as frontend and LLVM as backend. P
 4. Enjoy! (-o is optional)
 
    ```
-   ./spc [-O] [-ir/-S/-c] <source pascal file> [-o <output file>]
+   ./spc [optional options] <-ir/-S/-c> <source pascal file> [-o <output file>]
    ```
 
-   Args decription:
+   Args description:
 
    - -ir: produce LLVM IR code
    - -S: produce assembler code
    - -c: produce obj file
    - -o \<output file\>: Optional, specify the output file. If not specified, the compiler will generate a file with the same name as the pascal source file
    - -O: Optional, enable LLVM optimizations
+   - -opt-ast: Optional, enable AST optimizations
+   - -print-llvm: Optional, print out the generated LLVM IR code
+   - -print-table: Optional, print out the symbol tables
 
