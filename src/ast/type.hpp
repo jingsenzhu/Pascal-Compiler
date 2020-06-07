@@ -99,20 +99,6 @@ namespace spc
         ~ConstValueNode() = default;
 
         llvm::Type *getLLVMType(CodegenContext &context);
-        // {
-        //     switch (type) 
-        //     {
-        //         case Type::Bool: return context.getBuilder().getInt1Ty();
-        //         case Type::Int: return context.getBuilder().getInt32Ty();
-        //         case Type::Long: return context.getBuilder().getInt32Ty();
-        //         case Type::Char: return context.getBuilder().getInt8Ty();
-        //         case Type::Real: return context.getBuilder().getDoubleTy();
-        //         case Type::String: throw CodegenException("String currently not supported.\n");
-        //         default: return nullptr;
-        //     }
-        //     return nullptr;
-        // }
-        // void print() override;
     };
     
     class BooleanNode: public ConstValueNode
@@ -190,9 +176,7 @@ namespace spc
         ) : TypeNode(Type::Array), 
             range_start(cast_node<ExprNode>(make_node<IntegerNode>(start))), range_end(cast_node<ExprNode>(make_node<IntegerNode>(end))),
             itemType(make_node<SimpleTypeNode>(itype))
-        {
-            // std::shared_ptr<ConstValueNode> rs = make_node<IntegerNode>(start), re = make_node<IntegerNode>(end);
-        }
+        {}
         ~ArrayTypeNode() = default;
         llvm::Type *getLLVMType(CodegenContext &) override;
         void insertNestedArray(const std::string &outer, CodegenContext &context);

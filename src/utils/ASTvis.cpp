@@ -14,7 +14,6 @@ void spc::ASTvis::travAST(const std::shared_ptr<ProgramNode>& prog)
     of << texTail;
 
     // std::cout << "debug info:\n" << prog->getName() << std::endl;
-    // std::cout << "\n\n>>>>>>>>>>>>>>>==========  AST over!==========<<<<<<<<<<<<<<<" << std::endl;
 
     return;
 }
@@ -447,23 +446,6 @@ int spc::ASTvis::travExpr(const std::shared_ptr<BinaryExprNode>& expr)
 
     return lines;
 }
-// int spc::ASTvis::travExpr(const std::shared_ptr<spc::UnaryExprNode>& expr)
-// {
-//     if (expr == nullptr) return 0;
-//     int tmp = 0, lines = 1;
-
-//     of << "child { node {UNARY: ";
-//     switch (expr->op)
-//     {
-//         case spc::UnaryOp::Neg: of << "-";break;
-//         case spc::UnaryOp::Pos: of << "+";break;
-//         case spc::UnaryOp::Not: of << "!";break;
-//         default: of << "ERROR";break;
-//     }
-//     of << "}\n";
-//     of << "}\n";
-//     return lines;
-// }
 int spc::ASTvis::travExpr(const std::shared_ptr<spc::ConstValueNode>& expr)
 {
     if (expr == nullptr) return 0;

@@ -32,24 +32,6 @@ namespace spc
         friend class ASTvis;
         friend class ASTopt;
     };
-
-    // class UnaryExprNode: public ExprNode
-    // {
-    // private:
-    //     UnaryOp op;
-    //     std::shared_ptr<ExprNode> rhs;
-    // public:
-    //     UnaryExprNode(
-    //         const UnaryOp op, 
-    //         const std::shared_ptr<ExprNode>& rval
-    //         ) 
-    //         : op(op), rhs(rval) {}
-    //     ~UnaryExprNode() = default;
-
-    //     llvm::Value *codegen(CodegenContext &) override;
-    //     // void print() override;
-    //     friend class ASTvis;
-    // };
     
     class ArrayRefNode: public LeftExprNode
     {
@@ -105,12 +87,8 @@ namespace spc
     public:
         CustomProcNode(const std::string &name, const std::shared_ptr<ArgList> &args = nullptr) 
             : name(make_node<IdentifierNode>(name)), args(args) {}
-        // CustomProcStmtNode(const std::string &name) 
-        //     : name(make_node<IdentifierNode>(name)), args(nullptr) {}
         CustomProcNode(const std::shared_ptr<IdentifierNode> &name, const std::shared_ptr<ArgList> &args = nullptr) 
             : name(name), args(args) {}
-        // CustomProcStmtNode(const std::shared_ptr<IdentifierNode> &name) 
-        //     : name(name), args(nullptr) {}
         ~CustomProcNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;
@@ -128,8 +106,6 @@ namespace spc
     public:
         SysProcNode(const SysFunc name, const std::shared_ptr<ArgList> &args = nullptr) 
             : name(name), args(args) {}
-        // SysProcStmtNode(const SysFunc &name) 
-        //     : name(name), args(nullptr) {}
         ~SysProcNode() = default;
 
         llvm::Value *codegen(CodegenContext &context) override;

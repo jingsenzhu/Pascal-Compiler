@@ -148,8 +148,6 @@ namespace spc
         for (auto &arg : func->args())
         {
             auto *type = arg.getType();
-            // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
-            //     throw CodegenException("Unknown function param type");
             auto *local = context.getBuilder().CreateAlloca(type);
             context.setLocal(name->name + "." + names[index++], local);
             context.getBuilder().CreateStore(&arg, local);
@@ -169,8 +167,6 @@ namespace spc
         if (retType->type != Type::Void)  // set the return variable
         {  
             auto *type = retType->getLLVMType(context);
-            // if (!type->isIntegerTy(32) && !type->isIntegerTy(8) && !type->isDoubleTy())
-            //     throw CodegenException("Unknown function return type");
 
             llvm::Value *local;
             if (type == nullptr) throw CodegenException("Unknown function return type");
@@ -178,8 +174,6 @@ namespace spc
             {
                 if (type->getArrayElementType()->isIntegerTy(8) && type->getArrayNumElements() == 256) // String
                 {
-                    // llvm::ConstantInt *space = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 256);
-                    // local = context.getBuilder().CreateAlloca(context.getBuilder().getInt8Ty(), space);
                     local = context.getBuilder().CreateAlloca(type);
                 }
                 else
@@ -191,9 +185,6 @@ namespace spc
             context.setLocal(name->name + "." + name->name, local);
         }
 
-
-        // block = llvm::BasicBlock::Create(context.getModule()->getContext(), "back", func);
-        // context.getBuilder().SetInsertPoint(block);
         context.log() << "Entering body part of function " << name->name << std::endl;
         body->codegen(context);
 
@@ -203,7 +194,6 @@ namespace spc
             llvm::Value *ret = context.getBuilder().CreateLoad(local);
             if (ret->getType()->isArrayTy())
             {
-                // assert(ret->getType()->isArrayTy());
                 llvm::Value *tmpStr = context.getTempStrPtr();
                 llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
                 llvm::Value *retPtr = context.getBuilder().CreateInBoundsGEP(local, {zero, zero});
@@ -225,7 +215,6 @@ namespace spc
         if (context.fpm)
             context.fpm->run(*func);
 
-        // context.resetLocal();
         context.traces.pop_back();  
 
         context.log() << "Leaving function " << name->name << std::endl;

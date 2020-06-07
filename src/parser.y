@@ -28,8 +28,6 @@
     extern int line_no;
 }
 
-
-// 导入scanner和driver操作
 %code {
     int yylex(spc::parser::semantic_type* lval, spc::parser::location_type* loc);
 }
@@ -278,11 +276,6 @@ assign_stmt: left_expr ASSIGN expression {
         $$ = make_node<AssignStmtNode>($1, $3);
     }
     // | ID LB expression RB ASSIGN expression {
-    //     $$ = make_node<AssignStmtNode>(make_node<ArrayRefNode>($1, $3), $6);
-    // }
-    // | ID DOT ID ASSIGN expression {
-    //     $$ = make_node<AssignStmtNode>(make_node<RecordRefNode>($1, $3), $5);
-    // }
     ;
 // routine call
 proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
@@ -295,8 +288,6 @@ proc_stmt: ID {  $$ = make_node<ProcStmtNode>(make_node<CustomProcNode>($1)); }
         { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1)); }
     | SYS_PROC LP args_list RP
         { $$ = make_node<ProcStmtNode>(make_node<SysProcNode>($1, $3)); };
-//  | READ LP factor RP
-//      { printf("proc_stmt: READ LP factor RP\n"); }
     
 
 repeat_stmt: REPEAT stmt_list UNTIL expression {
@@ -324,7 +315,7 @@ if_stmt: IF expression THEN stmt else_clause {
     ;
 
 else_clause: ELSE stmt { $$ = $2; }
-    | { $$ = nullptr; }// $$ = make_node<CompoundStmtNode>();
+    | { $$ = nullptr; }
     ;
 
 case_stmt: CASE expression OF case_expr_list END {
@@ -384,10 +375,6 @@ factor: left_expr { $$ = $1; }
     | MINUS factor
         { $$ = make_node<BinaryExprNode>(BinaryOp::Minus, make_node<IntegerNode>(0), $2); }
     | PLUS factor { $$ = $2; }
-    // | ID LB expression RB
-    //     { $$ = make_node<ArrayRefNode>($1, $3); }
-    // | ID DOT ID
-    //     { $$ = make_node<RecordRefNode>($1, $3); }
     ;
 
 left_expr: ID { $$ = $1; }

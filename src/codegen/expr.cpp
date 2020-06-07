@@ -447,23 +447,6 @@ namespace spc
                 else
                     throw CodegenException("Incompatible type in val(): expected string");
             }
-            // else if (ty->isIntegerTy(8))
-            // {
-            //     if (!is_ptr_of<IdentifierNode>(arg))
-            //         throw CodegenException("Incompatible type in val(): expected string");
-            //     std::shared_ptr<std::pair<int,int>> arrEntry;
-            //     auto argId = cast_node<IdentifierNode>(arg);
-            //     // for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-            //     // {
-            //     //     if ((arrEntry = context.getArrayEntry(*rit + "." + argId->name)) != nullptr)
-            //     //         break;
-            //     // }
-            //     // if (arrEntry == nullptr) arrEntry = context.getArrayEntry(argId->name);
-            //     arrEntry = context.getArrayEntry(context.getTrace() + "." + argId->name);
-            //     if (arrEntry == nullptr)
-            //         throw CodegenException("Incompatible type in val(): expected string");
-            //     return context.getBuilder().CreateCall(context.atoiFunc, argId->getPtr(context));
-            // }
             else
                 throw CodegenException("Incompatible type in val(): expected string");
         }
@@ -581,13 +564,6 @@ namespace spc
     llvm::Value *RecordRefNode::codegen(CodegenContext &context)
     {
         auto *ptr = this->getPtr(context);
-        // if (ptr->getType()->getPointerElementType()->isArrayTy())
-        // {
-        //     // llvm::Value *zero = llvm::ConstantInt::get(context.getBuilder().getInt32Ty(), 0, false);
-        //     context.log() << "\tSTRING in RECORD" << std::endl;
-        //     // return context.getBuilder().CreateInBoundsGEP(ptr, {zero, zero});
-        //     return ptr;
-        // }
         return context.getBuilder().CreateLoad(ptr);
     }
     llvm::Value *RecordRefNode::getPtr(CodegenContext &context)
@@ -676,14 +652,14 @@ namespace spc
         {
             llvm::Value *range_start = llvm::ConstantInt::getSigned(context.getBuilder().getInt32Ty(), range->first);
             llvm::Value *trueIdx = context.getBuilder().CreateBinOp(llvm::Instruction::Sub, idx_value, range_start);
-            if (ptr_type->isArrayTy() /*&& !is_local*/)
+            if (ptr_type->isArrayTy())
                 idx.push_back(trueIdx);
             else
                 return context.getBuilder().CreateGEP(value, trueIdx);
         }
         else
         {
-            if (ptr_type->isArrayTy() /*&& !is_local*/)
+            if (ptr_type->isArrayTy())
                 idx.push_back(idx_value);
             else
                 return context.getBuilder().CreateGEP(value, idx_value);

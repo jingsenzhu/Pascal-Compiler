@@ -305,11 +305,6 @@ namespace spc
                     for (auto itr = recTy->element_begin(); itr != recTy->element_end(); itr++)
                         zeroes.push_back(llvm::Constant::getNullValue(*itr));
                     constant = llvm::ConstantStruct::get(recTy, zeroes);
-                    // int n = recTy->getNumElements();
-                    // for (int i = 0; i < n; i++)
-                    // {
-                    //     zeroes.push_back(llvm::Constant::getNullValue(recTy->getTypeAtIndex(i)));
-                    // }
                 }
                 else
                     throw CodegenException("Unknown type");

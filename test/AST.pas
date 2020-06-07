@@ -3,7 +3,7 @@ VAR
   i: integer;
 begin
   { const }
-  i := 3 + 4 * 5 - 12 div 6;
+  i := 3 + 4 * sqr(5) - 12 div 6;
 
   { if statement }
   if 1 < 2 then writeln('x < y')

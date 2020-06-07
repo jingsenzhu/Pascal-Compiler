@@ -138,11 +138,10 @@ namespace spc
         for (auto &decl: field)
         {
             auto *ty = decl->type->getLLVMType(context);
-            if (ty == nullptr/* || ty->isStructTy()*/)
+            if (ty == nullptr)
                 throw CodegenException("Unsupported type in record declaration");
             fieldTy.push_back(ty);
         }
-        // return llvm::StructType::create(fieldTy);
         return llvm::StructType::get(context.getBuilder().getContext(), fieldTy);
     }
     void RecordTypeNode::insertNestedRecord(const std::string &outer, CodegenContext &context)
@@ -191,24 +190,6 @@ namespace spc
                 assert(arr != nullptr);
                 if (!context.setArrayEntry(outer + "." + fName, arr)) throw CodegenException("Duplicate nested record field!");
                 arr->insertNestedArray(outer + "." + fName, context);
-                // std::shared_ptr<RecordTypeNode> rec;
-                // if (arr->itemType->type == Type::Alias)
-                // {
-                //     std::string aliasName = cast_node<AliasTypeNode>(arr->itemType)->name->name;
-                //     for (auto rit = context.traces.rbegin(); rit != context.traces.rend(); rit++)
-                //         if ((rec = context.getRecordAlias(*rit + "." + aliasName)) != nullptr)
-                //             break;
-                //     if (rec == nullptr) rec = context.getRecordAlias(aliasName);
-                //     if (rec == nullptr) continue;
-                //     if (!context.setRecordAlias(outer + "." + fName + "[]", rec)) throw CodegenException("Duplicate nested record field!");
-                //     rec->insertNestedRecord(outer + "." + fName + "[]", context);
-                // }
-                // if (arr->itemType->type == Type::Record)
-                // {
-                //     rec = cast_node<RecordTypeNode>(arr->itemType);
-                //     if (!context.setRecordAlias(outer + "." + fName + "[]", rec)) throw CodegenException("Duplicate nested record field!");
-                //     rec->insertNestedRecord(outer + "." + fName + "[]", context);
-                // }
             }
         }
         

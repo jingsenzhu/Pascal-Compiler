@@ -62,12 +62,6 @@ namespace spc {
 \\usepackage[active,tightpage]{preview} \n\
 \\PreviewEnvironment{tikzpicture} \n\
 \\setlength\\PreviewBorder{5pt}% \n\%\%\%> \n\n\
-\\begin{comment} \n\
-:Title: AST                 \n\
-:Tags: Trees; Syntax        \n\
-:Author: Eric Morris        \n\
-:Slug: abstract-syntax-tree \n\
-\\end{comment} \n\n\n\n\
 \\usetikzlibrary{trees}  \n\n\n\
 \\begin{document}\n\
 \\tikzstyle{every node}=[draw=black,thick,anchor=west]  \n\

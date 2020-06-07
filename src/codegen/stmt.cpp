@@ -101,23 +101,6 @@ namespace spc
     {
         llvm::Value *lhs;
         lhs = this->lhs->getAssignPtr(context);
-        // if (is_ptr_of<IdentifierNode>(this->lhs))
-        // {
-        //     auto id_cast = cast_node<IdentifierNode>(this->lhs);
-        //     lhs = id_cast->getAssignPtr(context);
-        // }
-        // else if (is_ptr_of<ArrayRefNode>(this->lhs))
-        // {
-        //     auto arr_cast = cast_node<ArrayRefNode>(this->lhs);
-        //     lhs = arr_cast->getAssignPtr(context);
-        // }
-        // else if (is_ptr_of<RecordRefNode>(this->lhs))
-        // {
-        //     auto rec_cast = cast_node<RecordRefNode>(this->lhs);
-        //     lhs = rec_cast->getPtr(context);
-        // }
-        // else
-        //     throw CodegenException("Assignment left argument not a identifier.");
         auto *rhs = this->rhs->codegen(context);
         auto *lhs_type = lhs->getType()->getPointerElementType();
         auto *rhs_type = rhs->getType();

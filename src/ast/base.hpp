@@ -89,14 +89,6 @@ namespace spc
                 c->codegen(context);
             }
         }
-        // virtual void print()
-        // {
-        //     std::cout << "===== Start List =====" << std::endl;
-        //     for (auto &c : children)
-        //     {
-        //         c->print();
-        //     }
-        // }
     };
 
     class ExprNode: public BaseNode
